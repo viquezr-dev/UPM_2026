@@ -131,12 +131,11 @@
             border-top: 1px solid #334155;
         }
         
-        /* Globo/Popup con tamaño compacto sin desbordar pantalla */
         .info-popup {
             font-size: 11px;
-            line-height: 1.3;
+            line-height: 1.15;
             color: #334155;
-            max-width: 240px;
+            max-width: 250px;
             max-height: 320px;
             overflow-y: auto;
             padding-right: 4px;
@@ -152,7 +151,7 @@
 
         .info-popup p {
             margin-bottom: 0px;
-            line-height: 0.5;
+            padding: 1px 0;
         }
 
         .distance-badge {
@@ -202,16 +201,29 @@
             display: inline-block;
         }
 
+        /* --- ESTILOS DE ETIQUETA DINÁMICA DE DISTANCIA --- */
         .distance-line-label {
-            background: #0f172a;        /* Fondo oscuro azul noche para destacar en calles claras */
-            color: #ffffff;            /* Texto blanco brillante */
-            border: 2px solid #38bdf8;  /* Borde celeste neón para separarlo de la vista satelital */
-            border-radius: 6px;
-            padding: 3px 8px;
+            border-radius: 4px;
+            padding: 3px 7px;
             font-size: 11px;
             font-weight: bold;
             white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Texto negro para Mapa Callejero */
+        .label-callejero {
+            background: #ffffff;
+            color: #0f172a;
+            border: 2px solid #0f172a;
+        }
+
+        /* Texto blanco para Vista Satelital */
+        .label-satelite {
+            background: #0f172a;
+            color: #ffffff;
+            border: 2px solid #38bdf8;
         }
     </style>
 </head>
@@ -271,7 +283,7 @@
         });
 
         const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
@@ -281,6 +293,16 @@
         });
 
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
+
+        // Control de tipo de mapa activo
+        let mapaActual = 'callejero';
+        map.on('baselayerchange', function(e) {
+            if (e.name.includes('Satelital')) {
+                mapaActual = 'satelite';
+            } else {
+                mapaActual = 'callejero';
+            }
+        });
 
         const provinciaContornoLayer = L.layerGroup().addTo(map);
         const poligonosEmlLayer = L.layerGroup().addTo(map);
@@ -385,7 +407,6 @@
         function inicializarFiltrosCascada() {
             const provinciasSet = new Set();
 
-            // Carga provincias desde los 3 archivos para no perder ninguna
             [emlData, oficinaData, provinciaData].forEach(dataSet => {
                 dataSet.forEach(f => {
                     if (f.properties && f.properties.PROV_NOMB) {
@@ -540,11 +561,10 @@
             if (provFeature) {
                 L.geoJSON(provFeature, {
                     style: {
-                        color: '#000000',      // Borde Negro
-                        weight: 3.5,           // Grosor del contorno
-                        fillOpacity: 0,        // Sin relleno
-                        dashArray: null,
-                        interactive: false     // No interfiere con clics en los polígonos
+                        color: '#000000',
+                        weight: 3.5,
+                        fillOpacity: 0,
+                        interactive: false
                     }
                 }).addTo(provinciaContornoLayer);
             }
@@ -561,13 +581,11 @@
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
 
-            // Renderizar contorno negro de la provincia si está seleccionada
             renderizarContornoProvincia(pSel);
 
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
-                // Filtro SEGM_TIPO / DIFICIL ACCESO
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel !== 'TODOS') {
@@ -638,13 +656,11 @@
                     if (props.hasOwnProperty(campo)) {
                         let valor = props[campo] ?? 'N/D';
                         
-                        // Transformación DA
                         if (campo === 'DA') {
                             const valStr = String(valor).trim();
                             if (valStr === '1') valor = 'DIFICIL ACCESO';
                             else if (valStr === '0') valor = 'NO APLICA';
                         } 
-                        // Transformación SEGM_TIPO
                         else if (campo === 'SEGM_TIPO') {
                             valor = normalizarSegmTipo(valor);
                         }
@@ -676,9 +692,12 @@
                             const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
                             const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
                             
+                            // Asignación de estilo dinámico según el mapa actual
+                            const claseEstilo = (mapaActual === 'satelite') ? 'label-satelite' : 'label-callejero';
+
                             L.marker([midLat, midLon], {
                                 icon: L.divIcon({
-                                    className: 'distance-line-label',
+                                    className: `distance-line-label ${claseEstilo}`,
                                     html: `${oficinaAsociada.distanciaKm.toFixed(2)} Km`,
                                     iconAnchor: [25, 10]
                                 })
