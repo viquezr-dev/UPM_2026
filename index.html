@@ -132,62 +132,70 @@
         }
         
         .info-popup {
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 11px;
+            line-height: 1.3;
             color: #334155;
-            max-width: 280px;
+            max-width: 240px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
         
         .info-popup h3 {
             color: #0f172a;
-            font-size: 14px;
-            margin-bottom: 6px;
+            font-size: 12px;
+            margin-bottom: 4px;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
+        }
+
+        .info-popup p {
+            margin-bottom: 2px;
         }
 
         .distance-badge {
             background: #2563eb;
             color: white;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
             font-weight: bold;
             display: inline-block;
-            margin-top: 6px;
+            margin-top: 4px;
+            font-size: 10px;
         }
 
         .legend {
             background: white;
-            padding: 12px;
-            line-height: 18px;
+            padding: 10px;
+            line-height: 16px;
             color: #334155;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            font-size: 12px;
-            max-height: 250px;
+            font-size: 11px;
+            max-height: 220px;
             overflow-y: auto;
         }
         
         .legend h4 {
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             color: #475569;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 4px;
+            padding-bottom: 3px;
         }
         
         .legend p {
             display: flex;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .legend i {
-            width: 14px;
-            height: 14px;
-            margin-right: 8px;
-            border-radius: 3px;
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+            border-radius: 2px;
             border: 1px solid #334155;
             display: inline-block;
         }
@@ -243,13 +251,11 @@
     </div>
 
     <script>
-        // 1. Inicialización del Mapa
         const map = L.map('map', {
             center: [8.537, -80.782],
             zoom: 8
         });
 
-        // 2. Capas Base (Street Map vs Satélite Esri)
         const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
@@ -267,17 +273,14 @@
 
         L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-        // 3. Estructura de Capas
         const poligonosEmlLayer = L.layerGroup().addTo(map);
         const oficinasLayer = L.layerGroup().addTo(map);
         const lineasDistanciaLayer = L.layerGroup().addTo(map);
 
-        // Variables de Almacenamiento de Datos
         let emlData = [];
         let oficinaData = [];
         let emlFiltrados = [];
 
-        // Paleta de colores consistente para provincias
         const provinciaColores = {};
         const paletaColores = [
             '#e11d48', '#2563eb', '#16a34a', '#d97706', '#9333ea', 
@@ -295,13 +298,11 @@
             return provinciaColores[norm];
         }
 
-        // Elementos DOM
         const selectProv = document.getElementById('provincia');
         const selectDist = document.getElementById('distrito');
         const selectCorr = document.getElementById('corregimiento');
         const selectPob = document.getElementById('poblado');
 
-        // Leyenda Dinámica de Provincias
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function (map) {
             const div = L.DomUtil.create('div', 'legend');
@@ -323,11 +324,10 @@
                     html += `<p><i style="background: ${provinciaColores[p]}"></i> ${p}</p>`;
                 });
             }
-            html += '<p style="margin-top:8px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
+            html += '<p style="margin-top:6px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
             div.innerHTML = html;
         }
 
-        // Carga de Datos GeoJSON (eml.geojson / oficina.geojson)
         async function cargarGeoJSONs() {
             try {
                 const [resEml, resOficina] = await Promise.all([
@@ -345,7 +345,6 @@
                     oficinaData = oficinaJson.features || [];
                 }
 
-                // Cargar datos sintéticos si los archivos locales no se detectan
                 if (emlData.length === 0 && oficinaData.length === 0) {
                     cargarMocksDemo();
                 }
@@ -371,13 +370,12 @@
             });
 
             Array.from(provinciasSet).sort().forEach(p => {
-                obtenerColorProvincia(p); // Pre-asignar color
+                obtenerColorProvincia(p);
                 selectProv.add(new Option(p, p));
             });
 
             actualizarLeyenda();
 
-            // Eventos en Cascada
             selectProv.addEventListener('change', () => {
                 const pSel = selectProv.value;
                 selectDist.innerHTML = '<option value="TODOS">Todos</option>';
@@ -437,16 +435,11 @@
             selectPob.addEventListener('change', filtrarYRenderizar);
         }
 
-        // Fórmulas de Geometría / Centroide y Distancia Haversine (Km)
         function calcularCentroide(feature) {
             if (!feature.geometry) return null;
-            
-            // Si el GeoJSON ya trae un punto o coordenadas directas
             if (feature.geometry.type === 'Point') {
                 return [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
             }
-
-            // Para Polígonos o MultiPolígonos
             let pts = [];
             const extraerCoords = (arr) => {
                 if (typeof arr[0] === 'number') {
@@ -458,18 +451,14 @@
             extraerCoords(feature.geometry.coordinates);
 
             if (pts.length === 0) return null;
-
             let sumLat = 0, sumLon = 0;
-            pts.forEach(p => {
-                sumLon += p[0];
-                sumLat += p[1];
-            });
+            pts.forEach(p => { sumLon += p[0]; sumLat += p[1]; });
 
             return [sumLat / pts.length, sumLon / pts.length];
         }
 
         function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radio de la Tierra en kilómetros
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -505,12 +494,7 @@
                     const dist = haversineDistance(centroideLat, centroideLon, coords.lat, coords.lon);
                     if (dist < menorDistancia) {
                         menorDistancia = dist;
-                        oficinaCercana = {
-                            feature: oficina,
-                            lat: coords.lat,
-                            lon: coords.lon,
-                            distanciaKm: dist
-                        };
+                        oficinaCercana = { feature: oficina, lat: coords.lat, lon: coords.lon, distanciaKm: dist };
                     }
                 }
             });
@@ -518,7 +502,6 @@
             return oficinaCercana;
         }
 
-        // Renderizado del mapa
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
@@ -529,7 +512,6 @@
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
 
-            // 1. Filtrar Polígonos EML
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
@@ -539,14 +521,12 @@
                 return true;
             });
 
-            // 2. Filtrar Oficinas (por provincia si hay selección)
             const oficinasFiltradas = oficinaData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
 
-            // 3. Dibujar Oficinas
             oficinasFiltradas.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
@@ -554,9 +534,9 @@
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
-                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
-                    iconSize: [26, 26],
-                    iconAnchor: [13, 13]
+                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
                 });
 
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
@@ -568,27 +548,18 @@
                 });
                 popupContent += `</div>`;
 
-                L.marker([coords.lat, coords.lon], { icon: iconOficina })
-                 .bindPopup(popupContent)
-                 .addTo(oficinasLayer);
+                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
 
-            // 4. Dibujar Polígonos con Interacción
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 const colorFill = obtenerColorProvincia(provNombre);
 
                 const polyLayer = L.geoJSON(feature, {
-                    style: {
-                        fillColor: colorFill,
-                        fillOpacity: 0.55,
-                        color: '#1e293b',
-                        weight: 1.5
-                    }
+                    style: { fillColor: colorFill, fillOpacity: 0.55, color: '#1e293b', weight: 1.5 }
                 });
 
-                // Trazado de Línea de Distancia
                 const centroide = calcularCentroide(feature);
                 let oficinaAsociada = null;
 
@@ -604,42 +575,42 @@
                 let popupContent = `<div class="info-popup"><h3>📍 Polígono EML</h3>`;
                 camposEML.forEach(campo => {
                     if (props.hasOwnProperty(campo)) {
-                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
+                        let valor = props[campo] ?? 'N/D';
+                        
+                        // Transformaciones solicitadas
+                        if (campo === 'DA' && String(valor).trim() === '1') {
+                            valor = 'DIFICIL ACCESO';
+                        } else if (campo === 'SEGM_TIPO') {
+                            const segmStr = String(valor).trim();
+                            if (segmStr === '01' || segmStr === '1') valor = 'URBANO';
+                            else if (segmStr === '02' || segmStr === '2') valor = 'RURAL';
+                            else if (segmStr === '03' || segmStr === '3') valor = 'INDIGENA';
+                        }
+                        
+                        popupContent += `<p><strong>${campo}:</strong> ${valor}</p>`;
                     }
                 });
 
                 if (oficinaAsociada) {
                     popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
-                } else {
-                    popupContent += `<p style="margin-top:6px; color:#94a3b8; font-style:italic;">No hay oficinas filtradas cercanas</p>`;
                 }
                 popupContent += `</div>`;
 
                 polyLayer.bindPopup(popupContent);
 
-                // Eventos de interacción Hover y Click
                 polyLayer.on({
                     mouseover: (e) => {
                         const layer = e.target;
-                        layer.setStyle({
-                            fillOpacity: 0.85,
-                            weight: 3,
-                            color: '#38bdf8'
-                        });
+                        layer.setStyle({ fillOpacity: 0.85, weight: 3, color: '#38bdf8' });
 
-                        // Trazar línea temporal al posarse
                         lineasDistanciaLayer.clearLayers();
                         if (centroide && oficinaAsociada) {
                             const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
                             
-                            const polyline = L.polyline(lineCoords, {
-                                color: '#0284c7',
-                                weight: 3,
-                                dashArray: '6, 6',
-                                opacity: 0.9
+                            L.polyline(lineCoords, {
+                                color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
                             }).addTo(lineasDistanciaLayer);
 
-                            // Etiqueta flotante en el centro de la línea
                             const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
                             const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
                             
@@ -652,9 +623,7 @@
                             }).addTo(lineasDistanciaLayer);
                         }
                     },
-                    mouseout: (e) => {
-                        polyLayer.resetStyle(e.target);
-                    }
+                    mouseout: (e) => { polyLayer.resetStyle(e.target); }
                 });
 
                 polyLayer.addTo(poligonosEmlLayer);
@@ -662,7 +631,6 @@
 
             document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradas.length} Oficinas`;
 
-            // Auto-encuadre inteligente en el mapa
             if (emlFiltrados.length > 0) {
                 const tempLayer = L.geoJSON(emlFiltrados);
                 map.fitBounds(tempLayer.getBounds(), { padding: [30, 30] });
@@ -683,94 +651,17 @@
             map.setView([8.537, -80.782], 8);
         }
 
-        // Carga de datos demostrativos en caso de no existir los GeoJSON locales
         function cargarMocksDemo() {
-            oficinaData = [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "fid": 1,
-                        "PROV_ID": "08",
-                        "PROV_NOMB": "PANAMA",
-                        "ID1": 101,
-                        "SHAPE_Leng": 0.05,
-                        "SHAPE_Area": 0.002,
-                        "OFICE_LAT": 8.9833,
-                        "OFICE_LONG": -79.5167,
-                        "PLUS_CODE": "8700+XX"
-                    },
-                    "geometry": { "type": "Point", "coordinates": [-79.5167, 8.9833] }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "fid": 2,
-                        "PROV_ID": "04",
-                        "PROV_NOMB": "CHIRIQUI",
-                        "ID1": 102,
-                        "SHAPE_Leng": 0.04,
-                        "SHAPE_Area": 0.001,
-                        "OFICE_LAT": 8.4273,
-                        "OFICE_LONG": -82.4301,
-                        "PLUS_CODE": "7600+YY"
-                    },
-                    "geometry": { "type": "Point", "coordinates": [-82.4301, 8.4273] }
-                }
-            ];
-
-            emlData = [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001",
-                        "SEGM_TIPO": "Urbano", "DA": "01", "INDIG": "NO",
-                        "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO",
-                        "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-79.510, 8.980], [-79.500, 8.980],
-                            [-79.500, 8.990], [-79.510, 8.990],
-                            [-79.510, 8.980]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "02", "LUPO_ID": "002",
-                        "SEGM_TIPO": "Urbano", "DA": "02", "INDIG": "NO",
-                        "CODE_UPM": "UPM-0802", "LUPO_NOMB": "BELLA VISTA POBLADO",
-                        "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "BELLA VISTA"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-79.530, 8.970], [-79.520, 8.970],
-                            [-79.520, 8.980], [-79.530, 8.980],
-                            [-79.530, 8.970]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "PROV_ID": "04", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "003",
-                        "SEGM_TIPO": "Rural", "DA": "01", "INDIG": "NO",
-                        "CODE_UPM": "UPM-0401", "LUPO_NOMB": "DAVID CENTRO",
-                        "PROV_NOMB": "CHIRIQUI", "DIST_NOMB": "DAVID", "CORR_NOMB": "DAVID"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-82.440, 8.420], [-82.420, 8.420],
-                            [-82.420, 8.440], [-82.440, 8.440],
-                            [-82.440, 8.420]
-                        ]]
-                    }
-                }
-            ];
+            oficinaData = [{
+                "type": "Feature",
+                "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 101, "OFICE_LAT": 8.9833, "OFICE_LONG": -79.5167, "PLUS_CODE": "8700+XX" },
+                "geometry": { "type": "Point", "coordinates": [-79.5167, 8.9833] }
+            }];
+            emlData = [{
+                "type": "Feature",
+                "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
+                "geometry": { "type": "Polygon", "coordinates": [[[-79.510, 8.980], [-79.500, 8.980], [-79.500, 8.990], [-79.510, 8.990], [-79.510, 8.980]]] }
+            }];
         }
 
         document.addEventListener('DOMContentLoaded', cargarGeoJSONs);
