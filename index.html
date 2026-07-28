@@ -280,12 +280,14 @@
 
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
 
+        const provinciaContornoLayer = L.layerGroup().addTo(map);
         const poligonosEmlLayer = L.layerGroup().addTo(map);
         const oficinasLayer = L.layerGroup().addTo(map);
         const lineasDistanciaLayer = L.layerGroup().addTo(map);
 
         let emlData = [];
         let oficinaData = [];
+        let provinciaData = [];
         let emlFiltrados = [];
 
         const provinciaColores = {};
@@ -338,9 +340,10 @@
 
         async function cargarGeoJSONs() {
             try {
-                const [resEml, resOficina] = await Promise.all([
+                const [resEml, resOficina, resProvincia] = await Promise.all([
                     fetch('eml.geojson').catch(() => null),
-                    fetch('oficina.geojson').catch(() => null)
+                    fetch('oficina.geojson').catch(() => null),
+                    fetch('provincia.geojson').catch(() => null)
                 ]);
 
                 if (resEml && resEml.ok) {
@@ -351,6 +354,11 @@
                 if (resOficina && resOficina.ok) {
                     const oficinaJson = await resOficina.json();
                     oficinaData = oficinaJson.features || [];
+                }
+
+                if (resProvincia && resProvincia.ok) {
+                    const provinciaJson = await resProvincia.json();
+                    provinciaData = provinciaJson.features || [];
                 }
 
                 if (emlData.length === 0 && oficinaData.length === 0) {
@@ -374,15 +382,14 @@
 
         function inicializarFiltrosCascada() {
             const provinciasSet = new Set();
-            emlData.forEach(f => {
-                if (f.properties && f.properties.PROV_NOMB) {
-                    provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
-                }
-            });
-            oficinaData.forEach(f => {
-                if (f.properties && f.properties.PROV_NOMB) {
-                    provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
-                }
+
+            // Carga provincias desde los 3 archivos para no perder ninguna
+            [emlData, oficinaData, provinciaData].forEach(dataSet => {
+                dataSet.forEach(f => {
+                    if (f.properties && f.properties.PROV_NOMB) {
+                        provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
+                    }
+                });
             });
 
             Array.from(provinciasSet).sort().forEach(p => {
@@ -520,6 +527,27 @@
             return oficinaCercana;
         }
 
+        function renderizarContornoProvincia(pSel) {
+            provinciaContornoLayer.clearLayers();
+            if (pSel === 'TODAS' || provinciaData.length === 0) return;
+
+            const provFeature = provinciaData.find(
+                f => f.properties && f.properties.PROV_NOMB && f.properties.PROV_NOMB.trim().toUpperCase() === pSel
+            );
+
+            if (provFeature) {
+                L.geoJSON(provFeature, {
+                    style: {
+                        color: '#000000',      // Borde Negro
+                        weight: 3.5,           // Grosor del contorno
+                        fillOpacity: 0,        // Sin relleno
+                        dashArray: null,
+                        interactive: false     // No interfiere con clics en los polígonos
+                    }
+                }).addTo(provinciaContornoLayer);
+            }
+        }
+
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
@@ -530,6 +558,9 @@
             const dSel = selectDist.value;
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
+
+            // Renderizar contorno negro de la provincia si está seleccionada
+            renderizarContornoProvincia(pSel);
 
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
@@ -689,6 +720,11 @@
                 "type": "Feature",
                 "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 101, "OFICE_LAT": 8.9833, "OFICE_LONG": -79.5167, "PLUS_CODE": "8700+XX" },
                 "geometry": { "type": "Point", "coordinates": [-79.5167, 8.9833] }
+            }];
+            provinciaData = [{
+                "type": "Feature",
+                "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 1, "SHAPE_Leng": 2.5, "SHAPE_Area": 0.5 },
+                "geometry": { "type": "Polygon", "coordinates": [[[-79.550, 8.950], [-79.450, 8.950], [-79.450, 9.020], [-79.550, 9.020], [-79.550, 8.950]]] }
             }];
             emlData = [
                 {
