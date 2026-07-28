@@ -143,21 +143,24 @@
         }
         
         .info-popup {
-            font-size: 10px;
-            line-height: 0.5;
+            font-size: 11px;
+            line-height: 1.25;      /* Un poco más de espacio entre líneas */
             color: #334155;
-            max-width: 250px;
-            max-height: 350px;
+            min-width: 200px;       /* 👈 Ancho mínimo para que no se colapse */
+            max-width: 320px;       /* 👈 Aumentado de 250px a 320px */
+            max-height: 380px;      /* 👈 Aumentado para ver más filas */
             overflow-y: auto;
             padding-right: 4px;
         }
         
         .info-popup h3 {
             color: #0f172a;
-            font-size: 12px;
-            margin-bottom: 4px;
+            font-size: 13px;
+            margin-bottom: 6px;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 2px;
+            padding-bottom: 3px;
+            white-space: normal;    /* 👈 Permite que el título baje de línea si es muy largo */
+            word-wrap: break-word;  /* 👈 Evita que las palabras largas se salgan */
         }
 
         .info-popup p {
@@ -687,7 +690,7 @@
                 }
                 popupContent += `</div>`;
 
-                polyLayer.bindPopup(popupContent);
+                polyLayer.bindPopup(popupContent, { maxWidth: 350, minWidth: 220 });
 
                 polyLayer.on({
                     mouseover: (e) => {
