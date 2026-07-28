@@ -94,6 +94,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 4px;
         }
         
         .btn-reset {
@@ -103,6 +104,16 @@
 
         .btn-reset:hover {
             background: #fca5a5;
+        }
+
+        .btn-export {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .btn-export:hover {
+            background: #bbf7d0;
         }
         
         .stats {
@@ -136,7 +147,7 @@
             line-height: 0.5;
             color: #334155;
             max-width: 250px;
-            max-height: 330px;
+            max-height: 350px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -267,6 +278,7 @@
             <select id="poblado" disabled><option value="TODOS">Todos</option></select>
         </div>
 
+        <button class="btn-export" onclick="exportarCSV()">📥 Descargar CSV</button>
         <button class="btn-reset" onclick="resetMap()">🔄 Resetear Filtros</button>
     </div>
     
@@ -313,6 +325,7 @@
         let oficinaData = [];
         let provinciaData = [];
         let emlFiltrados = [];
+        let oficinasFiltradasGlobal = [];
 
         const provinciaColores = {};
         const paletaColores = [
@@ -600,13 +613,13 @@
                 return true;
             });
 
-            const oficinasFiltradas = oficinaData.filter(f => {
+            oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
 
-            oficinasFiltradas.forEach(oficina => {
+            oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
 
@@ -642,8 +655,8 @@
                 const centroide = calcularCentroide(feature);
                 let oficinaAsociada = null;
 
-                if (centroide && oficinasFiltradas.length > 0) {
-                    oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradas);
+                if (centroide && oficinasFiltradasGlobal.length > 0) {
+                    oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
                 }
 
                 const camposEML = [
@@ -692,7 +705,6 @@
                             const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
                             const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
                             
-                            // Asignación de estilo dinámico según el mapa actual
                             const claseEstilo = (mapaActual === 'satelite') ? 'label-satelite' : 'label-callejero';
 
                             L.marker([midLat, midLon], {
@@ -713,12 +725,80 @@
                 polyLayer.addTo(poligonosEmlLayer);
             });
 
-            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradas.length} Oficinas`;
+            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
 
             if (emlFiltrados.length > 0) {
                 const tempLayer = L.geoJSON(emlFiltrados);
                 map.fitBounds(tempLayer.getBounds(), { padding: [30, 30] });
             }
+        }
+
+        /* --- FUNCIÓN PARA EXPORTAR DATOS FILTRADOS A CSV --- */
+        function exportarCSV() {
+            if (!emlFiltrados || emlFiltrados.length === 0) {
+                alert("⚠️ No hay polígonos filtrados en pantalla para exportar.");
+                return;
+            }
+
+            // Obtener todas las claves únicas presentes en los registros filtrados
+            const columnasSet = new Set();
+            emlFiltrados.forEach(f => {
+                if (f.properties) {
+                    Object.keys(f.properties).forEach(key => columnasSet.add(key));
+                }
+            });
+
+            const columnas = Array.from(columnasSet);
+            columnas.push("DISTANCIA_OFICINA_KM"); // Agregar columna calculada de distancia
+
+            // Encabezados en formato CSV
+            let csvContent = columnas.join(",") + "\n";
+
+            // Filas de datos
+            emlFiltrados.forEach(feature => {
+                const props = feature.properties || {};
+                
+                // Calcular distancia para exportación
+                const centroide = calcularCentroide(feature);
+                let distanciaKm = "";
+                if (centroide && oficinasFiltradasGlobal.length > 0) {
+                    const oficina = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
+                    if (oficina) distanciaKm = oficina.distanciaKm.toFixed(2);
+                }
+
+                const fila = columnas.map(col => {
+                    let valor = (col === "DISTANCIA_OFICINA_KM") ? distanciaKm : (props[col] ?? "");
+                    
+                    if (col === "SEGM_TIPO") {
+                        valor = normalizarSegmTipo(valor);
+                    } else if (col === "DA") {
+                        const valStr = String(valor).trim();
+                        if (valStr === '1') valor = 'DIFICIL ACCESO';
+                        else if (valStr === '0') valor = 'NO APLICA';
+                    }
+
+                    // Escapar comillas dobles y envolver texto entre comillas para evitar rupturas de formato
+                    const valEscapado = String(valor).replace(/"/g, '""');
+                    return `"${valEscapado}"`;
+                });
+
+                csvContent += fila.join(",") + "\n";
+            });
+
+            // Forzar codificación UTF-8 con BOM (\uFEFF) para compatibilidad nativa con Microsoft Excel
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            
+            // Nombre descriptivo con fecha y hora
+            const fechaStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("download", `UPM_Filtrados_${fechaStr}.csv`);
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function resetMap() {
