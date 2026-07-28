@@ -559,10 +559,13 @@
                     iconAnchor: [13, 13]
                 });
 
+                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
-                for (const [key, val] of Object.entries(props)) {
-                    popupContent += `<p><strong>${key}:</strong> ${val ?? 'N/D'}</p>`;
-                }
+                camposOficina.forEach(campo => {
+                    if (props.hasOwnProperty(campo)) {
+                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
+                    }
+                });
                 popupContent += `</div>`;
 
                 L.marker([coords.lat, coords.lon], { icon: iconOficina })
@@ -593,11 +596,17 @@
                     oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradas);
                 }
 
-                // Generar Contenido del Popup con TODOS los campos del GeoJSON eml
+                const camposEML = [
+                    'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
+                    'DA', 'INDIG', 'SHAPE_Leng', 'SHAPE_Area', 'CODE_UPM', 
+                    'LUPO_NOMB', 'PROV_NOMB', 'DIST_NOMB', 'CORR_NOMB'
+                ];
                 let popupContent = `<div class="info-popup"><h3>📍 Polígono EML</h3>`;
-                for (const [key, val] of Object.entries(props)) {
-                    popupContent += `<p><strong>${key}:</strong> ${val ?? 'N/D'}</p>`;
-                }
+                camposEML.forEach(campo => {
+                    if (props.hasOwnProperty(campo)) {
+                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
+                    }
+                });
 
                 if (oficinaAsociada) {
                     popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
