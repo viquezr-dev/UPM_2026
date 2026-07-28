@@ -69,7 +69,7 @@
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 13px;
-            min-width: 150px;
+            min-width: 140px;
             background: #f8fafc;
             color: #334155;
             cursor: pointer;
@@ -131,6 +131,7 @@
             border-top: 1px solid #334155;
         }
         
+        /* Globo/Popup con tamaño ajustado */
         .info-popup {
             font-size: 11px;
             line-height: 1.3;
@@ -201,7 +202,7 @@
         }
 
         .distance-line-label {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             color: #ffffff;
             border: 1px solid #38bdf8;
             border-radius: 4px;
@@ -220,6 +221,16 @@
     
     <div class="controls">
         <span class="stats" id="contador">0 Polígonos | 0 Oficinas</span>
+
+        <div class="filter-group">
+            <label for="segm_tipo">Tipo Segmento:</label>
+            <select id="segm_tipo">
+                <option value="TODOS">Todos</option>
+                <option value="URBANO">Urbano (01)</option>
+                <option value="RURAL">Rural (02)</option>
+                <option value="INDIGENA">Indígena (03)</option>
+            </select>
+        </div>
 
         <div class="filter-group">
             <label for="provincia">Provincia:</label>
@@ -262,20 +273,15 @@
         }).addTo(map);
 
         const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            attribution: 'Tiles &copy; Esri',
             maxZoom: 19
         });
 
-        const baseMaps = {
-            "🗺️ Mapa Callejero": streetMap,
-            "🛰️ Vista Satelital": satelliteMap
-        };
-
-        L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+        L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
 
         const poligonosEmlLayer = L.layerGroup().addTo(map);
         const oficinasLayer = L.layerGroup().addTo(map);
-        const lineasDistanciaLayer = L.layerGroup().addTo(map);
+        const rutasRecorridoLayer = L.layerGroup().addTo(map);
 
         let emlData = [];
         let oficinaData = [];
@@ -298,13 +304,14 @@
             return provinciaColores[norm];
         }
 
+        const selectSegm = document.getElementById('segm_tipo');
         const selectProv = document.getElementById('provincia');
         const selectDist = document.getElementById('distrito');
         const selectCorr = document.getElementById('corregimiento');
         const selectPob = document.getElementById('poblado');
 
         const legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function (map) {
+        legend.onAdd = function () {
             const div = L.DomUtil.create('div', 'legend');
             div.id = 'leyenda-provincias';
             div.innerHTML = '<h4>Provincias</h4><p>Cargando datos...</p>';
@@ -356,6 +363,14 @@
             }
         }
 
+        function normalizarSegmTipo(val) {
+            const segmStr = String(val ?? '').trim();
+            if (segmStr === '01' || segmStr === '1' || segmStr.toUpperCase() === 'URBANO') return 'URBANO';
+            if (segmStr === '02' || segmStr === '2' || segmStr.toUpperCase() === 'RURAL') return 'RURAL';
+            if (segmStr === '03' || segmStr === '3' || segmStr.toUpperCase() === 'INDIGENA') return 'INDIGENA';
+            return segmStr;
+        }
+
         function inicializarFiltrosCascada() {
             const provinciasSet = new Set();
             emlData.forEach(f => {
@@ -375,6 +390,8 @@
             });
 
             actualizarLeyenda();
+
+            selectSegm.addEventListener('change', filtrarYRenderizar);
 
             selectProv.addEventListener('change', () => {
                 const pSel = selectProv.value;
@@ -502,11 +519,46 @@
             return oficinaCercana;
         }
 
+        // Trazar ruta real por carretera usando OSRM
+        async function trazarrutaCarretera(lat1, lon1, lat2, lon2) {
+            rutasRecorridoLayer.clearLayers();
+            const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+                    const distanciaKm = (route.distance / 1000).toFixed(2);
+                    const minutos = Math.round(route.duration / 60);
+
+                    L.polyline(coords, {
+                        color: '#2563eb', weight: 5, opacity: 0.85
+                    }).addTo(rutasRecorridoLayer);
+
+                    const midIndex = Math.floor(coords.length / 2);
+                    L.marker(coords[midIndex], {
+                        icon: L.divIcon({
+                            className: 'distance-line-label',
+                            html: `🚗 ${distanciaKm} km (~${minutos} min)`,
+                            iconAnchor: [40, 10]
+                        })
+                    }).addTo(rutasRecorridoLayer);
+                }
+            } catch (err) {
+                // Si la red falla, traza la línea directa
+                L.polyline([[lat1, lon1], [lat2, lon2]], { color: '#dc2626', weight: 3, dashArray: '6,6' }).addTo(rutasRecorridoLayer);
+            }
+        }
+
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
-            lineasDistanciaLayer.clearLayers();
+            rutasRecorridoLayer.clearLayers();
 
+            const segmSel = selectSegm.value;
             const pSel = selectProv.value;
             const dSel = selectDist.value;
             const cSel = selectCorr.value;
@@ -514,6 +566,13 @@
 
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
+                
+                // Filtro SEGM_TIPO
+                if (segmSel !== 'TODOS') {
+                    const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
+                    if (tipoNormalizado !== segmSel) return false;
+                }
+
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
@@ -577,14 +636,11 @@
                     if (props.hasOwnProperty(campo)) {
                         let valor = props[campo] ?? 'N/D';
                         
-                        // Transformaciones solicitadas
+                        // Transformaciones
                         if (campo === 'DA' && String(valor).trim() === '1') {
                             valor = 'DIFICIL ACCESO';
                         } else if (campo === 'SEGM_TIPO') {
-                            const segmStr = String(valor).trim();
-                            if (segmStr === '01' || segmStr === '1') valor = 'URBANO';
-                            else if (segmStr === '02' || segmStr === '2') valor = 'RURAL';
-                            else if (segmStr === '03' || segmStr === '3') valor = 'INDIGENA';
+                            valor = normalizarSegmTipo(valor);
                         }
                         
                         popupContent += `<p><strong>${campo}:</strong> ${valor}</p>`;
@@ -592,7 +648,7 @@
                 });
 
                 if (oficinaAsociada) {
-                    popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
+                    popupContent += `<div class="distance-badge">📏 Lineal: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
                 }
                 popupContent += `</div>`;
 
@@ -603,27 +659,14 @@
                         const layer = e.target;
                         layer.setStyle({ fillOpacity: 0.85, weight: 3, color: '#38bdf8' });
 
-                        lineasDistanciaLayer.clearLayers();
                         if (centroide && oficinaAsociada) {
-                            const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
-                            
-                            L.polyline(lineCoords, {
-                                color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
-                            }).addTo(lineasDistanciaLayer);
-
-                            const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
-                            const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
-                            
-                            L.marker([midLat, midLon], {
-                                icon: L.divIcon({
-                                    className: 'distance-line-label',
-                                    html: `${oficinaAsociada.distanciaKm.toFixed(2)} Km`,
-                                    iconAnchor: [25, 10]
-                                })
-                            }).addTo(lineasDistanciaLayer);
+                            trazarrutaCarretera(centroide[0], centroide[1], oficinaAsociada.lat, oficinaAsociada.lon);
                         }
                     },
-                    mouseout: (e) => { polyLayer.resetStyle(e.target); }
+                    mouseout: (e) => { 
+                        polyLayer.resetStyle(e.target); 
+                        rutasRecorridoLayer.clearLayers();
+                    }
                 });
 
                 polyLayer.addTo(poligonosEmlLayer);
@@ -638,6 +681,7 @@
         }
 
         function resetMap() {
+            selectSegm.value = 'TODOS';
             selectProv.value = 'TODAS';
             selectDist.innerHTML = '<option value="TODOS">Todos</option>';
             selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
@@ -657,11 +701,18 @@
                 "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 101, "OFICE_LAT": 8.9833, "OFICE_LONG": -79.5167, "PLUS_CODE": "8700+XX" },
                 "geometry": { "type": "Point", "coordinates": [-79.5167, 8.9833] }
             }];
-            emlData = [{
-                "type": "Feature",
-                "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
-                "geometry": { "type": "Polygon", "coordinates": [[[-79.510, 8.980], [-79.500, 8.980], [-79.500, 8.990], [-79.510, 8.990], [-79.510, 8.980]]] }
-            }];
+            emlData = [
+                {
+                    "type": "Feature",
+                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
+                    "geometry": { "type": "Polygon", "coordinates": [[[-79.510, 8.980], [-79.500, 8.980], [-79.500, 8.990], [-79.510, 8.990], [-79.510, 8.980]]] }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "002", "SEGM_TIPO": "02", "DA": "0", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0802", "LUPO_NOMB": "SECTOR RURAL DEMO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
+                    "geometry": { "type": "Polygon", "coordinates": [[[-79.490, 8.980], [-79.480, 8.980], [-79.480, 8.990], [-79.490, 8.990], [-79.490, 8.980]]] }
+                }
+            ];
         }
 
         document.addEventListener('DOMContentLoaded', cargarGeoJSONs);
