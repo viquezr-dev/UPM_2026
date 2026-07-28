@@ -131,7 +131,7 @@
             border-top: 1px solid #334155;
         }
         
-        /* Globo/Popup con tamaño ajustado */
+        /* Globo/Popup con tamaño compacto sin desbordar pantalla */
         .info-popup {
             font-size: 11px;
             line-height: 1.3;
@@ -202,7 +202,7 @@
         }
 
         .distance-line-label {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.85);
             color: #ffffff;
             border: 1px solid #38bdf8;
             border-radius: 4px;
@@ -223,12 +223,13 @@
         <span class="stats" id="contador">0 Polígonos | 0 Oficinas</span>
 
         <div class="filter-group">
-            <label for="segm_tipo">Tipo Segmento:</label>
+            <label for="segm_tipo">Tipo Segmento / Acceso:</label>
             <select id="segm_tipo">
                 <option value="TODOS">Todos</option>
                 <option value="URBANO">Urbano (01)</option>
                 <option value="RURAL">Rural (02)</option>
                 <option value="INDIGENA">Indígena (03)</option>
+                <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso (DA = 1)</option>
             </select>
         </div>
 
@@ -281,7 +282,7 @@
 
         const poligonosEmlLayer = L.layerGroup().addTo(map);
         const oficinasLayer = L.layerGroup().addTo(map);
-        const rutasRecorridoLayer = L.layerGroup().addTo(map);
+        const lineasDistanciaLayer = L.layerGroup().addTo(map);
 
         let emlData = [];
         let oficinaData = [];
@@ -519,44 +520,10 @@
             return oficinaCercana;
         }
 
-        // Trazar ruta real por carretera usando OSRM
-        async function trazarrutaCarretera(lat1, lon1, lat2, lon2) {
-            rutasRecorridoLayer.clearLayers();
-            const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.routes && data.routes.length > 0) {
-                    const route = data.routes[0];
-                    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-                    const distanciaKm = (route.distance / 1000).toFixed(2);
-                    const minutos = Math.round(route.duration / 60);
-
-                    L.polyline(coords, {
-                        color: '#2563eb', weight: 5, opacity: 0.85
-                    }).addTo(rutasRecorridoLayer);
-
-                    const midIndex = Math.floor(coords.length / 2);
-                    L.marker(coords[midIndex], {
-                        icon: L.divIcon({
-                            className: 'distance-line-label',
-                            html: `🚗 ${distanciaKm} km (~${minutos} min)`,
-                            iconAnchor: [40, 10]
-                        })
-                    }).addTo(rutasRecorridoLayer);
-                }
-            } catch (err) {
-                // Si la red falla, traza la línea directa
-                L.polyline([[lat1, lon1], [lat2, lon2]], { color: '#dc2626', weight: 3, dashArray: '6,6' }).addTo(rutasRecorridoLayer);
-            }
-        }
-
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
-            rutasRecorridoLayer.clearLayers();
+            lineasDistanciaLayer.clearLayers();
 
             const segmSel = selectSegm.value;
             const pSel = selectProv.value;
@@ -567,8 +534,10 @@
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
-                // Filtro SEGM_TIPO
-                if (segmSel !== 'TODOS') {
+                // Filtro SEGM_TIPO / DIFICIL ACCESO
+                if (segmSel === 'DIFICIL_ACCESO') {
+                    if (String(props.DA).trim() !== '1') return false;
+                } else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
@@ -636,10 +605,14 @@
                     if (props.hasOwnProperty(campo)) {
                         let valor = props[campo] ?? 'N/D';
                         
-                        // Transformaciones
-                        if (campo === 'DA' && String(valor).trim() === '1') {
-                            valor = 'DIFICIL ACCESO';
-                        } else if (campo === 'SEGM_TIPO') {
+                        // Transformación DA
+                        if (campo === 'DA') {
+                            const valStr = String(valor).trim();
+                            if (valStr === '1') valor = 'DIFICIL ACCESO';
+                            else if (valStr === '0') valor = 'NO APLICA';
+                        } 
+                        // Transformación SEGM_TIPO
+                        else if (campo === 'SEGM_TIPO') {
                             valor = normalizarSegmTipo(valor);
                         }
                         
@@ -648,7 +621,7 @@
                 });
 
                 if (oficinaAsociada) {
-                    popupContent += `<div class="distance-badge">📏 Lineal: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
+                    popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
                 }
                 popupContent += `</div>`;
 
@@ -659,13 +632,29 @@
                         const layer = e.target;
                         layer.setStyle({ fillOpacity: 0.85, weight: 3, color: '#38bdf8' });
 
+                        lineasDistanciaLayer.clearLayers();
                         if (centroide && oficinaAsociada) {
-                            trazarrutaCarretera(centroide[0], centroide[1], oficinaAsociada.lat, oficinaAsociada.lon);
+                            const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
+                            
+                            L.polyline(lineCoords, {
+                                color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
+                            }).addTo(lineasDistanciaLayer);
+
+                            const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
+                            const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
+                            
+                            L.marker([midLat, midLon], {
+                                icon: L.divIcon({
+                                    className: 'distance-line-label',
+                                    html: `${oficinaAsociada.distanciaKm.toFixed(2)} Km`,
+                                    iconAnchor: [25, 10]
+                                })
+                            }).addTo(lineasDistanciaLayer);
                         }
                     },
                     mouseout: (e) => { 
                         polyLayer.resetStyle(e.target); 
-                        rutasRecorridoLayer.clearLayers();
+                        lineasDistanciaLayer.clearLayers();
                     }
                 });
 
