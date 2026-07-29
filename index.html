@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral - Estadísticas Híbridas</title>
+    <title>UPM para Encuesta de Mercado Laboral - Completo</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -271,6 +271,29 @@
             display: inline-block;
             flex-shrink: 0;
         }
+
+        /* ESTILOS PARA LA ETIQUETA DE DISTANCIA SOBRE LA LÍNEA */
+        .distance-label-callejero {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: #000000;
+            font-weight: 800;
+            font-size: 11px;
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+            white-space: nowrap;
+        }
+
+        .distance-label-satelite {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 11px;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -387,8 +410,13 @@
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
 
         let mapaActual = 'callejero';
+        let ultimoPoligonoSeleccionado = null; // Guardar referencia para redibujar la etiqueta si cambia la capa base
+
         map.on('baselayerchange', function(e) {
             mapaActual = e.name.includes('Satelital') ? 'satelite' : 'callejero';
+            if (ultimoPoligonoSeleccionado) {
+                trazarDistanciaYPopup(ultimoPoligonoSeleccionado.layer, ultimoPoligonoSeleccionado.feature);
+            }
         });
 
         const provinciaContornoLayer = L.layerGroup().addTo(map);
@@ -627,7 +655,6 @@
             }
         }
 
-        // CÁLCULO SOBRE TOTAL GEOGRÁFICO DE LA ZONA SELECCIONADA
         function actualizarManejadorPorcentajes(listaBaseUbicacion) {
             const total = listaBaseUbicacion.length;
 
@@ -673,10 +700,107 @@
             actualizarTarjeta('da', daCount);
         }
 
+        /* LÓGICA DE DISTANCIA A LA OFICINA MÁS CERCANA */
+        function trazarDistanciaYPopup(layer, feature) {
+            lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = { layer, feature };
+
+            const props = feature.properties || {};
+            const centroide = layer.getBounds().getCenter();
+
+            if (oficinaData.length === 0) return;
+
+            const provEml = props.PROV_NOMB?.trim().toUpperCase();
+            
+            // Priorizar oficina de la misma provincia; si no existe, buscar la más cercana globalmente
+            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+            if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+
+            let oficinaCercana = null;
+            let distanciaMinima = Infinity;
+
+            oficinasBuscar.forEach(oficina => {
+                const coords = obtenerCoordenadasOficina(oficina);
+                if (coords) {
+                    const latLngOficina = L.latLng(coords.lat, coords.lon);
+                    const dist = centroide.distanceTo(latLngOficina); // Distancia en metros
+                    if (dist < distanciaMinima) {
+                        distanciaMinima = dist;
+                        oficinaCercana = { coords: latLngOficina, props: oficina.properties };
+                    }
+                }
+            });
+
+            if (!oficinaCercana) return;
+
+            const distanciaKm = (distanciaMinima / 1000).toFixed(2);
+
+            // Trazar línea punteada
+            const polyline = L.polyline([centroide, oficinaCercana.coords], {
+                color: '#ef4444',
+                weight: 2.5,
+                dashArray: '6, 6',
+                interactive: false
+            }).addTo(lineasDistanciaLayer);
+
+            // Etiqueta flotante en el centro de la línea
+            const puntoMedio = L.latLng(
+                (centroide.lat + oficinaCercana.coords.lat) / 2,
+                (centroide.lng + oficinaCercana.coords.lng) / 2
+            );
+
+            const estiloClase = (mapaActual === 'satelite') ? 'distance-label-satelite' : 'distance-label-callejero';
+
+            L.marker(puntoMedio, {
+                icon: L.divIcon({
+                    className: estiloClase,
+                    html: `📏 ${distanciaKm} km`,
+                    iconSize: [80, 20],
+                    iconAnchor: [40, 10]
+                }),
+                interactive: false
+            }).addTo(lineasDistanciaLayer);
+
+            // Generar Popup de la UPM incluyendo el cálculo de la distancia
+            let popupContent = `<div class="info-popup">
+                <h3>📍 UPM ${props.UPM || props.CODE_UPM || ''}</h3>
+                <p style="background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; border: 1px solid #bae6fd;">
+                    📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
+                </p>`;
+
+            for (let k in props) {
+                const kUpper = k.trim().toUpperCase();
+                const valRaw = String(props[k] ?? 'N/D').trim();
+                const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
+
+                if (esCampoVerificacion) {
+                    const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
+
+                    if (esValorSi) {
+                        popupContent += `
+                            <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
+                                <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
+                            </p>`;
+                    } else {
+                        popupContent += `
+                            <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
+                                <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
+                            </p>`;
+                    }
+                } else {
+                    popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
+                }
+            }
+            popupContent += `</div>`;
+
+            layer.bindPopup(popupContent).openPopup();
+        }
+
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
             lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = null;
 
             const segmSel = selectSegm.value;
             const pSel = selectProv.value;
@@ -686,7 +810,7 @@
 
             renderizarContornoProvincia(pSel);
 
-            // 1. BASE GEOGRÁFICA (Afectada solo por filtros de Ubicación)
+            // 1. BASE GEOGRÁFICA
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
@@ -696,10 +820,10 @@
                 return true;
             });
 
-            // 2. Las estadísticas SIEMPRE usan el total geográfico actual como denominador
+            // 2. Porcentajes Territoriales
             actualizarManejadorPorcentajes(emlBaseGeografica);
 
-            // 3. Filtrar lo que SE DIBUJA en el mapa según la opción escogida
+            // 3. Filtrar lo que SE DIBUJA en el mapa
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
@@ -720,7 +844,7 @@
                 return true;
             });
 
-            // Actualizar Badge del Header
+            // Badge Header
             document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos Visibles | ${oficinasFiltradasGlobal.length} Oficinas`;
 
             // Renderizar Oficinas
@@ -752,7 +876,6 @@
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
-                
                 const estaVerificado = esVerificado(props);
             
                 const estiloPoligono = estaVerificado ? {
@@ -769,34 +892,10 @@
             
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
-                let popupContent = `<div class="info-popup"><h3>📍 UPM ${props.UPM || props.CODE_UPM || ''}</h3>`;
-            
-                for (let k in props) {
-                    const kUpper = k.trim().toUpperCase();
-                    const valRaw = String(props[k] ?? 'N/D').trim();
-                    const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-            
-                    if (esCampoVerificacion) {
-                        const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
-            
-                        if (esValorSi) {
-                            popupContent += `
-                                <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
-                                    <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
-                                </p>`;
-                        } else {
-                            popupContent += `
-                                <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
-                                    <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
-                                </p>`;
-                        }
-                    } else {
-                        popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
-                    }
-                }
-                popupContent += `</div>`;
-                
-                polyLayer.bindPopup(popupContent);
+                // Evento al tocar/hacer clic en la UPM
+                polyLayer.on('click', function() {
+                    trazarDistanciaYPopup(polyLayer, feature);
+                });
             });
         }
 
@@ -810,6 +909,9 @@
             selectDist.disabled = true;
             selectCorr.disabled = true;
             selectPob.disabled = true;
+
+            lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = null;
             
             filtrarYRenderizar();
             map.setView([8.5, -80.0], 8);
