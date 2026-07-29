@@ -918,22 +918,61 @@
         }
 
         function exportarCSV() {
-            if (emlFiltrados.length === 0) {
-                alert("No hay datos para exportar.");
-                return;
-            }
-            const keys = Object.keys(emlFiltrados[0].properties || {});
-            let csv = keys.join(",") + "\n";
-            emlFiltrados.forEach(f => {
-                let row = keys.map(k => `"${f.properties[k] ?? ''}"`).join(",");
-                csv += row + "\n";
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "eml_filtrados.csv";
-            link.click();
+        if (emlFiltrados.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
         }
+    
+        // 1. Obtener las llaves originales del primer objeto
+        const keys = Object.keys(emlFiltrados[0].properties || {});
+        
+        // 2. Agregar la nueva columna para la distancia
+        const headers = [...keys, "DISTANCIA_OFICINA_KM"];
+        let csv = headers.join(",") + "\n";
+    
+        // 3. Procesar cada UPM filtrada y calcular su distancia
+        emlFiltrados.forEach(f => {
+            const props = f.properties || {};
+            
+            // Crear capa temporal para obtener el centroide de la UPM
+            const tempLayer = L.geoJSON(f);
+            const centroide = tempLayer.getBounds().getCenter();
+            const provEml = props.PROV_NOMB?.trim().toUpperCase();
+    
+            // Buscar la oficina de su provincia o la más cercana
+            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+            if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+    
+            let distanciaMinima = Infinity;
+    
+            oficinasBuscar.forEach(oficina => {
+                const coords = obtenerCoordenadasOficina(oficina);
+                if (coords) {
+                    const latLngOficina = L.latLng(coords.lat, coords.lon);
+                    const dist = centroide.distanceTo(latLngOficina);
+                    if (dist < distanciaMinima) {
+                        distanciaMinima = dist;
+                    }
+                }
+            });
+    
+            // Convertir metros a Kilómetros con 2 decimales
+            const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
+    
+            // Crear la fila del CSV con las propiedades existentes + la distancia
+            let row = keys.map(k => `"${props[k] ?? ''}"`);
+            row.push(`"${distanciaKm}"`);
+            
+            csv += row.join(",") + "\n";
+        });
+    
+        // 4. Generar y descargar el archivo
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    }
 
         cargarGeoJSONs();
     </script>
