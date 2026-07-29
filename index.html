@@ -142,13 +142,14 @@
             border-top: 1px solid #334155;
         }
         
+        /* Contenedor del Popup */
         .info-popup {
-            font-size: 10px;
-            line-height: 0.5;      /* Un poco más de espacio entre líneas */
+            font-size: 11px;
+            line-height: 1.25;
             color: #334155;
-            min-width: 200px;       /* 👈 Ancho mínimo para que no se colapse */
-            max-width: 250px;       /* 👈 Aumentado de 250px a 320px */
-            max-height: 420px;      /* 👈 Aumentado para ver más filas */
+            min-width: 200px;
+            max-width: 320px;
+            max-height: 380px;
             overflow-y: auto;
             padding: 10px 8px 4px 2px;
         }
@@ -156,12 +157,12 @@
         .info-popup h3 {
             color: #0f172a;
             font-size: 13px;
-            margin-top: 4px;         /* 👈 Separación para que no toque el borde superior */
+            margin-top: 4px;
             margin-bottom: 6px;
             border-bottom: 2px solid #3b82f6;
             padding-bottom: 3px;
             white-space: normal;
-            word-wrap: break-word;  /* 👈 Evita que las palabras largas se salgan */
+            word-wrap: break-word;
         }
 
         .info-popup p {
@@ -180,6 +181,11 @@
             font-size: 10px;
         }
 
+        /* Ajuste de espacio global para popups en Leaflet */
+        .leaflet-popup-content {
+            margin: 12px 14px 10px 14px !important;
+        }
+
         .legend {
             background: white;
             padding: 10px;
@@ -188,7 +194,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.15);
             font-size: 11px;
-            max-height: 220px;
+            max-height: 250px;
             overflow-y: auto;
         }
         
@@ -252,13 +258,14 @@
         <span class="stats" id="contador">0 Polígonos | 0 Oficinas</span>
 
         <div class="filter-group">
-            <label for="segm_tipo">Tipo Segmento / Acceso:</label>
+            <label for="segm_tipo">Tipo Segmento / Estado:</label>
             <select id="segm_tipo">
                 <option value="TODOS">Todos</option>
                 <option value="URBANO">Urbano (01)</option>
                 <option value="RURAL">Rural (02)</option>
                 <option value="INDIGENA">Indígena (03)</option>
                 <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso (DA = 1)</option>
+                <option value="VERIFICADO">✅ Actualizado / Verificado (SI)</option>
             </select>
         </div>
 
@@ -310,7 +317,6 @@
 
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
 
-        // Control de tipo de mapa activo
         let mapaActual = 'callejero';
         map.on('baselayerchange', function(e) {
             if (e.name.includes('Satelital')) {
@@ -348,6 +354,13 @@
             return provinciaColores[norm];
         }
 
+        // Función para obtener el valor del campo Verificado contemplando posibles recortes de nombres
+        function esVerificado(props) {
+            if (!props) return false;
+            const val = String(props.VERIFICADO ?? props.VERIFICAD ?? '').trim().toUpperCase();
+            return val === 'SI' || val === 'SÍ';
+        }
+
         const selectSegm = document.getElementById('segm_tipo');
         const selectProv = document.getElementById('provincia');
         const selectDist = document.getElementById('distrito');
@@ -358,7 +371,7 @@
         legend.onAdd = function () {
             const div = L.DomUtil.create('div', 'legend');
             div.id = 'leyenda-provincias';
-            div.innerHTML = '<h4>Provincias</h4><p>Cargando datos...</p>';
+            div.innerHTML = '<h4>Leyenda</h4><p>Cargando datos...</p>';
             return div;
         };
         legend.addTo(map);
@@ -366,7 +379,9 @@
         function actualizarLeyenda() {
             const div = document.getElementById('leyenda-provincias');
             if (!div) return;
-            let html = '<h4>Provincias (Polígonos)</h4>';
+            let html = '<h4>Simbología / Provincias</h4>';
+            html += '<p><i style="background: #facc15; border: 1px solid #ca8a04;"></i> <strong>Verificado (SI)</strong></p>';
+            
             const provs = Object.keys(provinciaColores).sort();
             if (provs.length === 0) {
                 html += '<p>Sin provincias disponibles</p>';
@@ -605,6 +620,8 @@
                 
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
+                } else if (segmSel === 'VERIFICADO') {
+                    if (!esVerificado(props)) return false;
                 } else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
@@ -650,10 +667,12 @@
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
-                const colorFill = obtenerColorProvincia(provNombre);
+                
+                // Si VERIFICADO = SI, color AMARILLO. De lo contrario, color de provincia.
+                const colorFill = esVerificado(props) ? '#facc15' : obtenerColorProvincia(provNombre);
 
                 const polyLayer = L.geoJSON(feature, {
-                    style: { fillColor: colorFill, fillOpacity: 0.55, color: '#1e293b', weight: 1.5 }
+                    style: { fillColor: colorFill, fillOpacity: 0.65, color: '#1e293b', weight: 1.5 }
                 });
 
                 const centroide = calcularCentroide(feature);
@@ -665,13 +684,21 @@
 
                 const camposEML = [
                     'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
-                    'DA', 'INDIG', 'SHAPE_Leng', 'SHAPE_Area', 'CODE_UPM', 
+                    'DA', 'INDIG', 'VERIFICADO', 'SHAPE_Leng', 'SHAPE_Area', 'CODE_UPM', 
                     'LUPO_NOMB', 'PROV_NOMB', 'DIST_NOMB', 'CORR_NOMB'
                 ];
+                
                 let popupContent = `<div class="info-popup"><h3>📍 Polígono EML</h3>`;
+                
                 camposEML.forEach(campo => {
-                    if (props.hasOwnProperty(campo)) {
-                        let valor = props[campo] ?? 'N/D';
+                    // Soporte para variaciones de nombres de campos
+                    let keyEncontrada = campo;
+                    if (!props.hasOwnProperty(campo) && campo === 'VERIFICADO' && props.hasOwnProperty('VERIFICAD')) {
+                        keyEncontrada = 'VERIFICAD';
+                    }
+
+                    if (props.hasOwnProperty(keyEncontrada)) {
+                        let valor = props[keyEncontrada] ?? 'N/D';
                         
                         if (campo === 'DA') {
                             const valStr = String(valor).trim();
@@ -737,14 +764,12 @@
             }
         }
 
-        /* --- FUNCIÓN PARA EXPORTAR DATOS FILTRADOS A CSV --- */
         function exportarCSV() {
             if (!emlFiltrados || emlFiltrados.length === 0) {
                 alert("⚠️ No hay polígonos filtrados en pantalla para exportar.");
                 return;
             }
 
-            // Obtener todas las claves únicas presentes en los registros filtrados
             const columnasSet = new Set();
             emlFiltrados.forEach(f => {
                 if (f.properties) {
@@ -753,16 +778,13 @@
             });
 
             const columnas = Array.from(columnasSet);
-            columnas.push("DISTANCIA_OFICINA_KM"); // Agregar columna calculada de distancia
+            columnas.push("DISTANCIA_OFICINA_KM");
 
-            // Encabezados en formato CSV
             let csvContent = columnas.join(",") + "\n";
 
-            // Filas de datos
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 
-                // Calcular distancia para exportación
                 const centroide = calcularCentroide(feature);
                 let distanciaKm = "";
                 if (centroide && oficinasFiltradasGlobal.length > 0) {
@@ -781,7 +803,6 @@
                         else if (valStr === '0') valor = 'NO APLICA';
                     }
 
-                    // Escapar comillas dobles y envolver texto entre comillas para evitar rupturas de formato
                     const valEscapado = String(valor).replace(/"/g, '""');
                     return `"${valEscapado}"`;
                 });
@@ -789,14 +810,12 @@
                 csvContent += fila.join(",") + "\n";
             });
 
-            // Forzar codificación UTF-8 con BOM (\uFEFF) para compatibilidad nativa con Microsoft Excel
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement("a");
             link.setAttribute("href", url);
             
-            // Nombre descriptivo con fecha y hora
             const fechaStr = new Date().toISOString().slice(0, 10);
             link.setAttribute("download", `UPM_Filtrados_${fechaStr}.csv`);
             
@@ -834,12 +853,12 @@
             emlData = [
                 {
                     "type": "Feature",
-                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
+                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "VERIFICADO": "SI", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
                     "geometry": { "type": "Polygon", "coordinates": [[[-79.510, 8.980], [-79.500, 8.980], [-79.500, 8.990], [-79.510, 8.990], [-79.510, 8.980]]] }
                 },
                 {
                     "type": "Feature",
-                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "002", "SEGM_TIPO": "02", "DA": "0", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0802", "LUPO_NOMB": "SECTOR RURAL DEMO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
+                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "002", "SEGM_TIPO": "02", "DA": "0", "VERIFICADO": "NO", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0802", "LUPO_NOMB": "SECTOR RURAL DEMO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
                     "geometry": { "type": "Polygon", "coordinates": [[[-79.490, 8.980], [-79.480, 8.980], [-79.480, 8.990], [-79.490, 8.990], [-79.490, 8.980]]] }
                 }
             ];
