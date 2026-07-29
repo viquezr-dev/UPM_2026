@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral - Compacto</title>
+    <title>UPM para Encuesta de Mercado Laboral - Estadísticas Híbridas</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -123,7 +123,7 @@
         .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-export:hover { background: #bbf7d0; }
 
-        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES (AHORA CON INDÍGENA) */
+        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES */
         .pct-dashboard {
             background: #0f172a;
             color: white;
@@ -319,9 +319,8 @@
         </div>
     </div>
 
-    <!-- Panel de Porcentajes Completo (5 Categorías) -->
+    <!-- Panel de Porcentajes -->
     <div class="pct-dashboard" id="pct-dashboard">
-        <!-- 1. VERIFICADOS -->
         <div class="pct-card">
             <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
             <div class="pct-info">
@@ -330,7 +329,6 @@
             </div>
         </div>
 
-        <!-- 2. URBANO -->
         <div class="pct-card">
             <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
             <div class="pct-info">
@@ -339,7 +337,6 @@
             </div>
         </div>
 
-        <!-- 3. RURAL -->
         <div class="pct-card">
             <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
             <div class="pct-info">
@@ -348,7 +345,6 @@
             </div>
         </div>
 
-        <!-- 4. INDÍGENA (NUEVO) -->
         <div class="pct-card">
             <div class="pct-val" id="pct-indigena" style="color:#c084fc;">0.0%</div>
             <div class="pct-info">
@@ -357,7 +353,6 @@
             </div>
         </div>
 
-        <!-- 5. DIFÍCIL ACCESO -->
         <div class="pct-card">
             <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
             <div class="pct-info">
@@ -632,7 +627,7 @@
             }
         }
 
-        // CÁLCULO DE ESTADÍSTICAS REVISADO Y CORREGIDO
+        // CÁLCULO SOBRE TOTAL GEOGRÁFICO DE LA ZONA SELECCIONADA
         function actualizarManejadorPorcentajes(listaBaseUbicacion) {
             const total = listaBaseUbicacion.length;
 
@@ -691,7 +686,7 @@
 
             renderizarContornoProvincia(pSel);
 
-            // 1. Obtener la BASE GEOGRÁFICA (sin aplicar el filtro de Tipo/Estado)
+            // 1. BASE GEOGRÁFICA (Afectada solo por filtros de Ubicación)
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
@@ -701,10 +696,10 @@
                 return true;
             });
 
-            // 2. Calcular porcentajes basados en la base geográfica real de la zona
+            // 2. Las estadísticas SIEMPRE usan el total geográfico actual como denominador
             actualizarManejadorPorcentajes(emlBaseGeografica);
 
-            // 3. Aplicar el filtro de Tipo/Estado para mostrar polígonos en el mapa
+            // 3. Filtrar lo que SE DIBUJA en el mapa según la opción escogida
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
@@ -726,7 +721,7 @@
             });
 
             // Actualizar Badge del Header
-            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
+            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos Visibles | ${oficinasFiltradasGlobal.length} Oficinas`;
 
             // Renderizar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
@@ -832,7 +827,7 @@
                 csv += row + "\n";
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.append("a");
+            const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = "eml_filtrados.csv";
             link.click();
