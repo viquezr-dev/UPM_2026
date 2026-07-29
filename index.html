@@ -16,7 +16,6 @@
             box-sizing: border-box;
         }
         
-        /* Contenedor principal que ocupa exacto el alto del navegador sin scroll */
         body, html {
             width: 100%;
             height: 100vh;
@@ -55,7 +54,7 @@
             font-weight: 500;
         }
         
-        /* 2. FILA DE CONTROLES Y FILTROS (ULTRACOMPACTA) */
+        /* 2. FILA DE CONTROLES Y FILTROS */
         .controls {
             background: white;
             padding: 6px 12px;
@@ -67,7 +66,7 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             z-index: 1000;
             flex-wrap: nowrap;
-            overflow-x: auto; /* Permite scroll horizontal en pantallas muy angostas */
+            overflow-x: auto;
         }
         
         .filter-group {
@@ -124,7 +123,7 @@
         .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-export:hover { background: #bbf7d0; }
 
-        /* 3. BARRA INTEGRADORA DE PORCENTAJES (INTEGRADA Y ULTRACOMPACTA) */
+        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES (AHORA CON INDÍGENA) */
         .pct-dashboard {
             background: #0f172a;
             color: white;
@@ -132,28 +131,29 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
-            gap: 10px;
+            gap: 8px;
             border-bottom: 1px solid #334155;
             z-index: 999;
+            overflow-x: auto;
         }
 
         .pct-card {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #1e293b;
-            padding: 3px 10px;
+            padding: 3px 8px;
             border-radius: 5px;
             border: 1px solid #334155;
             flex: 1;
-            max-width: 250px;
+            min-width: 140px;
+            max-width: 220px;
         }
 
         .pct-val {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: #38bdf8;
-            min-width: 42px;
+            min-width: 40px;
             text-align: right;
         }
 
@@ -171,7 +171,7 @@
 
         .pct-label small {
             color: #cbd5e1;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .pct-progress-bg {
@@ -185,22 +185,18 @@
 
         .pct-progress-fill {
             height: 100%;
-            background: #38bdf8;
             width: 0%;
             transition: width 0.4s ease;
         }
-
-        .pct-progress-fill.verified { background: #facc15; }
-        .pct-progress-fill.da { background: #ef4444; }
         
-        /* 4. MAPA BASE (TOMA TODO EL ESPACIO RESTANTE) */
+        /* 4. MAPA BASE */
         #map {
             flex: 1;
             width: 100%;
             background: #e2e8f0;
         }
         
-        /* 5. FOOTER FINO */
+        /* 5. FOOTER */
         .footer {
             background: #1e293b;
             color: #cbd5e1;
@@ -212,7 +208,6 @@
             z-index: 1001;
         }
         
-        /* ESTILOS POPUPS Y LEYENDA */
         .info-popup {
             font-size: 10px;
             line-height: 1.1;
@@ -263,7 +258,7 @@
         .legend p {
             display: flex;
             align-items: center;
-            margin-bottom: 2px;  /* Espaciado compacto entre elementos */
+            margin-bottom: 2px;
             white-space: nowrap; 
         }
         
@@ -280,13 +275,11 @@
 </head>
 <body>
 
-    <!-- Header con título y contador integrado -->
     <div class="header">
         <h1>🏢 UPM para Encuesta de Mercado Laboral</h1>
         <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
     </div>
     
-    <!-- Filtros alineados horizontalmente -->
     <div class="controls">
         <div class="filter-group">
             <label for="segm_tipo">Tipo/Estado:</label>
@@ -326,16 +319,18 @@
         </div>
     </div>
 
-    <!-- Panel de Porcentajes Compacto -->
+    <!-- Panel de Porcentajes Completo (5 Categorías) -->
     <div class="pct-dashboard" id="pct-dashboard">
+        <!-- 1. VERIFICADOS -->
         <div class="pct-card">
             <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
             <div class="pct-info">
                 <div class="pct-label"><span>Verificados</span><small id="cnt-verificado">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill verified" id="bar-verificado"></div></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#facc15;" id="bar-verificado"></div></div>
             </div>
         </div>
 
+        <!-- 2. URBANO -->
         <div class="pct-card">
             <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
             <div class="pct-info">
@@ -344,6 +339,7 @@
             </div>
         </div>
 
+        <!-- 3. RURAL -->
         <div class="pct-card">
             <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
             <div class="pct-info">
@@ -352,19 +348,27 @@
             </div>
         </div>
 
+        <!-- 4. INDÍGENA (NUEVO) -->
+        <div class="pct-card">
+            <div class="pct-val" id="pct-indigena" style="color:#c084fc;">0.0%</div>
+            <div class="pct-info">
+                <div class="pct-label"><span>Indígena</span><small id="cnt-indigena">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#c084fc;" id="bar-indigena"></div></div>
+            </div>
+        </div>
+
+        <!-- 5. DIFÍCIL ACCESO -->
         <div class="pct-card">
             <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
             <div class="pct-info">
-                <div class="pct-label"><span>Difícil Acceso</span><small id="cnt-da">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill da" id="bar-da"></div></div>
+                <div class="pct-label"><span>D. Acceso</span><small id="cnt-da">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#f87171;" id="bar-da"></div></div>
             </div>
         </div>
     </div>
     
-    <!-- Mapa Base -->
     <div id="map"></div>
     
-    <!-- Footer -->
     <div class="footer">
         Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
     </div>
@@ -593,39 +597,6 @@
             selectPob.addEventListener('change', filtrarYRenderizar);
         }
 
-        function calcularCentroide(feature) {
-            if (!feature.geometry) return null;
-            if (feature.geometry.type === 'Point') {
-                return [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
-            }
-            let pts = [];
-            const extraerCoords = (arr) => {
-                if (typeof arr[0] === 'number') {
-                    pts.push(arr);
-                } else {
-                    arr.forEach(extraerCoords);
-                }
-            };
-            extraerCoords(feature.geometry.coordinates);
-
-            if (pts.length === 0) return null;
-            let sumLat = 0, sumLon = 0;
-            pts.forEach(p => { sumLon += p[0]; sumLat += p[1]; });
-
-            return [sumLat / pts.length, sumLon / pts.length];
-        }
-
-        function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
         function obtenerCoordenadasOficina(feature) {
             const props = feature.properties || {};
             let lat = parseFloat(props.OFICE_LAT);
@@ -639,25 +610,6 @@
             }
             if (isNaN(lat) || isNaN(lon)) return null;
             return { lat, lon };
-        }
-
-        function encontrarOficinaMasCercana(centroideLat, centroideLon, oficinas) {
-            if (!oficinas || oficinas.length === 0) return null;
-            let menorDistancia = Infinity;
-            let oficinaCercana = null;
-
-            oficinas.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (coords) {
-                    const dist = haversineDistance(centroideLat, centroideLon, coords.lat, coords.lon);
-                    if (dist < menorDistancia) {
-                        menorDistancia = dist;
-                        oficinaCercana = { feature: oficina, lat: coords.lat, lon: coords.lon, distanciaKm: dist };
-                    }
-                }
-            });
-
-            return oficinaCercana;
         }
 
         function renderizarContornoProvincia(pSel) {
@@ -680,34 +632,26 @@
             }
         }
 
-        function actualizarManejadorPorcentajes(listaFiltrada) {
-            const total = listaFiltrada.length;
+        // CÁLCULO DE ESTADÍSTICAS REVISADO Y CORREGIDO
+        function actualizarManejadorPorcentajes(listaBaseUbicacion) {
+            const total = listaBaseUbicacion.length;
 
             if (total === 0) {
-                document.getElementById('pct-verificado').textContent = '0.0%';
-                document.getElementById('cnt-verificado').textContent = '(0/0)';
-                document.getElementById('bar-verificado').style.width = '0%';
-
-                document.getElementById('pct-urbano').textContent = '0.0%';
-                document.getElementById('cnt-urbano').textContent = '(0/0)';
-                document.getElementById('bar-urbano').style.width = '0%';
-
-                document.getElementById('pct-rural').textContent = '0.0%';
-                document.getElementById('cnt-rural').textContent = '(0/0)';
-                document.getElementById('bar-rural').style.width = '0%';
-
-                document.getElementById('pct-da').textContent = '0.0%';
-                document.getElementById('cnt-da').textContent = '(0/0)';
-                document.getElementById('bar-da').style.width = '0%';
+                ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
+                    document.getElementById(`pct-${id}`).textContent = '0.0%';
+                    document.getElementById(`cnt-${id}`).textContent = '(0/0)';
+                    document.getElementById(`bar-${id}`).style.width = '0%';
+                });
                 return;
             }
 
             let verifCount = 0;
             let urbanoCount = 0;
             let ruralCount = 0;
+            let indigenaCount = 0;
             let daCount = 0;
 
-            listaFiltrada.forEach(f => {
+            listaBaseUbicacion.forEach(f => {
                 const props = f.properties || {};
                 
                 if (esVerificado(props)) verifCount++;
@@ -715,30 +659,23 @@
                 const tipo = normalizarSegmTipo(props.SEGM_TIPO);
                 if (tipo === 'URBANO') urbanoCount++;
                 if (tipo === 'RURAL') ruralCount++;
+                if (tipo === 'INDIGENA') indigenaCount++;
                 
                 if (String(props.DA).trim() === '1') daCount++;
             });
 
-            const pctVerif = ((verifCount / total) * 100).toFixed(1);
-            const pctUrb = ((urbanoCount / total) * 100).toFixed(1);
-            const pctRur = ((ruralCount / total) * 100).toFixed(1);
-            const pctDA = ((daCount / total) * 100).toFixed(1);
+            const actualizarTarjeta = (id, count) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                document.getElementById(`pct-${id}`).textContent = `${pct}%`;
+                document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
+                document.getElementById(`bar-${id}`).style.width = `${pct}%`;
+            };
 
-            document.getElementById('pct-verificado').textContent = `${pctVerif}%`;
-            document.getElementById('cnt-verificado').textContent = `(${verifCount}/${total})`;
-            document.getElementById('bar-verificado').style.width = `${pctVerif}%`;
-
-            document.getElementById('pct-urbano').textContent = `${pctUrb}%`;
-            document.getElementById('cnt-urbano').textContent = `(${urbanoCount}/${total})`;
-            document.getElementById('bar-urbano').style.width = `${pctUrb}%`;
-
-            document.getElementById('pct-rural').textContent = `${pctRur}%`;
-            document.getElementById('cnt-rural').textContent = `(${ruralCount}/${total})`;
-            document.getElementById('bar-rural').style.width = `${pctRur}%`;
-
-            document.getElementById('pct-da').textContent = `${pctDA}%`;
-            document.getElementById('cnt-da').textContent = `(${daCount}/${total})`;
-            document.getElementById('bar-da').style.width = `${pctDA}%`;
+            actualizarTarjeta('verificado', verifCount);
+            actualizarTarjeta('urbano', urbanoCount);
+            actualizarTarjeta('rural', ruralCount);
+            actualizarTarjeta('indigena', indigenaCount);
+            actualizarTarjeta('da', daCount);
         }
 
         function filtrarYRenderizar() {
@@ -754,7 +691,21 @@
 
             renderizarContornoProvincia(pSel);
 
-            emlFiltrados = emlData.filter(f => {
+            // 1. Obtener la BASE GEOGRÁFICA (sin aplicar el filtro de Tipo/Estado)
+            const emlBaseGeografica = emlData.filter(f => {
+                const props = f.properties || {};
+                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
+                if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
+                if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
+                if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
+                return true;
+            });
+
+            // 2. Calcular porcentajes basados en la base geográfica real de la zona
+            actualizarManejadorPorcentajes(emlBaseGeografica);
+
+            // 3. Aplicar el filtro de Tipo/Estado para mostrar polígonos en el mapa
+            emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
                 if (segmSel === 'DIFICIL_ACCESO') {
@@ -765,16 +716,8 @@
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
-
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
-                if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
-                if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
-                if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
-                
                 return true;
             });
-
-            actualizarManejadorPorcentajes(emlFiltrados);
 
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
@@ -831,35 +774,28 @@
             
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
-                // CONSTRUCCIÓN DEL POPUP
                 let popupContent = `<div class="info-popup"><h3>📍 UPM ${props.UPM || props.CODE_UPM || ''}</h3>`;
             
                 for (let k in props) {
                     const kUpper = k.trim().toUpperCase();
                     const valRaw = String(props[k] ?? 'N/D').trim();
-            
-                    // Detectar si es la clave de verificación
                     const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
             
                     if (esCampoVerificacion) {
-                        // Evaluamos si el valor de ESTE campo en específico es "SI"
                         const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
             
                         if (esValorSi) {
-                            // 🟢 RESALTADO SI ES "SI"
                             popupContent += `
                                 <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
                                     <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
                                 </p>`;
                         } else {
-                            // 🔴 ESTILO SI ES "NO", "PENDIENTE" O VACÍO
                             popupContent += `
                                 <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
                                     <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
                                 </p>`;
                         }
                     } else {
-                        // Formato normal para el resto de propiedades
                         popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
                     }
                 }
@@ -896,13 +832,12 @@
                 csv += row + "\n";
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
+            const link = document.append("a");
             link.href = URL.createObjectURL(blob);
             link.download = "eml_filtrados.csv";
             link.click();
         }
 
-        // Cargar datos al iniciar
         cargarGeoJSONs();
     </script>
 </body>
