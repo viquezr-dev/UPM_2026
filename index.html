@@ -348,8 +348,18 @@
         // Evalúa si VERIFICADO es "SI" de forma robusta
         function esVerificado(props) {
             if (!props) return false;
-            const val = String(props.VERIFICADO ?? props.VERIFICAD ?? '').trim().toUpperCase();
-            return val === 'SI' || val === 'SÍ';
+            
+            // Busca la llave sin importar minúsculas/mayúsculas o espacios (por si acaso viene como VERIFICAD o VERIFICADO)
+            const llave = Object.keys(props).find(k => k.trim().toUpperCase().startsWith('VERIFICAD'));
+            if (!llave) return false;
+        
+            // Convierte a String, quita comillas extras, limpia espacios y pasa a Mayúsculas
+            const val = String(props[llave] ?? '')
+                .trim()
+                .replace(/^['"]|['"]$/g, '')
+                .toUpperCase();
+        
+            return val === 'SI' || val === 'SÍ' || val === '1' || val === 'TRUE';
         }
 
         const selectSegm = document.getElementById('segm_tipo');
