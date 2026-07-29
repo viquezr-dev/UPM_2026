@@ -142,7 +142,6 @@
             border-top: 1px solid #334155;
         }
         
-        /* Contenedor del Popup */
         .info-popup {
             font-size: 11px;
             line-height: 1.25;
@@ -181,7 +180,6 @@
             font-size: 10px;
         }
 
-        /* Ajuste de espacio global para popups en Leaflet */
         .leaflet-popup-content {
             margin: 12px 14px 10px 14px !important;
         }
@@ -222,7 +220,6 @@
             display: inline-block;
         }
 
-        /* --- ESTILOS DE ETIQUETA DINÁMICA DE DISTANCIA --- */
         .distance-line-label {
             border-radius: 4px;
             padding: 3px 7px;
@@ -233,14 +230,12 @@
             transition: all 0.2s ease-in-out;
         }
 
-        /* Texto negro para Mapa Callejero */
         .label-callejero {
             background: #ffffff;
             color: #0f172a;
             border: 2px solid #0f172a;
         }
 
-        /* Texto blanco para Vista Satelital */
         .label-satelite {
             background: #0f172a;
             color: #ffffff;
@@ -319,11 +314,7 @@
 
         let mapaActual = 'callejero';
         map.on('baselayerchange', function(e) {
-            if (e.name.includes('Satelital')) {
-                mapaActual = 'satelite';
-            } else {
-                mapaActual = 'callejero';
-            }
+            mapaActual = e.name.includes('Satelital') ? 'satelite' : 'callejero';
         });
 
         const provinciaContornoLayer = L.layerGroup().addTo(map);
@@ -354,7 +345,7 @@
             return provinciaColores[norm];
         }
 
-        // Función para obtener el valor del campo Verificado contemplando posibles recortes de nombres
+        // Evalúa si VERIFICADO es "SI" de forma robusta
         function esVerificado(props) {
             if (!props) return false;
             const val = String(props.VERIFICADO ?? props.VERIFICAD ?? '').trim().toUpperCase();
@@ -415,10 +406,6 @@
                 if (resProvincia && resProvincia.ok) {
                     const provinciaJson = await resProvincia.json();
                     provinciaData = provinciaJson.features || [];
-                }
-
-                if (emlData.length === 0 && oficinaData.length === 0) {
-                    cargarMocksDemo();
                 }
 
                 inicializarFiltrosCascada();
@@ -618,6 +605,7 @@
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
+                // 1. Filtrado por Tipo / Estado
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel === 'VERIFICADO') {
@@ -627,10 +615,12 @@
                     if (tipoNormalizado !== segmSel) return false;
                 }
 
+                // 2. Filtros de ubicación
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
                 if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
+                
                 return true;
             });
 
@@ -640,6 +630,7 @@
                 return true;
             });
 
+            // Dibujar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
@@ -664,15 +655,22 @@
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
 
+            // Dibujar Polígonos
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 
-                // Si VERIFICADO = SI, color AMARILLO. De lo contrario, color de provincia.
-                const colorFill = esVerificado(props) ? '#facc15' : obtenerColorProvincia(provNombre);
+                // Color Amarillo (#facc15) si VERIFICADO == "SI", si no, color por provincia
+                const estaVerificado = esVerificado(props);
+                const colorFill = estaVerificado ? '#facc15' : obtenerColorProvincia(provNombre);
 
                 const polyLayer = L.geoJSON(feature, {
-                    style: { fillColor: colorFill, fillOpacity: 0.65, color: '#1e293b', weight: 1.5 }
+                    style: { 
+                        fillColor: colorFill, 
+                        fillOpacity: 0.70, 
+                        color: estaVerificado ? '#b45309' : '#1e293b', 
+                        weight: estaVerificado ? 2 : 1.5 
+                    }
                 });
 
                 const centroide = calcularCentroide(feature);
@@ -684,21 +682,15 @@
 
                 const camposEML = [
                     'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
-                    'DA', 'INDIG', 'VERIFICADO', 'SHAPE_Leng', 'SHAPE_Area', 'CODE_UPM', 
-                    'LUPO_NOMB', 'PROV_NOMB', 'DIST_NOMB', 'CORR_NOMB'
+                    'DA', 'INDIG', 'VERIFICADO', 'CODE_UPM', 'LUPO_NOMB', 
+                    'PROV_NOMB', 'DIST_NOMB', 'CORR_NOMB', 'SHAPE_Area'
                 ];
                 
                 let popupContent = `<div class="info-popup"><h3>📍 Polígono EML</h3>`;
                 
                 camposEML.forEach(campo => {
-                    // Soporte para variaciones de nombres de campos
-                    let keyEncontrada = campo;
-                    if (!props.hasOwnProperty(campo) && campo === 'VERIFICADO' && props.hasOwnProperty('VERIFICAD')) {
-                        keyEncontrada = 'VERIFICAD';
-                    }
-
-                    if (props.hasOwnProperty(keyEncontrada)) {
-                        let valor = props[keyEncontrada] ?? 'N/D';
+                    if (props.hasOwnProperty(campo)) {
+                        let valor = props[campo] ?? 'N/D';
                         
                         if (campo === 'DA') {
                             const valStr = String(valor).trim();
@@ -837,31 +829,6 @@
 
             filtrarYRenderizar();
             map.setView([8.537, -80.782], 8);
-        }
-
-        function cargarMocksDemo() {
-            oficinaData = [{
-                "type": "Feature",
-                "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 101, "OFICE_LAT": 8.9833, "OFICE_LONG": -79.5167, "PLUS_CODE": "8700+XX" },
-                "geometry": { "type": "Point", "coordinates": [-79.5167, 8.9833] }
-            }];
-            provinciaData = [{
-                "type": "Feature",
-                "properties": { "fid": 1, "PROV_ID": "08", "PROV_NOMB": "PANAMA", "ID1": 1, "SHAPE_Leng": 2.5, "SHAPE_Area": 0.5 },
-                "geometry": { "type": "Polygon", "coordinates": [[[-79.550, 8.950], [-79.450, 8.950], [-79.450, 9.020], [-79.550, 9.020], [-79.550, 8.950]]] }
-            }];
-            emlData = [
-                {
-                    "type": "Feature",
-                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "001", "SEGM_TIPO": "01", "DA": "1", "VERIFICADO": "SI", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0801", "LUPO_NOMB": "SAN FRANCISCO POBLADO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
-                    "geometry": { "type": "Polygon", "coordinates": [[[-79.510, 8.980], [-79.500, 8.980], [-79.500, 8.990], [-79.510, 8.990], [-79.510, 8.980]]] }
-                },
-                {
-                    "type": "Feature",
-                    "properties": { "PROV_ID": "08", "DIST_ID": "01", "CORR_ID": "01", "LUPO_ID": "002", "SEGM_TIPO": "02", "DA": "0", "VERIFICADO": "NO", "INDIG": "NO", "SHAPE_Leng": 0.04, "SHAPE_Area": 0.0001, "CODE_UPM": "UPM-0802", "LUPO_NOMB": "SECTOR RURAL DEMO", "PROV_NOMB": "PANAMA", "DIST_NOMB": "PANAMA", "CORR_NOMB": "SAN FRANCISCO" },
-                    "geometry": { "type": "Polygon", "coordinates": [[[-79.490, 8.980], [-79.480, 8.980], [-79.480, 8.990], [-79.490, 8.990], [-79.490, 8.980]]] }
-                }
-            ];
         }
 
         document.addEventListener('DOMContentLoaded', cargarGeoJSONs);
