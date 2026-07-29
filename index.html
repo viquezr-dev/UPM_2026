@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral</title>
+    <title>UPM para Encuesta de Mercado Laboral - Con Manejador de Porcentajes</title>
     
-    <!-- Leaflet CSS -->
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -124,6 +124,66 @@
             color: #334155;
             font-weight: 600;
             border: 1px solid #e2e8f0;
+        }
+
+        /* --- ESTILOS DEL MANEJADOR DE PORCENTAJES --- */
+        .pct-dashboard {
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-around;
+            border-bottom: 2px solid #334155;
+        }
+
+        .pct-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1e293b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            min-width: 200px;
+        }
+
+        .pct-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .pct-label {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.2;
+        }
+
+        .pct-progress-bg {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .pct-progress-fill {
+            height: 100%;
+            background: #38bdf8;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .pct-progress-fill.verified {
+            background: #facc15;
+        }
+
+        .pct-progress-fill.da {
+            background: #ef4444;
         }
         
         #map {
@@ -287,6 +347,41 @@
         <button class="btn-export" onclick="exportarCSV()">📥 Descargar CSV</button>
         <button class="btn-reset" onclick="resetMap()">🔄 Resetear Filtros</button>
     </div>
+
+    <!-- PANEL MANEJADOR DE PORCENTAJES -->
+    <div class="pct-dashboard" id="pct-dashboard">
+        <div class="pct-card">
+            <div>
+                <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
+                <div class="pct-label">Verificados / Actualizados<br><small id="cnt-verificado">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill verified" id="bar-verificado"></div></div>
+            </div>
+        </div>
+
+        <div class="pct-card">
+            <div>
+                <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
+                <div class="pct-label">Segmento Urbano<br><small id="cnt-urbano">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#60a5fa;" id="bar-urbano"></div></div>
+            </div>
+        </div>
+
+        <div class="pct-card">
+            <div>
+                <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
+                <div class="pct-label">Segmento Rural<br><small id="cnt-rural">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#4ade80;" id="bar-rural"></div></div>
+            </div>
+        </div>
+
+        <div class="pct-card">
+            <div>
+                <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
+                <div class="pct-label">Difícil Acceso (DA = 1)<br><small id="cnt-da">(0/0)</small></div>
+                <div class="pct-progress-bg"><div class="pct-progress-fill da" id="bar-da"></div></div>
+            </div>
+        </div>
+    </div>
     
     <div id="map"></div>
     
@@ -345,21 +440,28 @@
             return provinciaColores[norm];
         }
 
-        // Evalúa si VERIFICADO es "SI" de forma robusta
+        // Evalúa si VERIFICADO es "SI" de forma completamente flexible
         function esVerificado(props) {
             if (!props) return false;
-            
-            // Busca la llave sin importar minúsculas/mayúsculas o espacios (por si acaso viene como VERIFICAD o VERIFICADO)
-            const llave = Object.keys(props).find(k => k.trim().toUpperCase().startsWith('VERIFICAD'));
+            const llave = Object.keys(props).find(k => {
+                const kUpper = k.trim().toUpperCase();
+                return kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
+            });
+
             if (!llave) return false;
-        
-            // Convierte a String, quita comillas extras, limpia espacios y pasa a Mayúsculas
-            const val = String(props[llave] ?? '')
-                .trim()
-                .replace(/^['"]|['"]$/g, '')
-                .toUpperCase();
-        
-            return val === 'SI' || val === 'SÍ' || val === '1' || val === 'TRUE';
+            const valRaw = props[llave];
+            if (valRaw === null || valRaw === undefined) return false;
+
+            const val = String(valRaw).trim().toUpperCase().replace(/['"]/g, '');
+            return (
+                val === 'SI' || 
+                val === 'SÍ' || 
+                val === 'S' || 
+                val === '1' || 
+                val === 'TRUE' || 
+                val === 'VERIFICADO' ||
+                val === 'ACTUALIZADO'
+            );
         }
 
         const selectSegm = document.getElementById('segm_tipo');
@@ -599,22 +701,81 @@
             }
         }
 
+        // --- CÁLCULO Y MANEJADOR DE PORCENTAJES ---
+        function actualizarManejadorPorcentajes(listaFiltrada) {
+            const total = listaFiltrada.length;
+
+            if (total === 0) {
+                document.getElementById('pct-verificado').textContent = '0.0%';
+                document.getElementById('cnt-verificado').textContent = '(0/0)';
+                document.getElementById('bar-verificado').style.width = '0%';
+
+                document.getElementById('pct-urbano').textContent = '0.0%';
+                document.getElementById('cnt-urbano').textContent = '(0/0)';
+                document.getElementById('bar-urbano').style.width = '0%';
+
+                document.getElementById('pct-rural').textContent = '0.0%';
+                document.getElementById('cnt-rural').textContent = '(0/0)';
+                document.getElementById('bar-rural').style.width = '0%';
+
+                document.getElementById('pct-da').textContent = '0.0%';
+                document.getElementById('cnt-da').textContent = '(0/0)';
+                document.getElementById('bar-da').style.width = '0%';
+                return;
+            }
+
+            let verifCount = 0;
+            let urbanoCount = 0;
+            let ruralCount = 0;
+            let daCount = 0;
+
+            listaFiltrada.forEach(f => {
+                const props = f.properties || {};
+                
+                if (esVerificado(props)) verifCount++;
+                
+                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
+                if (tipo === 'URBANO') urbanoCount++;
+                if (tipo === 'RURAL') ruralCount++;
+                
+                if (String(props.DA).trim() === '1') daCount++;
+            });
+
+            const pctVerif = ((verifCount / total) * 100).toFixed(1);
+            const pctUrb = ((urbanoCount / total) * 100).toFixed(1);
+            const pctRur = ((ruralCount / total) * 100).toFixed(1);
+            const pctDA = ((daCount / total) * 100).toFixed(1);
+
+            document.getElementById('pct-verificado').textContent = `${pctVerif}%`;
+            document.getElementById('cnt-verificado').textContent = `(${verifCount}/${total})`;
+            document.getElementById('bar-verificado').style.width = `${pctVerif}%`;
+
+            document.getElementById('pct-urbano').textContent = `${pctUrb}%`;
+            document.getElementById('cnt-urbano').textContent = `(${urbanoCount}/${total})`;
+            document.getElementById('bar-urbano').style.width = `${pctUrb}%`;
+
+            document.getElementById('pct-rural').textContent = `${pctRur}%`;
+            document.getElementById('cnt-rural').textContent = `(${ruralCount}/${total})`;
+            document.getElementById('bar-rural').style.width = `${pctRur}%`;
+
+            document.getElementById('pct-da').textContent = `${pctDA}%`;
+            document.getElementById('cnt-da').textContent = `(${daCount}/${total})`;
+            document.getElementById('bar-da').style.width = `${pctDA}%`;
+        }
+
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
             lineasDistanciaLayer.clearLayers();
-        
+
             const segmSel = selectSegm.value;
             const pSel = selectProv.value;
             const dSel = selectDist.value;
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
-        
+
             renderizarContornoProvincia(pSel);
-        
-            // Conteo de diagnóstico para consola
-            let totalConSi = 0;
-        
+
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
@@ -622,13 +783,12 @@
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel === 'VERIFICADO') {
-                    // AL FILTRAR POR "VERIFICADO", SOLO DEJA PASAR LOS QUE "esVerificado(props)" SEA TRUE
                     if (!esVerificado(props)) return false;
                 } else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
-        
+
                 // 2. Filtros de ubicación geográfica
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
@@ -637,24 +797,21 @@
                 
                 return true;
             });
-        
-            // Diagnóstico en la consola (F12)
-            emlFiltrados.forEach(f => {
-                if (esVerificado(f.properties)) totalConSi++;
-            });
-            console.log(`[DIAGNÓSTICO] Polígonos filtrados visibles: ${emlFiltrados.length} | Con VERIFICADO = SI: ${totalConSi}`);
-        
+
+            // Actualiza las estadísticas porcentuales en la barra
+            actualizarManejadorPorcentajes(emlFiltrados);
+
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
-        
+
             // Renderizar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-        
+
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -662,7 +819,7 @@
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
                 });
-        
+
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
                 camposOficina.forEach(campo => {
@@ -671,22 +828,21 @@
                     }
                 });
                 popupContent += `</div>`;
-        
+
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-        
+
             // Renderizar Polígonos EML
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 
                 const estaVerificado = esVerificado(props);
-        
-                // ESTILO DIFERENCIADO: Si está verificado, se pinta de AMARILLO BRILLANTE con borde ROJO/OCRE grueso
+
                 const estiloPoligono = estaVerificado ? {
-                    fillColor: '#facc15', // Amarillo fuerte
+                    fillColor: '#facc15',
                     fillOpacity: 0.85,
-                    color: '#dc2626',     // Borde rojo brillante para que resalte
+                    color: '#dc2626',
                     weight: 2.5
                 } : {
                     fillColor: obtenerColorProvincia(provNombre),
@@ -694,16 +850,16 @@
                     color: '#1e293b',
                     weight: 1.2
                 };
-        
+
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono });
-        
+
                 const centroide = calcularCentroide(feature);
                 let oficinaAsociada = null;
-        
+
                 if (centroide && oficinasFiltradasGlobal.length > 0) {
                     oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
                 }
-        
+
                 const camposEML = [
                     'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
                     'DA', 'INDIG', 'VERIFICADO', 'CODE_UPM', 'LUPO_NOMB', 
@@ -725,7 +881,6 @@
                             valor = normalizarSegmTipo(valor);
                         }
                         
-                        // Resaltar en el Popup si es VERIFICADO
                         if (campo === 'VERIFICADO' && estaVerificado) {
                             valor = `<b style="color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ SI (VERIFICADO)</b>`;
                         }
@@ -733,19 +888,19 @@
                         popupContent += `<p><strong>${campo}:</strong> ${valor}</p>`;
                     }
                 });
-        
+
                 if (oficinaAsociada) {
                     popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
                 }
                 popupContent += `</div>`;
-        
+
                 polyLayer.bindPopup(popupContent, { maxWidth: 350, minWidth: 220 });
-        
+
                 polyLayer.on({
                     mouseover: (e) => {
                         const layer = e.target;
                         layer.setStyle({ fillOpacity: 0.95, weight: 3.5, color: '#38bdf8' });
-        
+
                         lineasDistanciaLayer.clearLayers();
                         if (centroide && oficinaAsociada) {
                             const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
@@ -753,12 +908,12 @@
                             L.polyline(lineCoords, {
                                 color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
                             }).addTo(lineasDistanciaLayer);
-        
+
                             const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
                             const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
                             
                             const claseEstilo = (mapaActual === 'satelite') ? 'label-satelite' : 'label-callejero';
-        
+
                             L.marker([midLat, midLon], {
                                 icon: L.divIcon({
                                     className: `distance-line-label ${claseEstilo}`,
@@ -773,12 +928,12 @@
                         lineasDistanciaLayer.clearLayers();
                     }
                 });
-        
+
                 polyLayer.addTo(poligonosEmlLayer);
             });
-        
+
             document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
-        
+
             if (emlFiltrados.length > 0) {
                 const tempLayer = L.geoJSON(emlFiltrados);
                 map.fitBounds(tempLayer.getBounds(), { padding: [30, 30] });
