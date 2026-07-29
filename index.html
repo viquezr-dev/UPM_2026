@@ -603,15 +603,18 @@
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
             lineasDistanciaLayer.clearLayers();
-
+        
             const segmSel = selectSegm.value;
             const pSel = selectProv.value;
             const dSel = selectDist.value;
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
-
+        
             renderizarContornoProvincia(pSel);
-
+        
+            // Conteo de diagnóstico para consola
+            let totalConSi = 0;
+        
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
@@ -619,13 +622,14 @@
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel === 'VERIFICADO') {
+                    // AL FILTRAR POR "VERIFICADO", SOLO DEJA PASAR LOS QUE "esVerificado(props)" SEA TRUE
                     if (!esVerificado(props)) return false;
                 } else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
-
-                // 2. Filtros de ubicación
+        
+                // 2. Filtros de ubicación geográfica
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
@@ -633,18 +637,24 @@
                 
                 return true;
             });
-
+        
+            // Diagnóstico en la consola (F12)
+            emlFiltrados.forEach(f => {
+                if (esVerificado(f.properties)) totalConSi++;
+            });
+            console.log(`[DIAGNÓSTICO] Polígonos filtrados visibles: ${emlFiltrados.length} | Con VERIFICADO = SI: ${totalConSi}`);
+        
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
-
-            // Dibujar Oficinas
+        
+            // Renderizar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-
+        
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -652,7 +662,7 @@
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
                 });
-
+        
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
                 camposOficina.forEach(campo => {
@@ -661,35 +671,39 @@
                     }
                 });
                 popupContent += `</div>`;
-
+        
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-
-            // Dibujar Polígonos
+        
+            // Renderizar Polígonos EML
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 
-                // Color Amarillo (#facc15) si VERIFICADO == "SI", si no, color por provincia
                 const estaVerificado = esVerificado(props);
-                const colorFill = estaVerificado ? '#facc15' : obtenerColorProvincia(provNombre);
-
-                const polyLayer = L.geoJSON(feature, {
-                    style: { 
-                        fillColor: colorFill, 
-                        fillOpacity: 0.70, 
-                        color: estaVerificado ? '#b45309' : '#1e293b', 
-                        weight: estaVerificado ? 2 : 1.5 
-                    }
-                });
-
+        
+                // ESTILO DIFERENCIADO: Si está verificado, se pinta de AMARILLO BRILLANTE con borde ROJO/OCRE grueso
+                const estiloPoligono = estaVerificado ? {
+                    fillColor: '#facc15', // Amarillo fuerte
+                    fillOpacity: 0.85,
+                    color: '#dc2626',     // Borde rojo brillante para que resalte
+                    weight: 2.5
+                } : {
+                    fillColor: obtenerColorProvincia(provNombre),
+                    fillOpacity: 0.60,
+                    color: '#1e293b',
+                    weight: 1.2
+                };
+        
+                const polyLayer = L.geoJSON(feature, { style: estiloPoligono });
+        
                 const centroide = calcularCentroide(feature);
                 let oficinaAsociada = null;
-
+        
                 if (centroide && oficinasFiltradasGlobal.length > 0) {
                     oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
                 }
-
+        
                 const camposEML = [
                     'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
                     'DA', 'INDIG', 'VERIFICADO', 'CODE_UPM', 'LUPO_NOMB', 
@@ -711,22 +725,27 @@
                             valor = normalizarSegmTipo(valor);
                         }
                         
+                        // Resaltar en el Popup si es VERIFICADO
+                        if (campo === 'VERIFICADO' && estaVerificado) {
+                            valor = `<b style="color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ SI (VERIFICADO)</b>`;
+                        }
+                        
                         popupContent += `<p><strong>${campo}:</strong> ${valor}</p>`;
                     }
                 });
-
+        
                 if (oficinaAsociada) {
                     popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
                 }
                 popupContent += `</div>`;
-
+        
                 polyLayer.bindPopup(popupContent, { maxWidth: 350, minWidth: 220 });
-
+        
                 polyLayer.on({
                     mouseover: (e) => {
                         const layer = e.target;
-                        layer.setStyle({ fillOpacity: 0.85, weight: 3, color: '#38bdf8' });
-
+                        layer.setStyle({ fillOpacity: 0.95, weight: 3.5, color: '#38bdf8' });
+        
                         lineasDistanciaLayer.clearLayers();
                         if (centroide && oficinaAsociada) {
                             const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
@@ -734,12 +753,12 @@
                             L.polyline(lineCoords, {
                                 color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
                             }).addTo(lineasDistanciaLayer);
-
+        
                             const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
                             const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
                             
                             const claseEstilo = (mapaActual === 'satelite') ? 'label-satelite' : 'label-callejero';
-
+        
                             L.marker([midLat, midLon], {
                                 icon: L.divIcon({
                                     className: `distance-line-label ${claseEstilo}`,
@@ -754,12 +773,12 @@
                         lineasDistanciaLayer.clearLayers();
                     }
                 });
-
+        
                 polyLayer.addTo(poligonosEmlLayer);
             });
-
+        
             document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
-
+        
             if (emlFiltrados.length > 0) {
                 const tempLayer = L.geoJSON(emlFiltrados);
                 map.fitBounds(tempLayer.getBounds(), { padding: [30, 30] });
