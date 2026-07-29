@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral - Con Manejador de Porcentajes</title>
+    <title>UPM para Encuesta de Mercado Laboral - Compacto</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -16,158 +16,170 @@
             box-sizing: border-box;
         }
         
-        body {
+        /* Contenedor principal que ocupa exacto el alto del navegador sin scroll */
+        body, html {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: #f4f6f8;
             color: #334155;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
         }
         
+        /* 1. HEADER COMPACTO */
         .header {
             background: #1e293b;
             color: #f8fafc;
-            padding: 14px 20px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1001;
         }
         
         .header h1 {
-            font-size: 22px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
             letter-spacing: 0.5px;
         }
+
+        .stats-badge {
+            background: #334155;
+            color: #f8fafc;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
         
+        /* 2. FILA DE CONTROLES Y FILTROS (ULTRACOMPACTA) */
         .controls {
             background: white;
-            padding: 14px;
+            padding: 6px 12px;
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
+            justify-content: space-between;
+            gap: 8px;
             border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            z-index: 1000;
+            flex-wrap: nowrap;
+            overflow-x: auto; /* Permite scroll horizontal en pantallas muy angostas */
         }
         
         .filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
 
         .controls label {
             font-weight: 600;
             color: #475569;
-            font-size: 13px;
+            font-size: 11px;
             white-space: nowrap;
         }
         
         .controls select {
-            padding: 6px 12px;
+            padding: 3px 6px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 13px;
-            min-width: 140px;
+            border-radius: 4px;
+            font-size: 11px;
+            min-width: 110px;
             background: #f8fafc;
             color: #334155;
             cursor: pointer;
-            transition: all 0.2s;
+            outline: none;
         }
         
         .controls select:focus {
-            outline: none;
             border-color: #3b82f6;
             background: white;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
         }
         
         .controls button {
-            padding: 8px 16px;
+            padding: 4px 10px;
             border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
+            gap: 3px;
         }
         
-        .btn-reset {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+        .btn-reset { background: #fee2e2; color: #991b1b; }
+        .btn-reset:hover { background: #fca5a5; }
 
-        .btn-reset:hover {
-            background: #fca5a5;
-        }
+        .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .btn-export:hover { background: #bbf7d0; }
 
-        .btn-export {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .btn-export:hover {
-            background: #bbf7d0;
-        }
-        
-        .stats {
-            background: #f1f5f9;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #334155;
-            font-weight: 600;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* --- ESTILOS DEL MANEJADOR DE PORCENTAJES --- */
+        /* 3. BARRA INTEGRADORA DE PORCENTAJES (INTEGRADA Y ULTRACOMPACTA) */
         .pct-dashboard {
             background: #0f172a;
             color: white;
-            padding: 12px 20px;
+            padding: 4px 12px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
             align-items: center;
             justify-content: space-around;
-            border-bottom: 2px solid #334155;
+            gap: 10px;
+            border-bottom: 1px solid #334155;
+            z-index: 999;
         }
 
         .pct-card {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             background: #1e293b;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 3px 10px;
+            border-radius: 5px;
             border: 1px solid #334155;
-            min-width: 200px;
+            flex: 1;
+            max-width: 250px;
         }
 
         .pct-val {
-            font-size: 20px;
+            font-size: 14px;
             font-weight: 700;
             color: #38bdf8;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .pct-info {
+            flex: 1;
         }
 
         .pct-label {
-            font-size: 12px;
+            font-size: 10px;
             color: #94a3b8;
-            line-height: 1.2;
+            line-height: 1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pct-label small {
+            color: #cbd5e1;
+            font-size: 10px;
         }
 
         .pct-progress-bg {
             width: 100%;
-            height: 6px;
+            height: 4px;
             background: #334155;
-            border-radius: 3px;
-            margin-top: 4px;
+            border-radius: 2px;
+            margin-top: 3px;
             overflow: hidden;
         }
 
@@ -178,142 +190,98 @@
             transition: width 0.4s ease;
         }
 
-        .pct-progress-fill.verified {
-            background: #facc15;
-        }
-
-        .pct-progress-fill.da {
-            background: #ef4444;
-        }
+        .pct-progress-fill.verified { background: #facc15; }
+        .pct-progress-fill.da { background: #ef4444; }
         
+        /* 4. MAPA BASE (TOMA TODO EL ESPACIO RESTANTE) */
         #map {
             flex: 1;
             width: 100%;
             background: #e2e8f0;
         }
         
+        /* 5. FOOTER FINO */
         .footer {
             background: #1e293b;
             color: #cbd5e1;
             text-align: center;
-            padding: 8px;
-            font-size: 12px;
+            padding: 3px;
+            font-size: 10px;
             width: 100%;
             border-top: 1px solid #334155;
+            z-index: 1001;
         }
         
+        /* ESTILOS POPUPS Y LEYENDA */
         .info-popup {
             font-size: 11px;
             line-height: 1.25;
             color: #334155;
-            min-width: 200px;
-            max-width: 320px;
-            max-height: 380px;
+            min-width: 180px;
+            max-width: 280px;
+            max-height: 300px;
             overflow-y: auto;
-            padding: 10px 8px 4px 2px;
         }
         
         .info-popup h3 {
             color: #0f172a;
-            font-size: 13px;
-            margin-top: 4px;
-            margin-bottom: 6px;
+            font-size: 12px;
+            margin-bottom: 4px;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 3px;
-            white-space: normal;
-            word-wrap: break-word;
+            padding-bottom: 2px;
         }
 
-        .info-popup p {
-            margin-bottom: 0px;
-            padding: 1px 0;
-        }
-
-        .distance-badge {
-            background: #2563eb;
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 4px;
-            font-size: 10px;
-        }
-
-        .leaflet-popup-content {
-            margin: 12px 14px 10px 14px !important;
-        }
+        .leaflet-popup-content { margin: 8px 10px !important; }
 
         .legend {
-            background: white;
-            padding: 10px;
-            line-height: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            line-height: 14px;
             color: #334155;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            font-size: 11px;
-            max-height: 250px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size: 10px;
+            max-height: 200px;
             overflow-y: auto;
         }
         
         .legend h4 {
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             color: #475569;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
         }
         
         .legend p {
             display: flex;
             align-items: center;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .legend i {
-            width: 12px;
-            height: 12px;
-            margin-right: 6px;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
             border-radius: 2px;
             border: 1px solid #334155;
             display: inline-block;
-        }
-
-        .distance-line-label {
-            border-radius: 4px;
-            padding: 3px 7px;
-            font-size: 11px;
-            font-weight: bold;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.2s ease-in-out;
-        }
-
-        .label-callejero {
-            background: #ffffff;
-            color: #0f172a;
-            border: 2px solid #0f172a;
-        }
-
-        .label-satelite {
-            background: #0f172a;
-            color: #ffffff;
-            border: 2px solid #38bdf8;
         }
     </style>
 </head>
 <body>
 
+    <!-- Header con título y contador integrado -->
     <div class="header">
         <h1>🏢 UPM para Encuesta de Mercado Laboral</h1>
+        <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
     </div>
     
+    <!-- Filtros alineados horizontalmente -->
     <div class="controls">
-        <span class="stats" id="contador">0 Polígonos | 0 Oficinas</span>
-
         <div class="filter-group">
-            <label for="segm_tipo">Tipo Segmento / Estado:</label>
+            <label for="segm_tipo">Tipo/Estado:</label>
             <select id="segm_tipo">
                 <option value="TODOS">Todos</option>
                 <option value="URBANO">Urbano (01)</option>
@@ -340,51 +308,55 @@
         </div>
 
         <div class="filter-group">
-            <label for="poblado">Lugar Poblado (LUPO):</label>
+            <label for="poblado">LUPO:</label>
             <select id="poblado" disabled><option value="TODOS">Todos</option></select>
         </div>
 
-        <button class="btn-export" onclick="exportarCSV()">📥 Descargar CSV</button>
-        <button class="btn-reset" onclick="resetMap()">🔄 Resetear Filtros</button>
+        <div class="btn-group">
+            <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
+            <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
+        </div>
     </div>
 
-    <!-- PANEL MANEJADOR DE PORCENTAJES -->
+    <!-- Panel de Porcentajes Compacto -->
     <div class="pct-dashboard" id="pct-dashboard">
         <div class="pct-card">
-            <div>
-                <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
-                <div class="pct-label">Verificados / Actualizados<br><small id="cnt-verificado">(0/0)</small></div>
+            <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
+            <div class="pct-info">
+                <div class="pct-label"><span>Verificados</span><small id="cnt-verificado">(0/0)</small></div>
                 <div class="pct-progress-bg"><div class="pct-progress-fill verified" id="bar-verificado"></div></div>
             </div>
         </div>
 
         <div class="pct-card">
-            <div>
-                <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
-                <div class="pct-label">Segmento Urbano<br><small id="cnt-urbano">(0/0)</small></div>
+            <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
+            <div class="pct-info">
+                <div class="pct-label"><span>Urbano</span><small id="cnt-urbano">(0/0)</small></div>
                 <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#60a5fa;" id="bar-urbano"></div></div>
             </div>
         </div>
 
         <div class="pct-card">
-            <div>
-                <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
-                <div class="pct-label">Segmento Rural<br><small id="cnt-rural">(0/0)</small></div>
+            <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
+            <div class="pct-info">
+                <div class="pct-label"><span>Rural</span><small id="cnt-rural">(0/0)</small></div>
                 <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#4ade80;" id="bar-rural"></div></div>
             </div>
         </div>
 
         <div class="pct-card">
-            <div>
-                <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
-                <div class="pct-label">Difícil Acceso (DA = 1)<br><small id="cnt-da">(0/0)</small></div>
+            <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
+            <div class="pct-info">
+                <div class="pct-label"><span>Difícil Acceso</span><small id="cnt-da">(0/0)</small></div>
                 <div class="pct-progress-bg"><div class="pct-progress-fill da" id="bar-da"></div></div>
             </div>
         </div>
     </div>
     
+    <!-- Mapa Base -->
     <div id="map"></div>
     
+    <!-- Footer -->
     <div class="footer">
         Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
     </div>
@@ -440,7 +412,6 @@
             return provinciaColores[norm];
         }
 
-        // Evalúa si VERIFICADO es "SI" de forma completamente flexible
         function esVerificado(props) {
             if (!props) return false;
             const llave = Object.keys(props).find(k => {
@@ -493,7 +464,7 @@
                     html += `<p><i style="background: ${provinciaColores[p]}"></i> ${p}</p>`;
                 });
             }
-            html += '<p style="margin-top:6px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
+            html += '<p style="margin-top:4px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
             div.innerHTML = html;
         }
 
@@ -701,7 +672,6 @@
             }
         }
 
-        // --- CÁLCULO Y MANEJADOR DE PORCENTAJES ---
         function actualizarManejadorPorcentajes(listaFiltrada) {
             const total = listaFiltrada.length;
 
@@ -779,7 +749,6 @@
             emlFiltrados = emlData.filter(f => {
                 const props = f.properties || {};
                 
-                // 1. Filtrado por Tipo / Estado
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel === 'VERIFICADO') {
@@ -789,7 +758,6 @@
                     if (tipoNormalizado !== segmSel) return false;
                 }
 
-                // 2. Filtros de ubicación geográfica
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
@@ -798,7 +766,6 @@
                 return true;
             });
 
-            // Actualiza las estadísticas porcentuales en la barra
             actualizarManejadorPorcentajes(emlFiltrados);
 
             oficinasFiltradasGlobal = oficinaData.filter(f => {
@@ -806,6 +773,9 @@
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
+
+            // Actualizar Badge del Header
+            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
 
             // Renderizar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
@@ -815,9 +785,9 @@
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
-                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
+                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
                 });
 
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
@@ -851,171 +821,53 @@
                     weight: 1.2
                 };
 
-                const polyLayer = L.geoJSON(feature, { style: estiloPoligono });
-
-                const centroide = calcularCentroide(feature);
-                let oficinaAsociada = null;
-
-                if (centroide && oficinasFiltradasGlobal.length > 0) {
-                    oficinaAsociada = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
-                }
-
-                const camposEML = [
-                    'PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'SEGM_TIPO', 
-                    'DA', 'INDIG', 'VERIFICADO', 'CODE_UPM', 'LUPO_NOMB', 
-                    'PROV_NOMB', 'DIST_NOMB', 'CORR_NOMB', 'SHAPE_Area'
-                ];
+                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
-                let popupContent = `<div class="info-popup"><h3>📍 Polígono EML</h3>`;
-                
-                camposEML.forEach(campo => {
-                    if (props.hasOwnProperty(campo)) {
-                        let valor = props[campo] ?? 'N/D';
-                        
-                        if (campo === 'DA') {
-                            const valStr = String(valor).trim();
-                            if (valStr === '1') valor = 'DIFICIL ACCESO';
-                            else if (valStr === '0') valor = 'NO APLICA';
-                        } 
-                        else if (campo === 'SEGM_TIPO') {
-                            valor = normalizarSegmTipo(valor);
-                        }
-                        
-                        if (campo === 'VERIFICADO' && estaVerificado) {
-                            valor = `<b style="color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ SI (VERIFICADO)</b>`;
-                        }
-                        
-                        popupContent += `<p><strong>${campo}:</strong> ${valor}</p>`;
-                    }
-                });
-
-                if (oficinaAsociada) {
-                    popupContent += `<div class="distance-badge">📏 Distancia a Oficina: ${oficinaAsociada.distanciaKm.toFixed(2)} Km</div>`;
+                // Popups EML
+                let popupContent = `<div class="info-popup"><h3>📍 UPM ${props.UPM || ''}</h3>`;
+                for (let k in props) {
+                    popupContent += `<p><strong>${k}:</strong> ${props[k] ?? 'N/D'}</p>`;
                 }
                 popupContent += `</div>`;
-
-                polyLayer.bindPopup(popupContent, { maxWidth: 350, minWidth: 220 });
-
-                polyLayer.on({
-                    mouseover: (e) => {
-                        const layer = e.target;
-                        layer.setStyle({ fillOpacity: 0.95, weight: 3.5, color: '#38bdf8' });
-
-                        lineasDistanciaLayer.clearLayers();
-                        if (centroide && oficinaAsociada) {
-                            const lineCoords = [centroide, [oficinaAsociada.lat, oficinaAsociada.lon]];
-                            
-                            L.polyline(lineCoords, {
-                                color: '#0284c7', weight: 3, dashArray: '6, 6', opacity: 0.9
-                            }).addTo(lineasDistanciaLayer);
-
-                            const midLat = (centroide[0] + oficinaAsociada.lat) / 2;
-                            const midLon = (centroide[1] + oficinaAsociada.lon) / 2;
-                            
-                            const claseEstilo = (mapaActual === 'satelite') ? 'label-satelite' : 'label-callejero';
-
-                            L.marker([midLat, midLon], {
-                                icon: L.divIcon({
-                                    className: `distance-line-label ${claseEstilo}`,
-                                    html: `${oficinaAsociada.distanciaKm.toFixed(2)} Km`,
-                                    iconAnchor: [25, 10]
-                                })
-                            }).addTo(lineasDistanciaLayer);
-                        }
-                    },
-                    mouseout: (e) => { 
-                        polyLayer.resetStyle(e.target); 
-                        lineasDistanciaLayer.clearLayers();
-                    }
-                });
-
-                polyLayer.addTo(poligonosEmlLayer);
+                polyLayer.bindPopup(popupContent);
             });
-
-            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
-
-            if (emlFiltrados.length > 0) {
-                const tempLayer = L.geoJSON(emlFiltrados);
-                map.fitBounds(tempLayer.getBounds(), { padding: [30, 30] });
-            }
-        }
-
-        function exportarCSV() {
-            if (!emlFiltrados || emlFiltrados.length === 0) {
-                alert("⚠️ No hay polígonos filtrados en pantalla para exportar.");
-                return;
-            }
-
-            const columnasSet = new Set();
-            emlFiltrados.forEach(f => {
-                if (f.properties) {
-                    Object.keys(f.properties).forEach(key => columnasSet.add(key));
-                }
-            });
-
-            const columnas = Array.from(columnasSet);
-            columnas.push("DISTANCIA_OFICINA_KM");
-
-            let csvContent = columnas.join(",") + "\n";
-
-            emlFiltrados.forEach(feature => {
-                const props = feature.properties || {};
-                
-                const centroide = calcularCentroide(feature);
-                let distanciaKm = "";
-                if (centroide && oficinasFiltradasGlobal.length > 0) {
-                    const oficina = encontrarOficinaMasCercana(centroide[0], centroide[1], oficinasFiltradasGlobal);
-                    if (oficina) distanciaKm = oficina.distanciaKm.toFixed(2);
-                }
-
-                const fila = columnas.map(col => {
-                    let valor = (col === "DISTANCIA_OFICINA_KM") ? distanciaKm : (props[col] ?? "");
-                    
-                    if (col === "SEGM_TIPO") {
-                        valor = normalizarSegmTipo(valor);
-                    } else if (col === "DA") {
-                        const valStr = String(valor).trim();
-                        if (valStr === '1') valor = 'DIFICIL ACCESO';
-                        else if (valStr === '0') valor = 'NO APLICA';
-                    }
-
-                    const valEscapado = String(valor).replace(/"/g, '""');
-                    return `"${valEscapado}"`;
-                });
-
-                csvContent += fila.join(",") + "\n";
-            });
-
-            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            
-            const fechaStr = new Date().toISOString().slice(0, 10);
-            link.setAttribute("download", `UPM_Filtrados_${fechaStr}.csv`);
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function resetMap() {
             selectSegm.value = 'TODOS';
             selectProv.value = 'TODAS';
-            selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-            selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-            selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+            selectDist.value = 'TODOS';
+            selectCorr.value = 'TODOS';
+            selectPob.value = 'TODOS';
             
             selectDist.disabled = true;
             selectCorr.disabled = true;
             selectPob.disabled = true;
-
+            
             filtrarYRenderizar();
             map.setView([8.537, -80.782], 8);
         }
 
-        document.addEventListener('DOMContentLoaded', cargarGeoJSONs);
+        function exportarCSV() {
+            if (emlFiltrados.length === 0) {
+                alert("No hay datos para exportar.");
+                return;
+            }
+            const keys = Object.keys(emlFiltrados[0].properties || {});
+            let csv = keys.join(",") + "\n";
+            emlFiltrados.forEach(f => {
+                let row = keys.map(k => `"${f.properties[k] ?? ''}"`).join(",");
+                csv += row + "\n";
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "eml_filtrados.csv";
+            link.click();
+        }
+
+        // Cargar datos al iniciar
+        cargarGeoJSONs();
     </script>
 </body>
 </html>
