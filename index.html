@@ -816,7 +816,7 @@
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 
                 const estaVerificado = esVerificado(props);
-
+            
                 const estiloPoligono = estaVerificado ? {
                     fillColor: '#facc15',
                     fillOpacity: 0.85,
@@ -828,15 +828,43 @@
                     color: '#1e293b',
                     weight: 1.2
                 };
-
+            
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
-                // Popups EML
-                let popupContent = `<div class="info-popup"><h3>📍 UPM ${props.UPM || ''}</h3>`;
+                // CONSTRUCCIÓN DEL POPUP
+                let popupContent = `<div class="info-popup"><h3>📍 UPM ${props.UPM || props.CODE_UPM || ''}</h3>`;
+            
                 for (let k in props) {
-                    popupContent += `<p><strong>${k}:</strong> ${props[k] ?? 'N/D'}</p>`;
+                    const kUpper = k.trim().toUpperCase();
+                    const valRaw = String(props[k] ?? 'N/D').trim();
+            
+                    // Detectar si es la clave de verificación
+                    const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
+            
+                    if (esCampoVerificacion) {
+                        // Evaluamos si el valor de ESTE campo en específico es "SI"
+                        const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
+            
+                        if (esValorSi) {
+                            // 🟢 RESALTADO SI ES "SI"
+                            popupContent += `
+                                <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
+                                    <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
+                                </p>`;
+                        } else {
+                            // 🔴 ESTILO SI ES "NO", "PENDIENTE" O VACÍO
+                            popupContent += `
+                                <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
+                                    <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
+                                </p>`;
+                        }
+                    } else {
+                        // Formato normal para el resto de propiedades
+                        popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
+                    }
                 }
                 popupContent += `</div>`;
+                
                 polyLayer.bindPopup(popupContent);
             });
         }
