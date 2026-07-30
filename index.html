@@ -941,52 +941,74 @@
             map.setView([8.5, -80.0], 8);
         }
 
-        function exportarCSV() {
+        async function exportarCSV() {
             if (emlFiltrados.length === 0) {
                 alert("No hay datos para exportar.");
                 return;
             }
         
-            const keys = Object.keys(emlFiltrados[0].properties || {});
-            const headers = [...keys, "DISTANCIA_OFICINA_KM"];
-            let csv = headers.join(",") + "\n";
+            // 1. Solicitar solo la contraseña al usuario
+            const password = prompt("Ingresa la contraseña para descargar el CSV:");
+            if (!password) return; // Cancela si presiona cancelar o lo deja vacío
         
-            emlFiltrados.forEach(f => {
-                const props = f.properties || {};
-                
-                const tempLayer = L.geoJSON(f);
-                const centroide = tempLayer.getBounds().getCenter();
-                const provEml = props.PROV_NOMB?.trim().toUpperCase();
-        
-                let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
-                if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-        
-                let distanciaMinima = Infinity;
-        
-                oficinasBuscar.forEach(oficina => {
-                    const coords = obtenerCoordenadasOficina(oficina);
-                    if (coords) {
-                        const latLngOficina = L.latLng(coords.lat, coords.lon);
-                        const dist = centroide.distanceTo(latLngOficina);
-                        if (dist < distanciaMinima) {
-                            distanciaMinima = dist;
-                        }
-                    }
+            try {
+                // 2. Enviar contraseña al backend para validación contra pass_eml.txt
+                const response = await fetch('/api/descargar-csv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
                 });
         
-                const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
+                if (!response.ok) {
+                    alert("Contraseña incorrecta. Acceso denegado.");
+                    return;
+                }
         
-                let row = keys.map(k => `"${props[k] ?? ''}"`);
-                row.push(`"${distanciaKm}"`);
-                
-                csv += row.join(",") + "\n";
-            });
+                // 3. Si la clave fue correcta en el servidor, generas la descarga del CSV filtrado
+                const keys = Object.keys(emlFiltrados[0].properties || {});
+                const headers = [...keys, "DISTANCIA_OFICINA_KM"];
+                let csv = headers.join(",") + "\n";
         
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
+                emlFiltrados.forEach(f => {
+                    const props = f.properties || {};
+                    const tempLayer = L.geoJSON(f);
+                    const centroide = tempLayer.getBounds().getCenter();
+                    const provEml = props.PROV_NOMB?.trim().toUpperCase();
+        
+                    let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+                    if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+        
+                    let distanciaMinima = Infinity;
+        
+                    oficinasBuscar.forEach(oficina => {
+                        const coords = obtenerCoordenadasOficina(oficina);
+                        if (coords) {
+                            const latLngOficina = L.latLng(coords.lat, coords.lon);
+                            const dist = centroide.distanceTo(latLngOficina);
+                            if (dist < distanciaMinima) {
+                                distanciaMinima = dist;
+                            }
+                        }
+                    });
+        
+                    const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
+        
+                    let row = keys.map(k => `"${props[k] ?? ''}"`);
+                    row.push(`"${distanciaKm}"`);
+                    
+                    csv += row.join(",") + "\n";
+                });
+        
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
+                link.click();
+        
+            } catch (error) {
+                console.error("Error al verificar la contraseña:", error);
+                alert("Ocurrió un error al intentar verificar la contraseña.");
+            }
         }
 
         cargarGeoJSONs();
