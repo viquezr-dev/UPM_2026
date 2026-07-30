@@ -410,7 +410,7 @@
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
 
         let mapaActual = 'callejero';
-        let ultimoPoligonoSeleccionado = null; // Guardar referencia para redibujar la etiqueta si cambia la capa base
+        let ultimoPoligonoSeleccionado = null; 
 
         map.on('baselayerchange', function(e) {
             mapaActual = e.name.includes('Satelital') ? 'satelite' : 'callejero';
@@ -436,6 +436,15 @@
             '#0891b2', '#ea580c', '#4f46e5', '#059669', '#ca8a04',
             '#be185d', '#0284c7', '#15803d', '#b45309', '#6b21a8'
         ];
+
+        /* FUNCIÓN AUXILIAR PARA OBTENER EL NOMBRE DE LA PROVINCIA DESDE PROV_NOMB */
+        function getProvNombre(props) {
+            if (!props) return null;
+            // Busca PROV_NOMB sin importar mayúsculas o minúsculas en la clave del objeto
+            const key = Object.keys(props).find(k => k.trim().toUpperCase() === 'PROV_NOMB');
+            const val = key ? props[key] : null;
+            return val ? String(val).trim().toUpperCase() : null;
+        }
 
         function obtenerColorProvincia(provNombre) {
             if (!provNombre) return '#64748b';
@@ -546,8 +555,9 @@
 
             [emlData, oficinaData, provinciaData].forEach(dataSet => {
                 dataSet.forEach(f => {
-                    if (f.properties && f.properties.PROV_NOMB) {
-                        provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
+                    const prov = getProvNombre(f.properties);
+                    if (prov) {
+                        provinciasSet.add(prov);
                     }
                 });
             });
@@ -573,7 +583,7 @@
 
                 if (pSel !== 'TODAS') {
                     const distritos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel)
+                    emlData.filter(f => getProvNombre(f.properties) === pSel)
                            .forEach(f => { if (f.properties.DIST_NOMB) distritos.add(f.properties.DIST_NOMB.trim().toUpperCase()); });
                     Array.from(distritos).sort().forEach(d => selectDist.add(new Option(d, d)));
                 }
@@ -591,7 +601,7 @@
 
                 if (dSel !== 'TODOS') {
                     const corregimientos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel)
+                    emlData.filter(f => getProvNombre(f.properties) === pSel && f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel)
                            .forEach(f => { if (f.properties.CORR_NOMB) corregimientos.add(f.properties.CORR_NOMB.trim().toUpperCase()); });
                     Array.from(corregimientos).sort().forEach(c => selectCorr.add(new Option(c, c)));
                 }
@@ -608,7 +618,7 @@
 
                 if (cSel !== 'TODOS') {
                     const poblados = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && 
+                    emlData.filter(f => getProvNombre(f.properties) === pSel && 
                                         f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel &&
                                         f.properties?.CORR_NOMB?.trim().toUpperCase() === cSel)
                            .forEach(f => { if (f.properties.LUPO_NOMB) poblados.add(f.properties.LUPO_NOMB.trim().toUpperCase()); });
@@ -639,9 +649,7 @@
             provinciaContornoLayer.clearLayers();
             if (pSel === 'TODAS' || provinciaData.length === 0) return;
 
-            const provFeature = provinciaData.find(
-                f => f.properties && f.properties.PROV_NOMB && f.properties.PROV_NOMB.trim().toUpperCase() === pSel
-            );
+            const provFeature = provinciaData.find(f => getProvNombre(f.properties) === pSel);
 
             if (provFeature) {
                 L.geoJSON(provFeature, {
@@ -710,10 +718,10 @@
 
             if (oficinaData.length === 0) return;
 
-            const provEml = props.PROV_NOMB?.trim().toUpperCase();
+            const provEml = getProvNombre(props);
             
             // Priorizar oficina de la misma provincia; si no existe, buscar la más cercana globalmente
-            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+            let oficinasBuscar = oficinaData.filter(o => getProvNombre(o.properties) === provEml);
             if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
 
             let oficinaCercana = null;
@@ -736,7 +744,7 @@
             const distanciaKm = (distanciaMinima / 1000).toFixed(2);
 
             // Trazar línea punteada
-            const polyline = L.polyline([centroide, oficinaCercana.coords], {
+            L.polyline([centroide, oficinaCercana.coords], {
                 color: '#ef4444',
                 weight: 2.5,
                 dashArray: '6, 6',
@@ -813,7 +821,7 @@
             // 1. BASE GEOGRÁFICA
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
+                if (pSel !== 'TODAS' && getProvNombre(props) !== pSel) return false;
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
                 if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
@@ -840,7 +848,7 @@
 
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
+                if (pSel !== 'TODAS' && getProvNombre(props) !== pSel) return false;
                 return true;
             });
 
@@ -875,7 +883,7 @@
             // Renderizar Polígonos EML
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
-                const provNombre = props.PROV_NOMB || 'Desconocido';
+                const provNombre = getProvNombre(props) || 'Desconocido';
                 const estaVerificado = esVerificado(props);
             
                 const estiloPoligono = estaVerificado ? {
@@ -918,61 +926,61 @@
         }
 
         function exportarCSV() {
-        if (emlFiltrados.length === 0) {
-            alert("No hay datos para exportar.");
-            return;
-        }
-    
-        // 1. Obtener las llaves originales del primer objeto
-        const keys = Object.keys(emlFiltrados[0].properties || {});
+            if (emlFiltrados.length === 0) {
+                alert("No hay datos para exportar.");
+                return;
+            }
         
-        // 2. Agregar la nueva columna para la distancia
-        const headers = [...keys, "DISTANCIA_OFICINA_KM"];
-        let csv = headers.join(",") + "\n";
-    
-        // 3. Procesar cada UPM filtrada y calcular su distancia
-        emlFiltrados.forEach(f => {
-            const props = f.properties || {};
+            // 1. Obtener las llaves originales del primer objeto
+            const keys = Object.keys(emlFiltrados[0].properties || {});
             
-            // Crear capa temporal para obtener el centroide de la UPM
-            const tempLayer = L.geoJSON(f);
-            const centroide = tempLayer.getBounds().getCenter();
-            const provEml = props.PROV_NOMB?.trim().toUpperCase();
-    
-            // Buscar la oficina de su provincia o la más cercana
-            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
-            if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-    
-            let distanciaMinima = Infinity;
-    
-            oficinasBuscar.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (coords) {
-                    const latLngOficina = L.latLng(coords.lat, coords.lon);
-                    const dist = centroide.distanceTo(latLngOficina);
-                    if (dist < distanciaMinima) {
-                        distanciaMinima = dist;
+            // 2. Agregar la nueva columna para la distancia
+            const headers = [...keys, "DISTANCIA_OFICINA_KM"];
+            let csv = headers.join(",") + "\n";
+        
+            // 3. Procesar cada UPM filtrada y calcular su distancia
+            emlFiltrados.forEach(f => {
+                const props = f.properties || {};
+                
+                // Crear capa temporal para obtener el centroide de la UPM
+                const tempLayer = L.geoJSON(f);
+                const centroide = tempLayer.getBounds().getCenter();
+                const provEml = getProvNombre(props);
+        
+                // Buscar la oficina de su provincia o la más cercana
+                let oficinasBuscar = oficinaData.filter(o => getProvNombre(o.properties) === provEml);
+                if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+        
+                let distanciaMinima = Infinity;
+        
+                oficinasBuscar.forEach(oficina => {
+                    const coords = obtenerCoordenadasOficina(oficina);
+                    if (coords) {
+                        const latLngOficina = L.latLng(coords.lat, coords.lon);
+                        const dist = centroide.distanceTo(latLngOficina);
+                        if (dist < distanciaMinima) {
+                            distanciaMinima = dist;
+                        }
                     }
-                }
+                });
+        
+                // Convertir metros a Kilómetros con 2 decimales
+                const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
+        
+                // Crear la fila del CSV con las propiedades existentes + la distancia
+                let row = keys.map(k => `"${props[k] ?? ''}"`);
+                row.push(`"${distanciaKm}"`);
+                
+                csv += row.join(",") + "\n";
             });
-    
-            // Convertir metros a Kilómetros con 2 decimales
-            const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
-    
-            // Crear la fila del CSV con las propiedades existentes + la distancia
-            let row = keys.map(k => `"${props[k] ?? ''}"`);
-            row.push(`"${distanciaKm}"`);
-            
-            csv += row.join(",") + "\n";
-        });
-    
-        // 4. Generar y descargar el archivo
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
-        link.click();
-    }
+        
+            // 4. Generar y descargar el archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
 
         cargarGeoJSONs();
     </script>
