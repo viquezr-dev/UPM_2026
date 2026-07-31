@@ -900,7 +900,7 @@
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
 
-            // Renderizar Polígonos EML
+            /// Renderizar Polígonos EML
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
@@ -924,6 +924,26 @@
                     trazarDistanciaYPopup(polyLayer, feature);
                 });
             });
+
+            // =========================================================
+            // LÓGICA DE ZOOM AUTOMÁTICO (PROVINCIA O BÚSQUEDA DE UPM)
+            // =========================================================
+
+            // 1. Zoom por Búsqueda de UPM (Prioridad si hay texto ingresado)
+            if (busquedaUpm !== '' && emlFiltrados.length > 0) {
+                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+                if (tempGroup.getBounds().isValid()) {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
+                }
+            } 
+            // 2. Zoom por Selección de Provincia en el Combo Box
+            else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
+                const provinciaLayer = provinciaContornoLayer.getLayers()[0];
+                if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
+                    map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
+                }
+            }
+        }
 
             // Auto-zoom automático cuando hay un texto de búsqueda ingresado
             if (busquedaUpm !== '' && emlFiltrados.length > 0) {
