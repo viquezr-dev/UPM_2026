@@ -941,14 +941,46 @@
             map.setView([8.5, -80.0], 8);
         }
 
+        // Función auxiliar para pedir la contraseña usando el modal oculto
+        function pedirPasswordModal() {
+          return new Promise((resolve) => {
+            const modal = document.getElementById('modalPassword');
+            const input = document.getElementById('inputPassModal');
+            const btnAceptar = document.getElementById('btnAceptarModal');
+            const btnCancelar = document.getElementById('btnCancelarModal');
+        
+            input.value = ''; // Limpiar el input
+            modal.style.display = 'flex'; // Mostrar modal
+            input.focus();
+        
+            const cerrarModal = (valor) => {
+              modal.style.display = 'none';
+              btnAceptar.onclick = null;
+              btnCancelar.onclick = null;
+              input.onkeydown = null;
+              resolve(valor);
+            };
+        
+            btnAceptar.onclick = () => cerrarModal(input.value);
+            btnCancelar.onclick = () => cerrarModal(null);
+            
+            // Permitir presionar Enter para confirmar
+            input.onkeydown = (e) => {
+              if (e.key === 'Enter') cerrarModal(input.value);
+              if (e.key === 'Escape') cerrarModal(null);
+            };
+          });
+        }
+        
+        // Función principal de exportación
         async function exportarCSV() {
             if (emlFiltrados.length === 0) {
                 alert("No hay datos para exportar.");
                 return;
             }
         
-            // 1. Solicitar solo la contraseña al usuario
-            const password = prompt("Ingresa la contraseña para descargar el CSV:");
+            // 1. Pedir la contraseña mediante el modal con input de tipo password (asteriscos)
+            const password = await pedirPasswordModal();
             if (!password) return; // Cancela si presiona cancelar o lo deja vacío
         
             try {
@@ -960,16 +992,15 @@
                     return;
                 }
         
-                // Leer la clave guardada en el txt y quitar saltos de línea (\n, \r) o espacios extra
                 const passwordCorrecta = (await response.text()).trim();
         
-                // 3. Comparar la contraseña ingresada con la del archivo .txt
+                // 3. Comparar la contraseña
                 if (password.trim() !== passwordCorrecta) {
                     alert("Contraseña incorrecta. Acceso denegado.");
                     return;
                 }
         
-                // 4. Si la clave es correcta, genera la descarga del CSV filtrado
+                // 4. Si la clave es correcta, genera la descarga del CSV
                 const keys = Object.keys(emlFiltrados[0].properties || {});
                 const headers = [...keys, "DISTANCIA_OFICINA_KM"];
                 let csv = headers.join(",") + "\n";
@@ -1018,5 +1049,21 @@
 
         cargarGeoJSONs();
     </script>
+    <!-- Modal para ingresar la contraseña de forma oculta -->
+    <div id="modalPassword" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 20px; border-radius: 8px; max-width: 300px; width: 90%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        <h3 style="margin-top: 0; font-size: 14px; color: #1e293b;">🔒 Confirmación Requerida</h3>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Ingresa la contraseña para descargar el CSV:</p>
+        
+        <!-- El tipo "password" oculta el texto con puntos/asteriscos -->
+        <input type="password" id="inputPassModal" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 14px; text-align: center;">
+        
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button id="btnCancelarModal" style="background: #e2e8f0; color: #475569; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Cancelar</button>
+          <button id="btnAceptarModal" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Descargar</button>
+        </div>
+      </div>
+    </div>
+
 </body>
 </html>
