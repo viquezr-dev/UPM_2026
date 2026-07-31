@@ -952,19 +952,24 @@
             if (!password) return; // Cancela si presiona cancelar o lo deja vacío
         
             try {
-                // 2. Enviar contraseña al backend para validación contra pass_eml.txt
-                const response = await fetch('/api/descargar-csv', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: password })
-                });
+                // 2. Leer el archivo pass_eml.txt directamente desde la carpeta raíz
+                const response = await fetch('pass_eml.txt');
         
                 if (!response.ok) {
+                    alert("No se encontró el archivo 'pass_eml.txt' en el servidor.");
+                    return;
+                }
+        
+                // Leer la clave guardada en el txt y quitar saltos de línea (\n, \r) o espacios extra
+                const passwordCorrecta = (await response.text()).trim();
+        
+                // 3. Comparar la contraseña ingresada con la del archivo .txt
+                if (password.trim() !== passwordCorrecta) {
                     alert("Contraseña incorrecta. Acceso denegado.");
                     return;
                 }
         
-                // 3. Si la clave fue correcta en el servidor, generas la descarga del CSV filtrado
+                // 4. Si la clave es correcta, genera la descarga del CSV filtrado
                 const keys = Object.keys(emlFiltrados[0].properties || {});
                 const headers = [...keys, "DISTANCIA_OFICINA_KM"];
                 let csv = headers.join(",") + "\n";
