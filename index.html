@@ -945,15 +945,6 @@
             }
         }
 
-            // Auto-zoom automático cuando hay un texto de búsqueda ingresado
-            if (busquedaUpm !== '' && emlFiltrados.length > 0) {
-                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-                if (tempGroup.getBounds().isValid()) {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                }
-            }
-        }
-
         function resetMap() {
             inputUpm.value = '';
             selectSegm.value = 'TODOS';
