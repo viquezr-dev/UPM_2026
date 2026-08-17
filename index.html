@@ -325,6 +325,16 @@
             </select>
         </div>
 
+        <!-- NUEVO FILTRO DE COSTO -->
+        <div class="filter-group">
+            <label for="filtro_costo">💰 Costo:</label>
+            <select id="filtro_costo">
+                <option value="TODOS">Todos</option>
+                <option value="SI">✅ Con Costo</option>
+                <option value="NO">❌ Sin Costo</option>
+            </select>
+        </div>
+
         <div class="filter-group">
             <label for="provincia">Provincia:</label>
             <select id="provincia"><option value="TODAS">Todas</option></select>
@@ -470,25 +480,7 @@
 
         function esVerificado(props) {
             if (!props) return false;
-            const llave = Object.keys(props).find(k => {
-                const kUpper = k.trim().toUpperCase();
-                return kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-            });
-
-            if (!llave) return false;
-            const valRaw = props[llave];
-            if (valRaw === null || valRaw === undefined) return false;
-
-            const val = String(valRaw).trim().toUpperCase().replace(/['"]/g, '');
-            return (
-                val === 'SI' || 
-                val === 'SÍ' || 
-                val === 'S' || 
-                val === '1' || 
-                val === 'TRUE' || 
-                val === 'VERIFICADO' ||
-                val === 'ACTUALIZADO'
-            );
+            return String(props.VERIFICADO || '').trim().toUpperCase() === 'SI';
         }
 
         const inputUpm = document.getElementById('buscar_upm');
@@ -497,6 +489,7 @@
         const selectDist = document.getElementById('distrito');
         const selectCorr = document.getElementById('corregimiento');
         const selectPob = document.getElementById('poblado');
+        const selectCosto = document.getElementById('filtro_costo');
 
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function () {
@@ -512,6 +505,8 @@
             if (!div) return;
             let html = '<h4>Simbología / Provincias</h4>';
             html += '<p><i style="background: #facc15; border: 1px solid #ca8a04;"></i> <strong>Verificado (SI)</strong></p>';
+            html += '<p><i style="background: #22c55e; border: 1px solid #15803d;"></i> <strong>💰 Con Costo (SI)</strong></p>';
+            html += '<p><i style="background: #ef4444; border: 1px solid #b91c1c;"></i> <strong>💰 Sin Costo (NO)</strong></p>';
             
             const provs = Object.keys(provinciaColores).sort();
             if (provs.length === 0) {
@@ -584,6 +579,7 @@
             // Evento para Búsqueda Incremental por CODE_UPM
             inputUpm.addEventListener('input', filtrarYRenderizar);
             selectSegm.addEventListener('change', filtrarYRenderizar);
+            selectCosto.addEventListener('change', filtrarYRenderizar);
 
             selectProv.addEventListener('change', () => {
                 const pSel = selectProv.value;
@@ -788,6 +784,25 @@
                     📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
                 </p>`;
 
+            // CAMPO COSTO DESTACADO
+            const costoVal = String(props.COSTO || 'N/D').trim().toUpperCase();
+            const costoMostrar = props.COSTO || 'N/D';
+            const costoColor = costoVal === 'SI' ? '#16a34a' : costoVal === 'NO' ? '#dc2626' : '#64748b';
+            const costoFondo = costoVal === 'SI' ? '#dcfce7' : costoVal === 'NO' ? '#fee2e2' : '#f1f5f9';
+            const costoBorde = costoVal === 'SI' ? '#bbf7d0' : costoVal === 'NO' ? '#fca5a5' : '#e2e8f0';
+            const costoIcono = costoVal === 'SI' ? '✅' : costoVal === 'NO' ? '❌' : '❓';
+            
+            popupContent += `
+                <p style="background: ${costoFondo}; 
+                          color: ${costoColor}; 
+                          padding: 4px 8px; 
+                          border-radius: 4px; 
+                          font-weight: bold; 
+                          margin: 4px 0; 
+                          border: 1px solid ${costoBorde};">
+                    ${costoIcono} <strong>💰 Costo:</strong> ${costoMostrar}
+                </p>`;
+
             for (let k in props) {
                 const kUpper = k.trim().toUpperCase();
                 const valRaw = String(props[k] ?? 'N/D').trim();
@@ -828,6 +843,7 @@
             const dSel = selectDist.value;
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
+            const costoSel = selectCosto.value;
 
             renderizarContornoProvincia(pSel);
 
@@ -863,6 +879,13 @@
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
+
+                // FILTRO DE COSTO
+                if (costoSel !== 'TODOS') {
+                    const costoVal = String(props.COSTO || '').trim().toUpperCase();
+                    if (costoVal !== costoSel) return false;
+                }
+
                 return true;
             });
 
@@ -905,19 +928,44 @@
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 const estaVerificado = esVerificado(props);
-            
-                const estiloPoligono = estaVerificado ? {
-                    fillColor: '#facc15',
-                    fillOpacity: 0.85,
-                    color: '#dc2626',
-                    weight: 2.5
-                } : {
-                    fillColor: obtenerColorProvincia(provNombre),
-                    fillOpacity: 0.60,
-                    color: '#1e293b',
-                    weight: 1.2
-                };
-            
+                const costoVal = String(props.COSTO || '').trim().toUpperCase();
+
+                let estiloPoligono;
+
+                // Prioridad: Verificado tiene prioridad sobre costo
+                if (estaVerificado) {
+                    estiloPoligono = {
+                        fillColor: '#facc15',
+                        fillOpacity: 0.85,
+                        color: '#dc2626',
+                        weight: 2.5
+                    };
+                } else if (costoVal === 'SI') {
+                    // Con Costo - Verde
+                    estiloPoligono = {
+                        fillColor: '#22c55e',
+                        fillOpacity: 0.65,
+                        color: '#15803d',
+                        weight: 1.5
+                    };
+                } else if (costoVal === 'NO') {
+                    // Sin Costo - Rojo
+                    estiloPoligono = {
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.65,
+                        color: '#b91c1c',
+                        weight: 1.5
+                    };
+                } else {
+                    // Sin dato de costo - Color por provincia
+                    estiloPoligono = {
+                        fillColor: obtenerColorProvincia(provNombre),
+                        fillOpacity: 0.60,
+                        color: '#1e293b',
+                        weight: 1.2
+                    };
+                }
+
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
                 polyLayer.on('click', function() {
@@ -925,34 +973,26 @@
                 });
             });
 
-            // =========================================================
-            // LÓGICA DE ZOOM AUTOMÁTICO (PROVINCIA O BÚSQUEDA DE UPM)
-            // =========================================================
-
-            // 1. Zoom por Búsqueda de UPM (Prioridad si hay texto ingresado)
-                if (busquedaUpm !== '' && emlFiltrados.length > 0) {
-                    const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-                    if (tempGroup.getBounds().isValid()) {
-                        map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                    }
-                } 
-                // 2. Zoom por Selección de Provincia en el Combo Box
-                else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
-                    const provinciaLayer = provinciaContornoLayer.getLayers()[0];
-                    if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
-                        map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
-                    }
+            // LÓGICA DE ZOOM AUTOMÁTICO
+            if (busquedaUpm !== '' && emlFiltrados.length > 0) {
+                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+                if (tempGroup.getBounds().isValid()) {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
                 }
-                // 3. Si se elige "TODAS" las provincias, re-centrar el mapa al encuadre general
-                else if (pSel === 'TODAS' && busquedaUpm === '') {
-                    map.setView([8.5, -80.0], 8);
+            } else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
+                const provinciaLayer = provinciaContornoLayer.getLayers()[0];
+                if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
+                    map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
                 }
+            } else if (pSel === 'TODAS' && busquedaUpm === '') {
+                map.setView([8.5, -80.0], 8);
             }
-        
+        }
 
         function resetMap() {
             inputUpm.value = '';
             selectSegm.value = 'TODOS';
+            selectCosto.value = 'TODOS';
             selectProv.value = 'TODAS';
             selectDist.value = 'TODOS';
             selectCorr.value = 'TODOS';
