@@ -836,7 +836,7 @@
             oficinasLayer.clearLayers();
             lineasDistanciaLayer.clearLayers();
             ultimoPoligonoSeleccionado = null;
-
+        
             const busquedaUpm = inputUpm.value.trim().toUpperCase();
             const segmSel = selectSegm.value;
             const pSel = selectProv.value;
@@ -844,9 +844,9 @@
             const cSel = selectCorr.value;
             const pobSel = selectPob.value;
             const costoSel = selectCosto.value;
-
+        
             renderizarContornoProvincia(pSel);
-
+        
             // 1. BASE GEOGRÁFICA Y BÚSQUEDA DE UPM
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
@@ -854,19 +854,18 @@
                 if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
                 if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
-
-                // Búsqueda incremental por prefijo de UPM / CODE_UPM
+        
                 if (busquedaUpm !== '') {
                     const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
                     if (!codigoUPM.startsWith(busquedaUpm)) return false;
                 }
-
+        
                 return true;
             });
-
+        
             // 2. Porcentajes Territoriales
             actualizarManejadorPorcentajes(emlBaseGeografica);
-
+        
             // 3. Filtrar lo que SE DIBUJA en el mapa
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
@@ -879,30 +878,30 @@
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
-
+        
                 // FILTRO DE COSTO
                 if (costoSel !== 'TODOS') {
                     const costoVal = String(props.COSTO || '').trim().toUpperCase();
                     if (costoVal !== costoSel) return false;
                 }
-
+        
                 return true;
             });
-
+        
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
                 return true;
             });
-
+        
             // Badge Header
             document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos Visibles | ${oficinasFiltradasGlobal.length} Oficinas`;
-
+        
             // Renderizar Oficinas
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-
+        
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -910,7 +909,7 @@
                     iconSize: [22, 22],
                     iconAnchor: [11, 11]
                 });
-
+        
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
                 camposOficina.forEach(campo => {
@@ -919,20 +918,19 @@
                     }
                 });
                 popupContent += `</div>`;
-
+        
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-
+        
             /// Renderizar Polígonos EML
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
-
+        
                 let estiloPoligono;
-
-                // Prioridad: Verificado tiene prioridad sobre costo
+        
                 if (estaVerificado) {
                     estiloPoligono = {
                         fillColor: '#facc15',
@@ -941,7 +939,6 @@
                         weight: 2.5
                     };
                 } else if (costoVal === 'SI') {
-                    // Con Costo - Verde
                     estiloPoligono = {
                         fillColor: '#22c55e',
                         fillOpacity: 0.65,
@@ -949,7 +946,6 @@
                         weight: 1.5
                     };
                 } else if (costoVal === 'NO') {
-                    // Sin Costo - Rojo
                     estiloPoligono = {
                         fillColor: '#ef4444',
                         fillOpacity: 0.65,
@@ -957,7 +953,6 @@
                         weight: 1.5
                     };
                 } else {
-                    // Sin dato de costo - Color por provincia
                     estiloPoligono = {
                         fillColor: obtenerColorProvincia(provNombre),
                         fillOpacity: 0.60,
@@ -965,26 +960,44 @@
                         weight: 1.2
                     };
                 }
-
+        
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
                 polyLayer.on('click', function() {
                     trazarDistanciaYPopup(polyLayer, feature);
                 });
             });
-
-            // LÓGICA DE ZOOM AUTOMÁTICO
+        
+            // =========================================================
+            // 🔍 LÓGICA DE ZOOM AUTOMÁTICO (ACTUALIZADA)
+            // =========================================================
+            
+            // 1. Prioridad: Búsqueda de UPM
             if (busquedaUpm !== '' && emlFiltrados.length > 0) {
                 const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
                 if (tempGroup.getBounds().isValid()) {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
                 }
-            } else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
+            } 
+            // 2. Filtro de COSTO (NUEVO)
+            else if (costoSel !== 'TODOS' && emlFiltrados.length > 0) {
+                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+                if (tempGroup.getBounds().isValid()) {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
+                    // Mostrar en consola el resultado
+                    const tipoCosto = costoSel === 'SI' ? '💰 Con Costo' : '❌ Sin Costo';
+                    console.log(`🔍 Mostrando ${emlFiltrados.length} UPM con ${tipoCosto}`);
+                }
+            }
+            // 3. Selección de Provincia
+            else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
                 const provinciaLayer = provinciaContornoLayer.getLayers()[0];
                 if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
                     map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
                 }
-            } else if (pSel === 'TODAS' && busquedaUpm === '') {
+            }
+            // 4. Reset: Ver todo Panamá
+            else if (pSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
                 map.setView([8.5, -80.0], 8);
             }
         }
