@@ -31,19 +31,19 @@
             .header {
                 background: #1e293b;
                 color: #f8fafc;
-                padding: 6px 16px;
+                padding: 4px 12px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 z-index: 1001;
-                gap: 10px;
+                gap: 8px;
                 flex-shrink: 0;
-                min-height: 40px;
+                min-height: 36px;
             }
             
             .header h1 {
-                font-size: 15px;
+                font-size: 13px;
                 font-weight: 600;
                 letter-spacing: 0.5px;
                 white-space: nowrap;
@@ -55,9 +55,9 @@
                 color: #f8fafc;
                 padding: 2px 8px;
                 border-radius: 4px;
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 500;
-                max-width: 85%;
+                max-width: 90%;
                 overflow-x: auto;
                 white-space: nowrap;
                 scrollbar-width: thin;
@@ -67,20 +67,21 @@
                 min-height: 24px;
                 flex-shrink: 1;
                 cursor: default;
+                scroll-behavior: smooth;
             }
             
             .stats-badge::-webkit-scrollbar {
-                height: 4px;
+                height: 5px;
             }
             
             .stats-badge::-webkit-scrollbar-track {
                 background: #1e293b;
-                border-radius: 2px;
+                border-radius: 3px;
             }
             
             .stats-badge::-webkit-scrollbar-thumb {
                 background: #475569;
-                border-radius: 2px;
+                border-radius: 3px;
             }
             
             .stats-badge::-webkit-scrollbar-thumb:hover {
@@ -1191,18 +1192,26 @@
             // =============================================================
             const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
             const totalVisible = emlFiltrados.length;
-
-            let badgeText = `${totalVisible} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
-
-            const provsEjecucion = Object.keys(statsEjecucion).filter(p => p !== '').sort();
+            
+            // Ordenar provincias alfabéticamente
+            const provsEjecucion = Object.keys(statsEjecucion)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));  // Orden alfabético
+            
+            let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
+            
             if (provsEjecucion.length > 0) {
-                badgeText += ' | 📊 ';
                 const detalles = provsEjecucion.map(p => {
-                    return `${p}: ${statsEjecucion[p].total}`;
+                    const stat = statsEjecucion[p];
+                    let detalle = `${p}: ${stat.total}`;
+                    if (stat.conCosto > 0) detalle += ` 💰${stat.conCosto}`;
+                    if (stat.sinCosto > 0) detalle += ` ❌${stat.sinCosto}`;
+                    if (stat.verificado > 0) detalle += ` ✅${stat.verificado}`;
+                    return detalle;
                 });
-                badgeText += detalles.join(' | ');
+                badgeText += ' | ' + detalles.join(' | ');
             }
-
+            
             document.getElementById('contador').textContent = badgeText;
 
             // =============================================================
