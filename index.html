@@ -37,12 +37,16 @@
             justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             z-index: 1001;
+            gap: 10px;
+            flex-shrink: 0;
         }
         
         .header h1 {
             font-size: 15px;
             font-weight: 600;
             letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .stats-badge {
@@ -52,10 +56,29 @@
             border-radius: 4px;
             font-size: 11px;
             font-weight: 500;
-            max-width: 65%;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            max-width: 75%;
+            overflow-x: auto;
             white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+            display: flex;
+            align-items: center;
+            min-height: 24px;
+            flex-shrink: 1;
+        }
+
+        .stats-badge::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .stats-badge::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 2px;
+        }
+
+        .stats-badge::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
         }
         
         /* 2. FILA DE CONTROLES Y FILTROS */
@@ -71,12 +94,35 @@
             z-index: 1000;
             flex-wrap: nowrap;
             overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+            min-height: 40px;
+            flex-shrink: 0;
+        }
+
+        .controls::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         
         .filter-group {
             display: flex;
             align-items: center;
             gap: 4px;
+            flex-shrink: 0;
         }
 
         .controls label {
@@ -109,6 +155,7 @@
         .btn-group {
             display: flex;
             gap: 6px;
+            flex-shrink: 0;
         }
         
         .controls button {
@@ -142,6 +189,23 @@
             border-bottom: 1px solid #334155;
             z-index: 999;
             overflow-x: auto;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #0f172a;
+            min-height: 36px;
+        }
+
+        .pct-dashboard::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .pct-dashboard::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        .pct-dashboard::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
         }
 
         .pct-card {
@@ -155,6 +219,7 @@
             flex: 1;
             min-width: 140px;
             max-width: 220px;
+            flex-shrink: 0;
         }
 
         .pct-val {
@@ -211,12 +276,29 @@
             overflow-x: auto;
             flex-wrap: nowrap;
             min-height: 28px;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #0f172a;
+        }
+
+        #panel-ejecucion::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        #panel-ejecucion::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        #panel-ejecucion::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
         }
 
         #panel-ejecucion .label-ejecucion {
             color: #e2e8f0;
             font-weight: 600;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         #detalle-ejecucion {
@@ -233,6 +315,7 @@
             padding: 2px 8px;
             border-radius: 4px;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .badge-ejecucion .color-dot {
@@ -273,6 +356,7 @@
             flex: 1;
             width: 100%;
             background: #e2e8f0;
+            min-height: 0;
         }
         
         /* 6. FOOTER */
@@ -285,6 +369,7 @@
             width: 100%;
             border-top: 1px solid #334155;
             z-index: 1001;
+            flex-shrink: 0;
         }
         
         .info-popup {
