@@ -256,39 +256,7 @@
             transition: width 0.4s ease;
         }
         
-       <!-- Panel de Gráfico de Costos -->
-        <div id="panel-grafico" style="
-            background: #0f172a;
-            color: #94a3b8;
-            padding: 8px 12px;
-            border-bottom: 1px solid #334155;
-            z-index: 997;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
-            min-height: 200px;
-            overflow-x: auto;
-        ">
-            <div style="flex: 1; min-width: 300px; height: 180px; position: relative;">
-                <canvas id="graficoCostos"></canvas>
-            </div>
-            <div style="
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                font-size: 10px;
-                color: #94a3b8;
-                padding-left: 12px;
-                border-left: 1px solid #334155;
-                min-width: 120px;
-            ">
-                <span style="color: #e2e8f0; font-weight: 600;">📊 Leyenda</span>
-                <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:2px; vertical-align:middle;"></span> Con Costo (SI)</span>
-                <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:2px; vertical-align:middle;"></span> Sin Costo (NO)</span>
-                <span style="margin-top:4px; color:#64748b; font-size:9px;">⬇️ Pasa el mouse para ver detalles</span>
-            </div>
-        </div>
+      
         
         /* 5. MAPA */
         #map {
@@ -512,6 +480,41 @@
         </div>
     </div>
 
+     <!-- Panel de Gráfico de Costos -->
+        <div id="panel-grafico" style="
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 8px 12px;
+            border-bottom: 1px solid #334155;
+            z-index: 997;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            min-height: 200px;
+            overflow-x: auto;
+        ">
+            <div style="flex: 1; min-width: 300px; height: 180px; position: relative;">
+                <canvas id="graficoCostos"></canvas>
+            </div>
+            <div style="
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 10px;
+                color: #94a3b8;
+                padding-left: 12px;
+                border-left: 1px solid #334155;
+                min-width: 120px;
+            ">
+                <span style="color: #e2e8f0; font-weight: 600;">📊 Leyenda</span>
+                <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:2px; vertical-align:middle;"></span> Con Costo (SI)</span>
+                <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:2px; vertical-align:middle;"></span> Sin Costo (NO)</span>
+                <span style="margin-top:4px; color:#64748b; font-size:9px;">⬇️ Pasa el mouse para ver detalles</span>
+            </div>
+        </div>
+    
+    
     <div id="map"></div>
     
     <div class="footer">
@@ -1048,9 +1051,9 @@
             let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
             if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
 
-            let oficinaCercana = null;
+            
             let distanciaMinima = Infinity;
-
+            let oficinaCercana = null; 
             oficinasBuscar.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (coords) {
@@ -1424,6 +1427,7 @@
         }
         
         // Función principal de exportación
+        // Función principal de exportación
         async function exportarCSV() {
             if (emlFiltrados.length === 0) {
                 alert("No hay datos para exportar.");
@@ -1449,20 +1453,25 @@
                 }
         
                 const keys = Object.keys(emlFiltrados[0].properties || {});
-                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION"];
+                // ✅ Headers declarados UNA SOLA VEZ
+                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
                 let csv = headers.join(",") + "\n";
         
                 emlFiltrados.forEach(f => {
                     const props = f.properties || {};
                     const tempLayer = L.geoJSON(f);
                     const centroide = tempLayer.getBounds().getCenter();
-                    const provEml = props.PROV_NOMB?.trim().toUpperCase();
+                    const provEml = (props.PROV_NOMB || '').trim().toUpperCase();
                     const provEjecucion = obtenerProvinciaEjecucion(props);
         
-                    let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+                    let oficinasBuscar = oficinaData.filter(o => {
+                        const provOficina = (o.properties?.PROV_NOMB || '').trim().toUpperCase();
+                        return provOficina === provEml;
+                    });
                     if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
         
                     let distanciaMinima = Infinity;
+                    let oficinaCercana = null;  // ✅ Declarada aquí
         
                     oficinasBuscar.forEach(oficina => {
                         const coords = obtenerCoordenadasOficina(oficina);
@@ -1471,7 +1480,7 @@
                             const dist = centroide.distanceTo(latLngOficina);
                             if (dist < distanciaMinima) {
                                 distanciaMinima = dist;
-                                oficinaCercana = oficina;  // ✅ Guardar la oficina cercana
+                                oficinaCercana = oficina;
                             }
                         }
                     });
@@ -1481,11 +1490,9 @@
                     let row = keys.map(k => `"${props[k] ?? ''}"`);
                     row.push(`"${distanciaKm}"`);
                     row.push(`"${provEjecucion}"`);
-                    // ✅ AGREGAR BUDGET DE LA OFICINA CERCANA
                     const budgetOficina = oficinaCercana ? oficinaCercana.properties.BUDGET : 'N/D';
                     row.push(`"${budgetOficina}"`);
-                    // Actualizar headers
-                    const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
+                    
                     csv += row.join(",") + "\n";
                 });
         
