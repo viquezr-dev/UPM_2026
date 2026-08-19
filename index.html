@@ -27,54 +27,111 @@
             flex-direction: column;
         }
         
-        /* 1. HEADER COMPACTO */
+        /* 1. HEADER COMPACTO - SIN SCROLL */
         .header {
             background: #1e293b;
             color: #f8fafc;
-            padding: 6px 16px;
+            padding: 4px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             z-index: 1001;
+            gap: 8px;
+            flex-shrink: 0;
+            min-height: 36px;
+            overflow: visible; /* ← Importante: no ocultar el scroll */
         }
         
         .header h1 {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-
+        
         .stats-badge {
             background: #334155;
             color: #f8fafc;
             padding: 2px 8px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
+            max-width: 85%;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+            display: flex;
+            align-items: center;
+            min-height: 24px;
+            flex-shrink: 1;
+            cursor: default;
         }
         
-        /* 2. FILA DE CONTROLES Y FILTROS */
+        .stats-badge::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .stats-badge::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 2px;
+        }
+        
+        .stats-badge::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
+        }
+        
+        .stats-badge::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* 2. CONTROLES - UNICO SCROLL HORIZONTAL */
         .controls {
             background: white;
             padding: 6px 12px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 8px;
             border-bottom: 1px solid #e2e8f0;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             z-index: 1000;
             flex-wrap: nowrap;
             overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+            min-height: 40px;
+            flex-shrink: 0;
+        }
+        
+        .controls::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .controls::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        .controls::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         
         .filter-group {
             display: flex;
             align-items: center;
             gap: 4px;
+            flex-shrink: 0;
         }
-
+        
         .controls label {
             font-weight: 600;
             color: #475569;
@@ -96,15 +153,16 @@
             min-width: 110px;
             cursor: pointer;
         }
-
+        
         .controls select:focus, .controls input:focus {
             border-color: #3b82f6;
             background: white;
         }
-
+        
         .btn-group {
             display: flex;
             gap: 6px;
+            flex-shrink: 0;
         }
         
         .controls button {
@@ -122,11 +180,11 @@
         
         .btn-reset { background: #fee2e2; color: #991b1b; }
         .btn-reset:hover { background: #fca5a5; }
-
+        
         .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-export:hover { background: #bbf7d0; }
-
-        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES */
+        
+        /* 3. DASHBOARD - SIN SCROLL */
         .pct-dashboard {
             background: #0f172a;
             color: white;
@@ -137,9 +195,12 @@
             gap: 8px;
             border-bottom: 1px solid #334155;
             z-index: 999;
-            overflow-x: auto;
+            overflow: hidden;
+            flex-shrink: 0;
+            min-height: 36px;
+            flex-wrap: wrap;
         }
-
+        
         .pct-card {
             display: flex;
             align-items: center;
@@ -149,21 +210,22 @@
             border-radius: 5px;
             border: 1px solid #334155;
             flex: 1;
-            min-width: 140px;
-            max-width: 220px;
+            min-width: 120px;
+            max-width: 200px;
+            flex-shrink: 0;
         }
-
+        
         .pct-val {
             font-size: 13px;
             font-weight: 700;
             min-width: 40px;
             text-align: right;
         }
-
+        
         .pct-info {
             flex: 1;
         }
-
+        
         .pct-label {
             font-size: 10px;
             color: #94a3b8;
@@ -171,12 +233,12 @@
             display: flex;
             justify-content: space-between;
         }
-
+        
         .pct-label small {
             color: #cbd5e1;
             font-size: 9px;
         }
-
+        
         .pct-progress-bg {
             width: 100%;
             height: 4px;
@@ -185,21 +247,24 @@
             margin-top: 3px;
             overflow: hidden;
         }
-
+        
         .pct-progress-fill {
             height: 100%;
             width: 0%;
             transition: width 0.4s ease;
         }
         
-        /* 4. MAPA BASE */
+       
+        
+        /* 5. MAPA */
         #map {
             flex: 1;
             width: 100%;
             background: #e2e8f0;
+            min-height: 0;
         }
         
-        /* 5. FOOTER */
+        /* 6. FOOTER */
         .footer {
             background: #1e293b;
             color: #cbd5e1;
@@ -209,6 +274,7 @@
             width: 100%;
             border-top: 1px solid #334155;
             z-index: 1001;
+            flex-shrink: 0;
         }
         
         .info-popup {
@@ -275,6 +341,14 @@
             flex-shrink: 0;
         }
 
+        .legend .legend-note {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px dashed #ccc;
+            font-size: 9px;
+            color: #64748b;
+        }
+
         /* ESTILOS PARA LA ETIQUETA DE DISTANCIA SOBRE LA LÍNEA */
         .distance-label-callejero {
             background: transparent;
@@ -325,7 +399,7 @@
             </select>
         </div>
 
-        <!-- NUEVO FILTRO DE COSTO -->
+        <!-- FILTRO DE COSTO -->
         <div class="filter-group">
             <label for="filtro_costo">💰 Costo:</label>
             <select id="filtro_costo">
@@ -403,7 +477,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="map"></div>
     
     <div class="footer">
@@ -468,14 +542,81 @@
             '#800000'  // Granate / Vino
         ];
 
+        // Mapeo de comarcas para colores consistentes
+        const comarcasMap = {
+            'NGÄBE-BUGLÉ': 'NGABE-BUGLE',
+            'GULA YALA': 'GULA-YALA',
+            'MADUGANDI': 'MADUGANDI',
+            'KUNA DE WARGANDI': 'KUNA-DE-WARGANDI',
+            'EMBERÁ': 'EMBERA'
+        };
+
         function obtenerColorProvincia(provNombre) {
             if (!provNombre) return '#64748b';
             const norm = provNombre.trim().toUpperCase();
-            if (!provinciaColores[norm]) {
+            
+            const normKey = comarcasMap[norm] || norm;
+            
+            if (!provinciaColores[normKey]) {
                 const index = Object.keys(provinciaColores).length % paletaColores.length;
-                provinciaColores[norm] = paletaColores[index];
+                provinciaColores[normKey] = paletaColores[index];
             }
-            return provinciaColores[norm];
+            return provinciaColores[normKey];
+        }
+
+        // Función para obtener la provincia de ejecución (prioriza EJECUCION)
+        function obtenerProvinciaEjecucion(props) {
+            if (!props) return '';
+            
+            if (props.EJECUCION && props.EJECUCION.trim() !== '') {
+                return props.EJECUCION.trim().toUpperCase();
+            }
+            
+            if (props.PROV_NOMB) {
+                return props.PROV_NOMB.trim().toUpperCase();
+            }
+            
+            return '';
+        }
+
+        // Función para obtener estadísticas agrupadas por provincia de ejecución
+        function obtenerEstadisticasPorEjecucion(listaUPM) {
+            const stats = {};
+            
+            listaUPM.forEach(f => {
+                const props = f.properties || {};
+                const provEjecucion = obtenerProvinciaEjecucion(props);
+                
+                if (!stats[provEjecucion]) {
+                    stats[provEjecucion] = {
+                        total: 0,
+                        conCosto: 0,
+                        sinCosto: 0,
+                        verificado: 0,
+                        urbano: 0,
+                        rural: 0,
+                        indigena: 0,
+                        da: 0
+                    };
+                }
+                
+                stats[provEjecucion].total++;
+                
+                const costoVal = String(props.COSTO || '').trim().toUpperCase();
+                if (costoVal === 'SI') stats[provEjecucion].conCosto++;
+                if (costoVal === 'NO') stats[provEjecucion].sinCosto++;
+                
+                if (esVerificado(props)) stats[provEjecucion].verificado++;
+                
+                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
+                if (tipo === 'URBANO') stats[provEjecucion].urbano++;
+                if (tipo === 'RURAL') stats[provEjecucion].rural++;
+                if (tipo === 'INDIGENA') stats[provEjecucion].indigena++;
+                
+                if (String(props.DA).trim() === '1') stats[provEjecucion].da++;
+            });
+            
+            return stats;
         }
 
         function esVerificado(props) {
@@ -508,6 +649,8 @@
             html += '<p><i style="background: #22c55e; border: 1px solid #15803d;"></i> <strong>💰 Con Costo (SI)</strong></p>';
             html += '<p><i style="background: #ef4444; border: 1px solid #b91c1c;"></i> <strong>💰 Sin Costo (NO)</strong></p>';
             
+            html += '<div class="legend-note">🏷️ Las UPM en comarcas se colorean según la provincia que las ejecuta (EJECUCION)</div>';
+            
             const provs = Object.keys(provinciaColores).sort();
             if (provs.length === 0) {
                 html += '<p>Sin provincias disponibles</p>';
@@ -519,6 +662,8 @@
             html += '<p style="margin-top:4px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
             div.innerHTML = html;
         }
+
+        
 
         async function cargarGeoJSONs() {
             try {
@@ -576,7 +721,6 @@
 
             actualizarLeyenda();
 
-            // Evento para Búsqueda Incremental por CODE_UPM
             inputUpm.addEventListener('input', filtrarYRenderizar);
             selectSegm.addEventListener('change', filtrarYRenderizar);
             selectCosto.addEventListener('change', filtrarYRenderizar);
@@ -675,8 +819,8 @@
             }
         }
 
-        function actualizarManejadorPorcentajes(listaBaseUbicacion) {
-            const total = listaBaseUbicacion.length;
+        function actualizarManejadorPorcentajes(listaUPM) {
+            const total = listaUPM.length;
 
             if (total === 0) {
                 ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
@@ -687,23 +831,20 @@
                 return;
             }
 
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            
             let verifCount = 0;
             let urbanoCount = 0;
             let ruralCount = 0;
             let indigenaCount = 0;
             let daCount = 0;
 
-            listaBaseUbicacion.forEach(f => {
-                const props = f.properties || {};
-                
-                if (esVerificado(props)) verifCount++;
-                
-                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
-                if (tipo === 'URBANO') urbanoCount++;
-                if (tipo === 'RURAL') ruralCount++;
-                if (tipo === 'INDIGENA') indigenaCount++;
-                
-                if (String(props.DA).trim() === '1') daCount++;
+            Object.values(stats).forEach(stat => {
+                verifCount += stat.verificado;
+                urbanoCount += stat.urbano;
+                ruralCount += stat.rural;
+                indigenaCount += stat.indigena;
+                daCount += stat.da;
             });
 
             const actualizarTarjeta = (id, count) => {
@@ -718,6 +859,16 @@
             actualizarTarjeta('rural', ruralCount);
             actualizarTarjeta('indigena', indigenaCount);
             actualizarTarjeta('da', daCount);
+
+            const dashboard = document.getElementById('pct-dashboard');
+            const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
+            if (provsEjecucion.length > 0) {
+                let titulo = '📊 Distribución por provincia de ejecución: ';
+                const detalles = provsEjecucion.map(p => {
+                    return `${p} (${stats[p].total})`;
+                });
+                dashboard.title = titulo + detalles.join(' | ');
+            }
         }
 
         /* LÓGICA DE DISTANCIA A LA OFICINA MÁS CERCANA */
@@ -784,7 +935,14 @@
                     📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
                 </p>`;
 
-            // CAMPO COSTO DESTACADO
+            const ejecucion = props.EJECUCION || 'N/D';
+            if (ejecucion !== 'N/D' && ejecucion.trim().toUpperCase() !== (props.PROV_NOMB || '').trim().toUpperCase()) {
+                popupContent += `
+                    <p style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #f59e0b;">
+                        🏛️ <strong>Ejecutado por:</strong> ${ejecucion}
+                    </p>`;
+            }
+
             const costoVal = String(props.COSTO || 'N/D').trim().toUpperCase();
             const costoMostrar = props.COSTO || 'N/D';
             const costoColor = costoVal === 'SI' ? '#16a34a' : costoVal === 'NO' ? '#dc2626' : '#64748b';
@@ -855,7 +1013,6 @@
                 if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
                 if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
 
-                // Búsqueda incremental por prefijo de UPM / CODE_UPM
                 if (busquedaUpm !== '') {
                     const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
                     if (!codigoUPM.startsWith(busquedaUpm)) return false;
@@ -864,10 +1021,7 @@
                 return true;
             });
 
-            // 2. Porcentajes Territoriales
-            actualizarManejadorPorcentajes(emlBaseGeografica);
-
-            // 3. Filtrar lo que SE DIBUJA en el mapa
+            // 2. Filtrar lo que SE DIBUJA en el mapa
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
@@ -880,7 +1034,6 @@
                     if (tipoNormalizado !== segmSel) return false;
                 }
 
-                // FILTRO DE COSTO
                 if (costoSel !== 'TODOS') {
                     const costoVal = String(props.COSTO || '').trim().toUpperCase();
                     if (costoVal !== costoSel) return false;
@@ -895,10 +1048,41 @@
                 return true;
             });
 
-            // Badge Header
-            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos Visibles | ${oficinasFiltradasGlobal.length} Oficinas`;
+            // =============================================================
+            // BADGE HEADER - Usando EJECUCION para los totales
+            // =============================================================
+            const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
+            const totalVisible = emlFiltrados.length;
+            
+            // Ordenar provincias alfabéticamente
+            const provsEjecucion = Object.keys(statsEjecucion)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));  // Orden alfabético
+            
+            let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
+            
+            if (provsEjecucion.length > 0) {
+                const detalles = provsEjecucion.map(p => {
+                    const stat = statsEjecucion[p];
+                    let detalle = `${p}: ${stat.total}`;
+                    if (stat.conCosto > 0) detalle += ` 💰${stat.conCosto}`;
+                    if (stat.sinCosto > 0) detalle += ` ❌${stat.sinCosto}`;
+                    if (stat.verificado > 0) detalle += ` ✅${stat.verificado}`;
+                    return detalle;
+                });
+                badgeText += ' | ' + detalles.join(' | ');
+            }
+            
+            document.getElementById('contador').textContent = badgeText;
 
-            // Renderizar Oficinas
+            // =============================================================
+            // DASHBOARD DE PORCENTAJES - Usando EJECUCION
+            // =============================================================
+            actualizarManejadorPorcentajes(emlFiltrados);
+
+            // =============================================================
+            // RENDERIZAR OFICINAS
+            // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
@@ -923,16 +1107,20 @@
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
 
-            /// Renderizar Polígonos EML
+            // =============================================================
+            // RENDERIZAR POLÍGONOS EML
+            // =============================================================
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
+                const provEjecucion = obtenerProvinciaEjecucion(props);
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
 
+                const provColor = provEjecucion || provNombre;
+                
                 let estiloPoligono;
 
-                // Prioridad: Verificado tiene prioridad sobre costo
                 if (estaVerificado) {
                     estiloPoligono = {
                         fillColor: '#facc15',
@@ -941,7 +1129,6 @@
                         weight: 2.5
                     };
                 } else if (costoVal === 'SI') {
-                    // Con Costo - Verde
                     estiloPoligono = {
                         fillColor: '#22c55e',
                         fillOpacity: 0.65,
@@ -949,7 +1136,6 @@
                         weight: 1.5
                     };
                 } else if (costoVal === 'NO') {
-                    // Sin Costo - Rojo
                     estiloPoligono = {
                         fillColor: '#ef4444',
                         fillOpacity: 0.65,
@@ -957,9 +1143,8 @@
                         weight: 1.5
                     };
                 } else {
-                    // Sin dato de costo - Color por provincia
                     estiloPoligono = {
-                        fillColor: obtenerColorProvincia(provNombre),
+                        fillColor: obtenerColorProvincia(provColor),
                         fillOpacity: 0.60,
                         color: '#1e293b',
                         weight: 1.2
@@ -973,18 +1158,25 @@
                 });
             });
 
-            // LÓGICA DE ZOOM AUTOMÁTICO
+            // =============================================================
+            // ZOOM AUTOMÁTICO
+            // =============================================================
             if (busquedaUpm !== '' && emlFiltrados.length > 0) {
                 const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
                 if (tempGroup.getBounds().isValid()) {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
+                }
+            } else if (costoSel !== 'TODOS' && emlFiltrados.length > 0) {
+                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+                if (tempGroup.getBounds().isValid()) {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
                 }
             } else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
                 const provinciaLayer = provinciaContornoLayer.getLayers()[0];
                 if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
                     map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
                 }
-            } else if (pSel === 'TODAS' && busquedaUpm === '') {
+            } else if (pSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
                 map.setView([8.5, -80.0], 8);
             }
         }
@@ -1017,8 +1209,8 @@
             const btnAceptar = document.getElementById('btnAceptarModal');
             const btnCancelar = document.getElementById('btnCancelarModal');
         
-            input.value = ''; // Limpiar el input
-            modal.style.display = 'flex'; // Mostrar modal
+            input.value = '';
+            modal.style.display = 'flex';
             input.focus();
         
             const cerrarModal = (valor) => {
@@ -1032,7 +1224,6 @@
             btnAceptar.onclick = () => cerrarModal(input.value);
             btnCancelar.onclick = () => cerrarModal(null);
             
-            // Permitir presionar Enter para confirmar
             input.onkeydown = (e) => {
               if (e.key === 'Enter') cerrarModal(input.value);
               if (e.key === 'Escape') cerrarModal(null);
@@ -1047,12 +1238,10 @@
                 return;
             }
         
-            // 1. Pedir la contraseña mediante el modal con input de tipo password (asteriscos)
             const password = await pedirPasswordModal();
-            if (!password) return; // Cancela si presiona cancelar o lo deja vacío
+            if (!password) return;
         
             try {
-                // 2. Leer el archivo pass_eml.txt directamente desde la carpeta raíz
                 const response = await fetch('pass_eml.txt');
         
                 if (!response.ok) {
@@ -1062,15 +1251,13 @@
         
                 const passwordCorrecta = (await response.text()).trim();
         
-                // 3. Comparar la contraseña
                 if (password.trim() !== passwordCorrecta) {
                     alert("Contraseña incorrecta. Acceso denegado.");
                     return;
                 }
         
-                // 4. Si la clave es correcta, genera la descarga del CSV
                 const keys = Object.keys(emlFiltrados[0].properties || {});
-                const headers = [...keys, "DISTANCIA_OFICINA_KM"];
+                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION"];
                 let csv = headers.join(",") + "\n";
         
                 emlFiltrados.forEach(f => {
@@ -1078,6 +1265,7 @@
                     const tempLayer = L.geoJSON(f);
                     const centroide = tempLayer.getBounds().getCenter();
                     const provEml = props.PROV_NOMB?.trim().toUpperCase();
+                    const provEjecucion = obtenerProvinciaEjecucion(props);
         
                     let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
                     if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
@@ -1099,6 +1287,7 @@
         
                     let row = keys.map(k => `"${props[k] ?? ''}"`);
                     row.push(`"${distanciaKm}"`);
+                    row.push(`"${provEjecucion}"`);
                     
                     csv += row.join(",") + "\n";
                 });
@@ -1117,13 +1306,13 @@
 
         cargarGeoJSONs();
     </script>
-    <!-- Modal para ingresar la contraseña de forma oculta -->
+
+    <!-- Modal para ingresar la contraseña -->
     <div id="modalPassword" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
       <div style="background: white; padding: 20px; border-radius: 8px; max-width: 300px; width: 90%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
         <h3 style="margin-top: 0; font-size: 14px; color: #1e293b;">🔒 Confirmación Requerida</h3>
         <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Ingresa la contraseña para descargar el CSV:</p>
         
-        <!-- El tipo "password" oculta el texto con puntos/asteriscos -->
         <input type="password" id="inputPassModal" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 14px; text-align: center;">
         
         <div style="display: flex; gap: 8px; justify-content: center;">
