@@ -821,7 +821,7 @@
 
         function actualizarManejadorPorcentajes(listaUPM) {
             const total = listaUPM.length;
-
+        
             if (total === 0) {
                 ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
                     document.getElementById(`pct-${id}`).textContent = '0.0%';
@@ -830,7 +830,7 @@
                 });
                 return;
             }
-
+        
             const stats = obtenerEstadisticasPorEjecucion(listaUPM);
             
             let verifCount = 0;
@@ -838,7 +838,7 @@
             let ruralCount = 0;
             let indigenaCount = 0;
             let daCount = 0;
-
+        
             Object.values(stats).forEach(stat => {
                 verifCount += stat.verificado;
                 urbanoCount += stat.urbano;
@@ -846,25 +846,25 @@
                 indigenaCount += stat.indigena;
                 daCount += stat.da;
             });
-
+        
             const actualizarTarjeta = (id, count) => {
                 const pct = ((count / total) * 100).toFixed(1);
                 document.getElementById(`pct-${id}`).textContent = `${pct}%`;
                 document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
                 document.getElementById(`bar-${id}`).style.width = `${pct}%`;
             };
-
+        
             actualizarTarjeta('verificado', verifCount);
             actualizarTarjeta('urbano', urbanoCount);
             actualizarTarjeta('rural', ruralCount);
             actualizarTarjeta('indigena', indigenaCount);
             actualizarTarjeta('da', daCount);
-
+        
             const dashboard = document.getElementById('pct-dashboard');
             const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
                 let titulo = '📊 Distribución por provincia de ejecución: ';
-                .map(p => {
+                const detalles = provsEjecucion.map(p => {  // ✅ CORREGIDO
                     return `${p} (${stats[p].total})`;
                 });
                 dashboard.title = titulo + detalles.join(' | ');
@@ -1044,7 +1044,7 @@
 
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
+                if (pSel !== 'TODAS' && (props.PROV_NOMB || '').trim().toUpperCase() !== pSel) return false;
                 return true;
             });
 
@@ -1182,8 +1182,9 @@
                 }
             } else if (pSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
                 map.setView([8.5, -80.0], 8);
-                }
             }
+        }
+            
         function resetMap() {
             inputUpm.value = '';
             selectSegm.value = 'TODOS';
