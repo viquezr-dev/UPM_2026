@@ -1110,20 +1110,21 @@
             // =============================================================
             // RENDERIZAR POLÍGONOS EML
             // =============================================================
+            const costoSel = selectCosto.value;  // Obtener valor del select de costo
+
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 const provEjecucion = obtenerProvinciaEjecucion(props);
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
-                const costoSel = selectCosto.value;  // Obtener el valor del select
             
                 // Determinar qué provincia usar para el color
                 const provColor = provEjecucion || provNombre;
                 
                 let estiloPoligono;
             
-                // Prioridad: Verificado siempre tiene prioridad máxima
+                // Prioridad: Verificado SIEMPRE tiene prioridad máxima
                 if (estaVerificado) {
                     estiloPoligono = {
                         fillColor: '#facc15',
@@ -1132,23 +1133,23 @@
                         weight: 2.5
                     };
                 } 
-                // Si el filtro de costo está activo, colorear según COSTO
+                // Si el filtro de costo está activo y coincide, colorear según COSTO
                 else if (costoSel === 'SI' && costoVal === 'SI') {
                     estiloPoligono = {
-                        fillColor: '#22c55e',
+                        fillColor: '#22c55e',  // Verde
                         fillOpacity: 0.65,
                         color: '#15803d',
                         weight: 1.5
                     };
                 } else if (costoSel === 'NO' && costoVal === 'NO') {
                     estiloPoligono = {
-                        fillColor: '#ef4444',
+                        fillColor: '#ef4444',  // Rojo
                         fillOpacity: 0.65,
                         color: '#b91c1c',
                         weight: 1.5
                     };
                 } 
-                // Si el filtro es "TODOS" o "Seleccione", usar colores por provincia
+                // Si el filtro es "TODOS" (Seleccione), usar colores por provincia (NEUTRO)
                 else {
                     estiloPoligono = {
                         fillColor: obtenerColorProvincia(provColor),
