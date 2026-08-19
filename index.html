@@ -1197,49 +1197,59 @@
         function inicializarFiltrosCascada() {
             const provinciasSet = new Set();
         
-            // ✅ Usar EJECUCION para llenar el selector de provincias
+            // ✅ SOLO usar EJECUCION para llenar el selector
             emlData.forEach(f => {
                 const props = f.properties || {};
+                // Prioriza EJECUCION, si no tiene usa PROV_NOMB
                 const provEjecucion = obtenerProvinciaEjecucion(props);
                 if (provEjecucion) {
                     provinciasSet.add(provEjecucion);
                 }
             });
         
-            // También agregar provincias de oficinas y provinciaData (para mantener compatibilidad)
-            [oficinaData, provinciaData].forEach(dataSet => {
-                dataSet.forEach(f => {
-                    if (f.properties && f.properties.PROV_NOMB) {
-                        provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
-                    }
-                });
+            // Agregar provincias de oficinas (por si acaso)
+            oficinaData.forEach(f => {
+                if (f.properties && f.properties.PROV_NOMB) {
+                    provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
+                }
             });
         
+            // Ordenar alfabéticamente
             Array.from(provinciasSet).sort().forEach(p => {
                 obtenerColorProvincia(p);
                 selectProv.add(new Option(p, p));
             });
         
             actualizarLeyenda();
-
+        
+            // =============================================================
+            // EVENTOS DE FILTROS EN CASCADA
+            // =============================================================
             inputUpm.addEventListener('input', filtrarYRenderizar);
             selectSegm.addEventListener('change', filtrarYRenderizar);
             selectCosto.addEventListener('change', filtrarYRenderizar);
-
+        
             selectProv.addEventListener('change', () => {
                 const pSel = selectProv.value;
                 selectDist.innerHTML = '<option value="TODOS">Todos</option>';
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
+        
                 selectDist.disabled = (pSel === 'TODAS');
                 selectCorr.disabled = true;
                 selectPob.disabled = true;
-
+        
+                // Los distritos se filtran por ubicación real (PROV_NOMB)
                 if (pSel !== 'TODAS') {
                     const distritos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel)
-                           .forEach(f => { if (f.properties.DIST_NOMB) distritos.add(f.properties.DIST_NOMB.trim().toUpperCase()); });
+                    emlData.filter(f => {
+                        const props = f.properties || {};
+                        // Usar PROV_NOMB para ubicación real en distritos
+                        return (props.PROV_NOMB || '').trim().toUpperCase() === pSel;
+                    }).forEach(f => {
+                        const props = f.properties || {};
+                        if (props.DIST_NOMB) distritos.add(props.DIST_NOMB.trim().toUpperCase());
+                    });
                     Array.from(distritos).sort().forEach(d => selectDist.add(new Option(d, d)));
                 }
                 filtrarYRenderizar();
@@ -1304,10 +1314,18 @@
             provinciaContornoLayer.clearLayers();
             if (pSel === 'TODAS' || provinciaData.length === 0) return;
         
-            // Buscar la provincia por nombre (independientemente de si es ejecución o ubicación)
-            const provFeature = provinciaData.find(
+            // Buscar la provincia en provinciaData (por si existe como ubicación real)
+            let provFeature = provinciaData.find(
                 f => f.properties && f.properties.PROV_NOMB && f.properties.PROV_NOMB.trim().toUpperCase() === pSel
             );
+        
+            // Si no se encuentra, intentar buscar por coincidencia parcial (ej: "PANAMÁ" vs "PANAMÁ OESTE")
+            if (!provFeature) {
+                provFeature = provinciaData.find(
+                    f => f.properties && f.properties.PROV_NOMB && 
+                         f.properties.PROV_NOMB.trim().toUpperCase().includes(pSel)
+                );
+            }
         
             if (provFeature) {
                 L.geoJSON(provFeature, {
