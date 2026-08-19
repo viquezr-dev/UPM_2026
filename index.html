@@ -8,6 +8,8 @@
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <style>
         * {
@@ -254,7 +256,39 @@
             transition: width 0.4s ease;
         }
         
-       
+       <!-- Panel de Gráfico de Costos -->
+        <div id="panel-grafico" style="
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 8px 12px;
+            border-bottom: 1px solid #334155;
+            z-index: 997;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            min-height: 200px;
+            overflow-x: auto;
+        ">
+            <div style="flex: 1; min-width: 300px; height: 180px; position: relative;">
+                <canvas id="graficoCostos"></canvas>
+            </div>
+            <div style="
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 10px;
+                color: #94a3b8;
+                padding-left: 12px;
+                border-left: 1px solid #334155;
+                min-width: 120px;
+            ">
+                <span style="color: #e2e8f0; font-weight: 600;">📊 Leyenda</span>
+                <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:2px; vertical-align:middle;"></span> Con Costo (SI)</span>
+                <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:2px; vertical-align:middle;"></span> Sin Costo (NO)</span>
+                <span style="margin-top:4px; color:#64748b; font-size:9px;">⬇️ Pasa el mouse para ver detalles</span>
+            </div>
+        </div>
         
         /* 5. MAPA */
         #map {
@@ -579,6 +613,134 @@
             return '';
         }
 
+        // Variable global para el gráfico
+        let chartCostos = null;
+        
+        function actualizarGraficoCostos(listaUPM) {
+            const canvas = document.getElementById('graficoCostos');
+            if (!canvas) return;
+        
+            // Obtener estadísticas por provincia de ejecución
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            
+            // Filtrar provincias con datos
+            const provs = Object.keys(stats)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));
+        
+            if (provs.length === 0) {
+                // Si no hay datos, mostrar mensaje
+                if (chartCostos) {
+                    chartCostos.destroy();
+                    chartCostos = null;
+                }
+                // Mostrar mensaje en el canvas
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sin datos para mostrar', canvas.width/2, canvas.height/2);
+                return;
+            }
+        
+            // Preparar datos
+            const labels = provs;
+            const datosConCosto = provs.map(p => stats[p].conCosto || 0);
+            const datosSinCosto = provs.map(p => stats[p].sinCosto || 0);
+        
+            // Colores para las barras
+            const coloresConCosto = provs.map(() => '#22c55e');  // Verde
+            const coloresSinCosto = provs.map(() => '#ef4444');  // Rojo
+        
+            // Si ya existe el gráfico, destruirlo
+            if (chartCostos) {
+                chartCostos.destroy();
+                chartCostos = null;
+            }
+        
+            const ctx = canvas.getContext('2d');
+        
+            // Crear nuevo gráfico
+            chartCostos = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '💰 Con Costo (SI)',
+                            data: datosConCosto,
+                            backgroundColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 0.7)'),
+                            borderColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 1)'),
+                            borderWidth: 1,
+                            borderRadius: 3,
+                        },
+                        {
+                            label: '❌ Sin Costo (NO)',
+                            data: datosSinCosto,
+                            backgroundColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 0.7)'),
+                            borderColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 1)'),
+                            borderWidth: 1,
+                            borderRadius: 3,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,  // Ocultamos la leyenda porque ya está en el panel
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} UPM`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.3)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 9,
+                                },
+                                maxRotation: 45,
+                                minRotation: 30,
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.3)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 9,
+                                },
+                                stepSize: 1,
+                            },
+                            beginAtZero: true,
+                        }
+                    },
+                    // Animación
+                    animation: {
+                        duration: 800,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        
         // Función para obtener estadísticas agrupadas por provincia de ejecución
         function obtenerEstadisticasPorEjecucion(listaUPM) {
             const stats = {};
@@ -1076,14 +1238,19 @@
             // DASHBOARD DE PORCENTAJES - Usando EJECUCION
             // =============================================================
             actualizarManejadorPorcentajes(emlFiltrados);
-
+            
+            // =============================================================
+            // GRÁFICO DE COSTOS
+            // =============================================================
+            actualizarGraficoCostos(emlFiltrados);
+            
             // =============================================================
             // RENDERIZAR OFICINAS
             // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-
+            
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -1091,19 +1258,40 @@
                     iconSize: [22, 22],
                     iconAnchor: [11, 11]
                 });
-
-                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
+            
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
+                
+                // Campos básicos
+                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 camposOficina.forEach(campo => {
                     if (props.hasOwnProperty(campo)) {
                         popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
                     }
                 });
+                
+                // Presupuesto (BUDGET) - formateado como moneda
+                const budget = props.BUDGET;
+                if (budget !== undefined && budget !== null && !isNaN(budget)) {
+                    const budgetFormateado = new Intl.NumberFormat('es-PA', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(budget);
+                    popupContent += `
+                        <p style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #93c5fd;">
+                            💰 <strong>Presupuesto:</strong> ${budgetFormateado}
+                        </p>`;
+                } else {
+                    popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
+                }
+                
                 popupContent += `</div>`;
-
+            
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-
+            
+            
             // =============================================================
             // RENDERIZAR POLÍGONOS EML
             // =============================================================
@@ -1283,6 +1471,7 @@
                             const dist = centroide.distanceTo(latLngOficina);
                             if (dist < distanciaMinima) {
                                 distanciaMinima = dist;
+                                oficinaCercana = oficina;  // ✅ Guardar la oficina cercana
                             }
                         }
                     });
@@ -1292,7 +1481,11 @@
                     let row = keys.map(k => `"${props[k] ?? ''}"`);
                     row.push(`"${distanciaKm}"`);
                     row.push(`"${provEjecucion}"`);
-                    
+                    // ✅ AGREGAR BUDGET DE LA OFICINA CERCANA
+                    const budgetOficina = oficinaCercana ? oficinaCercana.properties.BUDGET : 'N/D';
+                    row.push(`"${budgetOficina}"`);
+                    // Actualizar headers
+                    const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
                     csv += row.join(",") + "\n";
                 });
         
