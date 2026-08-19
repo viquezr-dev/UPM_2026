@@ -383,76 +383,53 @@
     </div>
     
     <div class="controls">
-        <!-- BUSCADOR DE UPM INCREMENTAL -->
+        <!-- BUSCADOR DE UPM -->
         <div class="filter-group">
             <label for="buscar_upm">🔎 UPM:</label>
-            <input type="text" id="buscar_upm" placeholder="Ej. 0101..." style="width: 110px;">
+            <input type="text" id="buscar_upm" placeholder="Ej. 0101..." style="width: 90px;">
         </div>
-
+    
         <div class="filter-group">
-            <label for="provincia">Provincia (Ejecución):</label>
-            <select id="provincia"><option value="TODAS">Todas</option></select>
-        </div>
-
-        <div class="filter-group">
-            <label for="distrito">Ubicación (PROV_NOMB):</label>
-            <select id="distrito" disabled><option value="TODOS">Todos</option></select>
-        </div>
-        
-        <div class="filter-group">
-            <label for="corregimiento">Distrito:</label>
-            <select id="corregimiento" disabled><option value="TODOS">Todos</option></select>
-        </div>
-        
-        <div class="filter-group">
-            <label for="poblado">Corregimiento:</label>
-            <select id="poblado" disabled><option value="TODOS">Todos</option></select>
-        </div>
-
-
-        
-        <div class="filter-group">
-            <label for="segm_tipo">Tipo/Estado:</label>
-            <select id="segm_tipo">
+            <label for="segm_tipo">Tipo:</label>
+            <select id="segm_tipo" style="min-width: 90px;">
                 <option value="TODOS">Todos</option>
-                <option value="URBANO">Urbano (01)</option>
-                <option value="RURAL">Rural (02)</option>
-                <option value="INDIGENA">Indígena (03)</option>
-                <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso (DA = 1)</option>
-                <option value="VERIFICADO">✅ Actualizado / Verificado (SI)</option>
+                <option value="URBANO">Urbano</option>
+                <option value="RURAL">Rural</option>
+                <option value="INDIGENA">Indígena</option>
+                <option value="DIFICIL_ACCESO">⚠️ DA</option>
+                <option value="VERIFICADO">✅ Verif.</option>
             </select>
         </div>
-
-        <!-- FILTRO DE COSTO -->
+    
         <div class="filter-group">
             <label for="filtro_costo">💰 Costo:</label>
-            <select id="filtro_costo">
+            <select id="filtro_costo" style="min-width: 80px;">
                 <option value="TODOS">Seleccione</option>
-                <option value="SI">✅ Con Costo</option>
-                <option value="NO">❌ Sin Costo</option>
+                <option value="SI">✅ Con</option>
+                <option value="NO">❌ Sin</option>
             </select>
         </div>
-
+    
         <div class="filter-group">
-            <label for="provincia">Provincia:</label>
-            <select id="provincia"><option value="TODAS">Todas</option></select>
+            <label for="provincia">🏛️ Ejec.:</label>
+            <select id="provincia" style="min-width: 100px;"><option value="TODAS">Todas</option></select>
         </div>
-        
+    
         <div class="filter-group">
-            <label for="distrito">Distrito:</label>
-            <select id="distrito" disabled><option value="TODOS">Todos</option></select>
+            <label for="distrito">📍 Ubic.:</label>
+            <select id="distrito" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
-        
+    
         <div class="filter-group">
-            <label for="corregimiento">Corregimiento:</label>
-            <select id="corregimiento" disabled><option value="TODOS">Todos</option></select>
+            <label for="corregimiento">🏙️ Dist.:</label>
+            <select id="corregimiento" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
-
+    
         <div class="filter-group">
-            <label for="poblado">LUPO:</label>
-            <select id="poblado" disabled><option value="TODOS">Todos</option></select>
+            <label for="poblado">📌 Corr.:</label>
+            <select id="poblado" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
-
+    
         <div class="btn-group">
             <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
             <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
