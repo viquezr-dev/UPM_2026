@@ -403,7 +403,7 @@
         <div class="filter-group">
             <label for="filtro_costo">💰 Costo:</label>
             <select id="filtro_costo">
-                <option value="TODOS">Todos</option>
+                <option value="TODOS">Seleccione</option>
                 <option value="SI">✅ Con Costo</option>
                 <option value="NO">❌ Sin Costo</option>
             </select>
@@ -821,7 +821,7 @@
 
         function actualizarManejadorPorcentajes(listaUPM) {
             const total = listaUPM.length;
-
+        
             if (total === 0) {
                 ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
                     document.getElementById(`pct-${id}`).textContent = '0.0%';
@@ -830,7 +830,7 @@
                 });
                 return;
             }
-
+        
             const stats = obtenerEstadisticasPorEjecucion(listaUPM);
             
             let verifCount = 0;
@@ -838,7 +838,7 @@
             let ruralCount = 0;
             let indigenaCount = 0;
             let daCount = 0;
-
+        
             Object.values(stats).forEach(stat => {
                 verifCount += stat.verificado;
                 urbanoCount += stat.urbano;
@@ -846,25 +846,25 @@
                 indigenaCount += stat.indigena;
                 daCount += stat.da;
             });
-
+        
             const actualizarTarjeta = (id, count) => {
                 const pct = ((count / total) * 100).toFixed(1);
                 document.getElementById(`pct-${id}`).textContent = `${pct}%`;
                 document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
                 document.getElementById(`bar-${id}`).style.width = `${pct}%`;
             };
-
+        
             actualizarTarjeta('verificado', verifCount);
             actualizarTarjeta('urbano', urbanoCount);
             actualizarTarjeta('rural', ruralCount);
             actualizarTarjeta('indigena', indigenaCount);
             actualizarTarjeta('da', daCount);
-
+        
             const dashboard = document.getElementById('pct-dashboard');
             const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
                 let titulo = '📊 Distribución por provincia de ejecución: ';
-                const detalles = provsEjecucion.map(p => {
+                const detalles = provsEjecucion.map(p => {  // ✅ CORREGIDO
                     return `${p} (${stats[p].total})`;
                 });
                 dashboard.title = titulo + detalles.join(' | ');
@@ -1044,7 +1044,7 @@
 
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
+                if (pSel !== 'TODAS' && (props.PROV_NOMB || '').trim().toUpperCase() !== pSel) return false;
                 return true;
             });
 
@@ -1057,18 +1057,15 @@
             // Ordenar provincias alfabéticamente
             const provsEjecucion = Object.keys(statsEjecucion)
                 .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));  // Orden alfabético
+                .sort((a, b) => a.localeCompare(b));
             
             let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
             
             if (provsEjecucion.length > 0) {
+                // ✅ SOLO MOSTRAR EL TOTAL POR PROVINCIA (sin desglose)
                 const detalles = provsEjecucion.map(p => {
                     const stat = statsEjecucion[p];
-                    let detalle = `${p}: ${stat.total}`;
-                    if (stat.conCosto > 0) detalle += ` 💰${stat.conCosto}`;
-                    if (stat.sinCosto > 0) detalle += ` ❌${stat.sinCosto}`;
-                    if (stat.verificado > 0) detalle += ` ✅${stat.verificado}`;
-                    return detalle;
+                    return `${p}: ${stat.total}`;
                 });
                 badgeText += ' | ' + detalles.join(' | ');
             }
@@ -1110,17 +1107,20 @@
             // =============================================================
             // RENDERIZAR POLÍGONOS EML
             // =============================================================
+           
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
                 const provEjecucion = obtenerProvinciaEjecucion(props);
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
-
+            
+                // Determinar qué provincia usar para el color
                 const provColor = provEjecucion || provNombre;
                 
                 let estiloPoligono;
-
+            
+                // Prioridad: Verificado SIEMPRE tiene prioridad máxima
                 if (estaVerificado) {
                     estiloPoligono = {
                         fillColor: '#facc15',
@@ -1128,21 +1128,25 @@
                         color: '#dc2626',
                         weight: 2.5
                     };
-                } else if (costoVal === 'SI') {
+                } 
+                // Si el filtro de costo está activo y coincide, colorear según COSTO
+                else if (costoSel === 'SI' && costoVal === 'SI') {
                     estiloPoligono = {
-                        fillColor: '#22c55e',
+                        fillColor: '#22c55e',  // Verde
                         fillOpacity: 0.65,
                         color: '#15803d',
                         weight: 1.5
                     };
-                } else if (costoVal === 'NO') {
+                } else if (costoSel === 'NO' && costoVal === 'NO') {
                     estiloPoligono = {
-                        fillColor: '#ef4444',
+                        fillColor: '#ef4444',  // Rojo
                         fillOpacity: 0.65,
                         color: '#b91c1c',
                         weight: 1.5
                     };
-                } else {
+                } 
+                // Si el filtro es "TODOS" (Seleccione), usar colores por provincia (NEUTRO)
+                else {
                     estiloPoligono = {
                         fillColor: obtenerColorProvincia(provColor),
                         fillOpacity: 0.60,
@@ -1150,7 +1154,7 @@
                         weight: 1.2
                     };
                 }
-
+            
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
                 polyLayer.on('click', function() {
@@ -1180,7 +1184,7 @@
                 map.setView([8.5, -80.0], 8);
             }
         }
-
+            
         function resetMap() {
             inputUpm.value = '';
             selectSegm.value = 'TODOS';
