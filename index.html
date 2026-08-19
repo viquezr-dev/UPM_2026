@@ -489,7 +489,7 @@
             bottom: 60px;
             right: 20px;
             z-index: 1002;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
             color: white;
             border: none;
             border-radius: 50%;
@@ -497,7 +497,7 @@
             height: 56px;
             font-size: 22px;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             align-items: center;
@@ -509,22 +509,18 @@
         
         <style>
             @keyframes pulse-button {
-                0%, 100% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5); }
-                50% { box-shadow: 0 4px 40px rgba(99, 102, 241, 0.8), 0 0 60px rgba(99, 102, 241, 0.2); }
+                0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); }
+                50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.8), 0 0 60px rgba(245, 158, 11, 0.2); }
             }
             
             #btnAbrirGrafico:hover {
                 transform: scale(1.15) rotate(8deg);
-                background: linear-gradient(135deg, #818cf8, #a78bfa);
-                box-shadow: 0 8px 32px rgba(99, 102, 241, 0.7);
-            }
-            
-            #btnAbrirGrafico:active {
-                transform: scale(0.9);
+                background: linear-gradient(135deg, #fbbf24, #dc2626);
+                box-shadow: 0 8px 32px rgba(245, 158, 11, 0.7);
             }
         </style>
         
-        <!-- MODAL PREMIUM -->
+        <!-- MODAL CON FONDO BRILLANTE -->
         <div id="modalGrafico" style="
             display: none;
             position: fixed;
@@ -532,56 +528,60 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.3s ease;
         ">
             <div style="
-                background: linear-gradient(145deg, #1e293b, #0f172a);
-                border-radius: 20px;
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 24px;
                 padding: 28px 32px 24px;
                 max-width: 900px;
                 width: 92%;
                 max-height: 85vh;
-                box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(99, 102, 241, 0.1);
+                box-shadow: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
                 position: relative;
-                border: 1px solid rgba(99, 102, 241, 0.15);
+                border: 2px solid rgba(245, 158, 11, 0.2);
                 animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             ">
-                <!-- Cabecera con diseño premium -->
+                <!-- Cabecera con diseño colorido -->
                 <div style="
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 16px;
-                    color: #e2e8f0;
+                    color: #1e293b;
                 ">
-                    <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
                         <div style="
-                            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 12px;
+                            background: linear-gradient(135deg, #f59e0b, #ef4444);
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 14px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            font-size: 20px;
-                            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+                            font-size: 22px;
+                            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
                         ">📊</div>
                         <div>
-                            <h3 style="font-size: 18px; font-weight: 700; margin: 0; background: linear-gradient(135deg, #e2e8f0, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Distribución de Costos</h3>
-                            <p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0; -webkit-text-fill-color: #64748b;">Distribución por provincia de ejecución</p>
+                            <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
+                                Distribución de Costos
+                            </h3>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">
+                                📍 Análisis por provincia de ejecución
+                            </p>
                         </div>
                     </div>
                     <button id="btnCerrarGrafico" style="
-                        background: rgba(255,255,255,0.05);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        color: #94a3b8;
-                        width: 36px;
-                        height: 36px;
+                        background: #fee2e2;
+                        border: none;
+                        color: #dc2626;
+                        width: 38px;
+                        height: 38px;
                         border-radius: 50%;
                         font-size: 16px;
                         cursor: pointer;
@@ -589,60 +589,65 @@
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        font-weight: 700;
                     ">✕</button>
                 </div>
                 
-                <!-- Contenedor del gráfico con sombra -->
+                <!-- Contenedor del gráfico con fondo claro -->
                 <div style="
                     width: 100%;
                     height: 420px;
                     position: relative;
-                    background: radial-gradient(ellipse at center, #1e293b, #0f172a);
+                    background: linear-gradient(135deg, #f8fafc, #ffffff);
                     border-radius: 16px;
-                    padding: 12px;
-                    border: 1px solid rgba(99, 102, 241, 0.08);
-                    box-shadow: inset 0 2px 20px rgba(0,0,0,0.3);
+                    padding: 16px;
+                    border: 2px solid #e2e8f0;
+                    box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
                 ">
                     <canvas id="graficoCostosModal"></canvas>
                 </div>
                 
-                <!-- Leyenda mejorada -->
+                <!-- Leyenda colorida -->
                 <div style="
                     display: flex;
                     justify-content: center;
                     gap: 28px;
                     margin-top: 16px;
-                    font-size: 12px;
-                    color: #94a3b8;
+                    font-size: 13px;
                     flex-wrap: wrap;
                 ">
-                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(34, 197, 94, 0.1); padding: 4px 14px 4px 10px; border-radius: 20px; border: 1px solid rgba(34, 197, 94, 0.15);">
-                        <span style="display:inline-block; width:14px; height:14px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 4px; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);"></span>
-                        <span style="color: #e2e8f0; font-weight: 500;">Con Costo (SI)</span>
+                    <div style="display: flex; align-items: center; gap: 10px; background: #dcfce7; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #86efac; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);">
+                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 6px; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);"></span>
+                        <span style="color: #166534; font-weight: 700;">💰 Con Costo (SI)</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.1); padding: 4px 14px 4px 10px; border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.15);">
-                        <span style="display:inline-block; width:14px; height:14px; background: linear-gradient(135deg, #f87171, #ef4444); border-radius: 4px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);"></span>
-                        <span style="color: #e2e8f0; font-weight: 500;">Sin Costo (NO)</span>
+                    <div style="display: flex; align-items: center; gap: 10px; background: #fee2e2; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #fca5a5; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
+                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #f87171, #ef4444); border-radius: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);"></span>
+                        <span style="color: #991b1b; font-weight: 700;">❌ Sin Costo (NO)</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 10px; background: rgba(255,255,255,0.03); padding: 4px 12px; border-radius: 20px;">
+                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 11px; background: #f1f5f9; padding: 6px 14px; border-radius: 30px; border: 1px solid #e2e8f0;">
                         <span>💡</span>
-                        <span>Pasa el mouse para detalles</span>
+                        <span>Pasa el mouse para ver detalles</span>
                     </div>
                 </div>
                 
-                <!-- Mini footer con estadísticas -->
+                <!-- Mini footer con estadísticas en color -->
                 <div style="
                     margin-top: 14px;
-                    padding-top: 12px;
-                    border-top: 1px solid rgba(255,255,255,0.05);
+                    padding-top: 14px;
+                    border-top: 2px solid #e2e8f0;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    font-size: 11px;
+                    font-size: 12px;
                     color: #64748b;
+                    font-weight: 500;
                 ">
-                    <span id="statsGrafico" style="color: #94a3b8;">Total UPM: 0 | Con Costo: 0 | Sin Costo: 0</span>
-                    <span style="color: #475569;">Actualizado en tiempo real</span>
+                    <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">
+                        📊 Total UPM: <span style="color: #3b82f6;">0</span> | 
+                        💰 Con Costo: <span style="color: #22c55e;">0</span> | 
+                        ❌ Sin Costo: <span style="color: #ef4444;">0</span>
+                    </span>
+                    <span style="color: #94a3b8; font-size: 11px;">🔄 Actualizado en tiempo real</span>
                 </div>
             </div>
         </div>
@@ -665,16 +670,12 @@
             }
             
             #btnCerrarGrafico:hover {
-                background: rgba(239, 68, 68, 0.2);
-                border-color: rgba(239, 68, 68, 0.3);
-                color: #f87171;
-                transform: rotate(90deg);
+                background: #fecaca;
+                transform: rotate(90deg) scale(1.1);
             }
         </style>
     
-    
-    
-    
+  
     <div class="footer">
         Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
     </div>
@@ -926,8 +927,10 @@
                 totalConCosto += s.conCosto;
                 totalSinCosto += s.sinCosto;
             });
-            document.getElementById('statsGrafico').textContent = 
-                `Total UPM: ${totalUPM} | 💰 Con Costo: ${totalConCosto} | ❌ Sin Costo: ${totalSinCosto}`;
+            document.getElementById('statsGrafico').innerHTML = 
+                `📊 Total UPM: <span style="color: #3b82f6; font-weight: 700;">${totalUPM}</span> | ` +
+                `💰 Con Costo: <span style="color: #22c55e; font-weight: 700;">${totalConCosto}</span> | ` +
+                `❌ Sin Costo: <span style="color: #ef4444; font-weight: 700;">${totalSinCosto}</span>`;
         
             if (provs.length === 0) {
                 if (chartCostosModal) {
@@ -936,8 +939,8 @@
                 }
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#64748b';
-                ctx.font = '16px Arial';
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 18px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('📊 Sin datos para mostrar', canvas.width/2, canvas.height/2);
                 return;
@@ -954,14 +957,14 @@
         
             const ctx = canvas.getContext('2d');
         
-            // Gradientes para las barras
+            // Gradientes vibrantes para las barras
             const gradientVerde = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientVerde.addColorStop(0, 'rgba(74, 222, 128, 1)');
-            gradientVerde.addColorStop(1, 'rgba(34, 197, 94, 0.7)');
+            gradientVerde.addColorStop(0, '#86efac');
+            gradientVerde.addColorStop(1, '#22c55e');
         
             const gradientRojo = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientRojo.addColorStop(0, 'rgba(248, 113, 113, 1)');
-            gradientRojo.addColorStop(1, 'rgba(239, 68, 68, 0.7)');
+            gradientRojo.addColorStop(0, '#fca5a5');
+            gradientRojo.addColorStop(1, '#ef4444');
         
             chartCostosModal = new Chart(ctx, {
                 type: 'bar',
@@ -971,23 +974,23 @@
                         {
                             label: '💰 Con Costo (SI)',
                             data: datosConCosto,
-                            backgroundColor: gradientVerde,
-                            borderColor: 'rgba(34, 197, 94, 1)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: '#22c55e',
                             borderWidth: 2,
-                            borderRadius: 6,
-                            hoverBackgroundColor: 'rgba(74, 222, 128, 0.9)',
-                            hoverBorderColor: '#4ade80',
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(74, 222, 128, 0.95)',
+                            hoverBorderColor: '#16a34a',
                             hoverBorderWidth: 3,
                         },
                         {
                             label: '❌ Sin Costo (NO)',
                             data: datosSinCosto,
-                            backgroundColor: gradientRojo,
-                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#ef4444',
                             borderWidth: 2,
-                            borderRadius: 6,
-                            hoverBackgroundColor: 'rgba(248, 113, 113, 0.9)',
-                            hoverBorderColor: '#f87171',
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(248, 113, 113, 0.95)',
+                            hoverBorderColor: '#dc2626',
                             hoverBorderWidth: 3,
                         }
                     ]
@@ -1000,13 +1003,14 @@
                             display: false,
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            titleColor: '#e2e8f0',
-                            bodyColor: '#94a3b8',
-                            borderColor: 'rgba(99, 102, 241, 0.3)',
-                            borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#0f172a',
+                            bodyColor: '#334155',
+                            borderColor: 'rgba(245, 158, 11, 0.3)',
+                            borderWidth: 2,
+                            padding: 14,
+                            cornerRadius: 12,
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                             callbacks: {
                                 label: function(context) {
                                     const label = context.dataset.label || '';
@@ -1024,13 +1028,13 @@
                     scales: {
                         x: {
                             grid: {
-                                color: 'rgba(51, 65, 85, 0.2)',
+                                color: 'rgba(226, 232, 240, 0.6)',
                                 drawBorder: false,
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: '#475569',
                                 font: {
-                                    size: 10,
+                                    size: 11,
                                     weight: '600',
                                 },
                                 maxRotation: 45,
@@ -1039,13 +1043,14 @@
                         },
                         y: {
                             grid: {
-                                color: 'rgba(51, 65, 85, 0.2)',
+                                color: 'rgba(226, 232, 240, 0.6)',
                                 drawBorder: false,
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: '#475569',
                                 font: {
-                                    size: 10,
+                                    size: 11,
+                                    weight: '600',
                                 },
                                 stepSize: 1,
                             },
@@ -1053,7 +1058,7 @@
                         }
                     },
                     animation: {
-                        duration: 1000,
+                        duration: 1200,
                         easing: 'easeInOutQuart'
                     }
                 }
