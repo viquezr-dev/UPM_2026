@@ -28,58 +28,64 @@
         }
         
         /* 1. HEADER COMPACTO */
-        .header {
-            background: #1e293b;
-            color: #f8fafc;
-            padding: 6px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            z-index: 1001;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        
-        .header h1 {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .stats-badge {
-            background: #334155;
-            color: #f8fafc;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 500;
-            max-width: 75%;
-            overflow-x: auto;
-            white-space: nowrap;
-            scrollbar-width: thin;
-            scrollbar-color: #475569 #1e293b;
-            display: flex;
-            align-items: center;
-            min-height: 24px;
-            flex-shrink: 1;
-        }
-
-        .stats-badge::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .stats-badge::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 2px;
-        }
-
-        .stats-badge::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 2px;
-        }
+            .header {
+                background: #1e293b;
+                color: #f8fafc;
+                padding: 6px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                z-index: 1001;
+                gap: 10px;
+                flex-shrink: 0;
+                min-height: 40px;
+            }
+            
+            .header h1 {
+                font-size: 15px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .stats-badge {
+                background: #334155;
+                color: #f8fafc;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 500;
+                max-width: 85%;
+                overflow-x: auto;
+                white-space: nowrap;
+                scrollbar-width: thin;
+                scrollbar-color: #475569 #1e293b;
+                display: flex;
+                align-items: center;
+                min-height: 24px;
+                flex-shrink: 1;
+                cursor: default;
+            }
+            
+            .stats-badge::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .stats-badge::-webkit-scrollbar-track {
+                background: #1e293b;
+                border-radius: 2px;
+            }
+            
+            .stats-badge::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 2px;
+            }
+            
+            .stats-badge::-webkit-scrollbar-thumb:hover {
+                background: #64748b;
+            }
         
         /* 2. FILA DE CONTROLES Y FILTROS */
         .controls {
