@@ -403,7 +403,7 @@
         <div class="filter-group">
             <label for="filtro_costo">💰 Costo:</label>
             <select id="filtro_costo">
-                <option value="TODOS">Todos</option>
+                <option value="TODOS">Seleccione</option>
                 <option value="SI">✅ Con Costo</option>
                 <option value="NO">❌ Sin Costo</option>
             </select>
@@ -1116,11 +1116,14 @@
                 const provEjecucion = obtenerProvinciaEjecucion(props);
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
-
+                const costoSel = selectCosto.value;  // Obtener el valor del select
+            
+                // Determinar qué provincia usar para el color
                 const provColor = provEjecucion || provNombre;
                 
                 let estiloPoligono;
-
+            
+                // Prioridad: Verificado siempre tiene prioridad máxima
                 if (estaVerificado) {
                     estiloPoligono = {
                         fillColor: '#facc15',
@@ -1128,21 +1131,25 @@
                         color: '#dc2626',
                         weight: 2.5
                     };
-                } else if (costoVal === 'SI') {
+                } 
+                // Si el filtro de costo está activo, colorear según COSTO
+                else if (costoSel === 'SI' && costoVal === 'SI') {
                     estiloPoligono = {
                         fillColor: '#22c55e',
                         fillOpacity: 0.65,
                         color: '#15803d',
                         weight: 1.5
                     };
-                } else if (costoVal === 'NO') {
+                } else if (costoSel === 'NO' && costoVal === 'NO') {
                     estiloPoligono = {
                         fillColor: '#ef4444',
                         fillOpacity: 0.65,
                         color: '#b91c1c',
                         weight: 1.5
                     };
-                } else {
+                } 
+                // Si el filtro es "TODOS" o "Seleccione", usar colores por provincia
+                else {
                     estiloPoligono = {
                         fillColor: obtenerColorProvincia(provColor),
                         fillOpacity: 0.60,
@@ -1150,7 +1157,7 @@
                         weight: 1.2
                     };
                 }
-
+            
                 const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
                 
                 polyLayer.on('click', function() {
@@ -1179,7 +1186,6 @@
             } else if (pSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
                 map.setView([8.5, -80.0], 8);
             }
-        }
 
         function resetMap() {
             inputUpm.value = '';
