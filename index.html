@@ -769,10 +769,12 @@
         function obtenerProvinciaEjecucion(props) {
             if (!props) return '';
             
+            // ✅ Si existe EJECUCION y no está vacío, usarlo
             if (props.EJECUCION && props.EJECUCION.trim() !== '') {
                 return props.EJECUCION.trim().toUpperCase();
             }
             
+            // ✅ Si no, usar PROV_NOMB (para que siempre haya algo)
             if (props.PROV_NOMB) {
                 return props.PROV_NOMB.trim().toUpperCase();
             }
@@ -1155,7 +1157,6 @@
         }
 
         
-
         async function cargarGeoJSONs() {
             try {
                 const [resEml, resOficina, resProvincia] = await Promise.all([
@@ -1163,22 +1164,47 @@
                     fetch('oficina.geojson').catch(() => null),
                     fetch('provincia.geojson').catch(() => null)
                 ]);
-
+        
                 if (resEml && resEml.ok) {
                     const emlJson = await resEml.json();
                     emlData = emlJson.features || [];
+                    
+                    // ✅ DIAGNÓSTICO: Verificar que existe el campo EJECUCION
+                    console.log('🔍 Verificando campo EJECUCION:');
+                    let conEjecucion = 0;
+                    let sinEjecucion = 0;
+                    const provinciasSet = new Set();
+                    
+                    emlData.forEach(f => {
+                        const props = f.properties || {};
+                        if (props.EJECUCION && props.EJECUCION.trim() !== '') {
+                            conEjecucion++;
+                            provinciasSet.add(props.EJECUCION.trim().toUpperCase());
+                        } else {
+                            sinEjecucion++;
+                        }
+                    });
+                    
+                    console.log(`   ✅ Con EJECUCION: ${conEjecucion}`);
+                    console.log(`   ⚠️ Sin EJECUCION: ${sinEjecucion}`);
+                    console.log(`   📊 Provincias en EJECUCION:`, Array.from(provinciasSet).sort());
                 }
-
+        
                 if (resOficina && resOficina.ok) {
                     const oficinaJson = await resOficina.json();
                     oficinaData = oficinaJson.features || [];
                 }
-
+        
                 if (resProvincia && resProvincia.ok) {
                     const provinciaJson = await resProvincia.json();
                     provinciaData = provinciaJson.features || [];
                 }
-
+        
+                console.log('✅ Datos cargados correctamente');
+                console.log(`   emlData: ${emlData.length} features`);
+                console.log(`   oficinaData: ${oficinaData.length} features`);
+                console.log(`   provinciaData: ${provinciaData.length} features`);
+                
                 inicializarFiltrosCascada();
                 filtrarYRenderizar();
             } catch (error) {
@@ -1197,25 +1223,46 @@
         function inicializarFiltrosCascada() {
             const provinciasSet = new Set();
         
-            // ✅ SOLO usar EJECUCION para llenar el selector
+            // ✅ FUENTE 1: EJECUCION desde emlData
             emlData.forEach(f => {
                 const props = f.properties || {};
-                // Prioriza EJECUCION, si no tiene usa PROV_NOMB
-                const provEjecucion = obtenerProvinciaEjecucion(props);
-                if (provEjecucion) {
-                    provinciasSet.add(provEjecucion);
+                if (props.EJECUCION && props.EJECUCION.trim() !== '') {
+                    provinciasSet.add(props.EJECUCION.trim().toUpperCase());
                 }
             });
         
-            // Agregar provincias de oficinas (por si acaso)
+            // ✅ FUENTE 2: PROV_NOMB desde emlData (fallback)
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
+                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
+                }
+            });
+        
+            // ✅ FUENTE 3: PROV_NOMB desde oficinaData
             oficinaData.forEach(f => {
-                if (f.properties && f.properties.PROV_NOMB) {
-                    provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
+                const props = f.properties || {};
+                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
+                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
                 }
             });
         
-            // Ordenar alfabéticamente
-            Array.from(provinciasSet).sort().forEach(p => {
+            // ✅ FUENTE 4: PROV_NOMB desde provinciaData
+            provinciaData.forEach(f => {
+                const props = f.properties || {};
+                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
+                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
+                }
+            });
+        
+            // Limpiar selector actual
+            selectProv.innerHTML = '<option value="TODAS">Todas</option>';
+        
+            // Ordenar y agregar
+            const provinciasOrdenadas = Array.from(provinciasSet).sort();
+            console.log('📊 Provincias disponibles:', provinciasOrdenadas);
+            
+            provinciasOrdenadas.forEach(p => {
                 obtenerColorProvincia(p);
                 selectProv.add(new Option(p, p));
             });
