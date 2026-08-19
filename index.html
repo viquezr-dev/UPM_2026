@@ -8,6 +8,8 @@
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <style>
         * {
@@ -254,7 +256,7 @@
             transition: width 0.4s ease;
         }
         
-       
+      
         
         /* 5. MAPA */
         #map {
@@ -478,8 +480,202 @@
         </div>
     </div>
 
-    <div id="map"></div>
+         
     
+    <div id="map"></div>
+    <!-- BOTÓN FLOTANTE PARA ABRIR GRÁFICO -->
+        <button id="btnAbrirGrafico" style="
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            z-index: 1002;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-button 2s ease-in-out infinite;
+        ">
+            <span style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">📊</span>
+        </button>
+        
+        <style>
+            @keyframes pulse-button {
+                0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); }
+                50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.8), 0 0 60px rgba(245, 158, 11, 0.2); }
+            }
+            
+            #btnAbrirGrafico:hover {
+                transform: scale(1.15) rotate(8deg);
+                background: linear-gradient(135deg, #fbbf24, #dc2626);
+                box-shadow: 0 8px 32px rgba(245, 158, 11, 0.7);
+            }
+        </style>
+        
+        <!-- MODAL CON FONDO BRILLANTE -->
+        <div id="modalGrafico" style="
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        ">
+            <div style="
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 24px;
+                padding: 28px 32px 24px;
+                max-width: 900px;
+                width: 92%;
+                max-height: 85vh;
+                box-shadow: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
+                position: relative;
+                border: 2px solid rgba(245, 158, 11, 0.2);
+                animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            ">
+                <!-- Cabecera con diseño colorido -->
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+                    color: #1e293b;
+                ">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="
+                            background: linear-gradient(135deg, #f59e0b, #ef4444);
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 14px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 22px;
+                            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+                        ">📊</div>
+                        <div>
+                            <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
+                                Distribución de Costos
+                            </h3>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">
+                                📍 Análisis por provincia de ejecución
+                            </p>
+                        </div>
+                    </div>
+                    <button id="btnCerrarGrafico" style="
+                        background: #fee2e2;
+                        border: none;
+                        color: #dc2626;
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 50%;
+                        font-size: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: 700;
+                    ">✕</button>
+                </div>
+                
+                <!-- Contenedor del gráfico con fondo claro -->
+                <div style="
+                    width: 100%;
+                    height: 420px;
+                    position: relative;
+                    background: linear-gradient(135deg, #f8fafc, #ffffff);
+                    border-radius: 16px;
+                    padding: 16px;
+                    border: 2px solid #e2e8f0;
+                    box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
+                ">
+                    <canvas id="graficoCostosModal"></canvas>
+                </div>
+                
+                <!-- Leyenda colorida -->
+                <div style="
+                    display: flex;
+                    justify-content: center;
+                    gap: 28px;
+                    margin-top: 16px;
+                    font-size: 13px;
+                    flex-wrap: wrap;
+                ">
+                    <div style="display: flex; align-items: center; gap: 10px; background: #dcfce7; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #86efac; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);">
+                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 6px; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);"></span>
+                        <span style="color: #166534; font-weight: 700;">💰 Con Costo (SI)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: #fee2e2; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #fca5a5; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
+                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #f87171, #ef4444); border-radius: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);"></span>
+                        <span style="color: #991b1b; font-weight: 700;">❌ Sin Costo (NO)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 11px; background: #f1f5f9; padding: 6px 14px; border-radius: 30px; border: 1px solid #e2e8f0;">
+                        <span>💡</span>
+                        <span>Pasa el mouse para ver detalles</span>
+                    </div>
+                </div>
+                
+                <!-- Mini footer con estadísticas en color -->
+                <div style="
+                    margin-top: 14px;
+                    padding-top: 14px;
+                    border-top: 2px solid #e2e8f0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 12px;
+                    color: #64748b;
+                    font-weight: 500;
+                ">
+                    <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">
+                        📊 Total UPM: <span style="color: #3b82f6;">0</span> | 
+                        💰 Con Costo: <span style="color: #22c55e;">0</span> | 
+                        ❌ Sin Costo: <span style="color: #ef4444;">0</span>
+                    </span>
+                    <span style="color: #94a3b8; font-size: 11px;">🔄 Actualizado en tiempo real</span>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(40px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            
+            #btnCerrarGrafico:hover {
+                background: #fecaca;
+                transform: rotate(90deg) scale(1.1);
+            }
+        </style>
+    
+  
     <div class="footer">
         Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
     </div>
@@ -579,6 +775,296 @@
             return '';
         }
 
+        // Variable global para el gráfico
+        let chartCostos = null;
+        
+        function actualizarGraficoCostos(listaUPM) {
+            const canvas = document.getElementById('graficoCostos');
+            if (!canvas) return;
+        
+            // Obtener estadísticas por provincia de ejecución
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            
+            // Filtrar provincias con datos
+            const provs = Object.keys(stats)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));
+        
+            if (provs.length === 0) {
+                // Si no hay datos, mostrar mensaje
+                if (chartCostos) {
+                    chartCostos.destroy();
+                    chartCostos = null;
+                }
+                // Mostrar mensaje en el canvas
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sin datos para mostrar', canvas.width/2, canvas.height/2);
+                return;
+            }
+        
+            // Preparar datos
+            const labels = provs;
+            const datosConCosto = provs.map(p => stats[p].conCosto || 0);
+            const datosSinCosto = provs.map(p => stats[p].sinCosto || 0);
+        
+            // Colores para las barras
+            const coloresConCosto = provs.map(() => '#22c55e');  // Verde
+            const coloresSinCosto = provs.map(() => '#ef4444');  // Rojo
+        
+            // Si ya existe el gráfico, destruirlo
+            if (chartCostos) {
+                chartCostos.destroy();
+                chartCostos = null;
+            }
+        
+            const ctx = canvas.getContext('2d');
+        
+            // Crear nuevo gráfico
+            chartCostos = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '💰 Con Costo (SI)',
+                            data: datosConCosto,
+                            backgroundColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 0.7)'),
+                            borderColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 1)'),
+                            borderWidth: 1,
+                            borderRadius: 3,
+                        },
+                        {
+                            label: '❌ Sin Costo (NO)',
+                            data: datosSinCosto,
+                            backgroundColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 0.7)'),
+                            borderColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 1)'),
+                            borderWidth: 1,
+                            borderRadius: 3,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,  // Ocultamos la leyenda porque ya está en el panel
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} UPM`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.3)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 9,
+                                },
+                                maxRotation: 45,
+                                minRotation: 30,
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.3)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 9,
+                                },
+                                stepSize: 1,
+                            },
+                            beginAtZero: true,
+                        }
+                    },
+                    // Animación
+                    animation: {
+                        duration: 800,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Variable global para el gráfico del modal
+        let chartCostosModal = null;
+        
+        // Función para actualizar el gráfico en el modal
+       
+        function actualizarGraficoModal(listaUPM) {
+            const canvas = document.getElementById('graficoCostosModal');
+            if (!canvas) return;
+        
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            
+            const provs = Object.keys(stats)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));
+        
+            // Actualizar estadísticas en el footer
+            let totalUPM = 0;
+            let totalConCosto = 0;
+            let totalSinCosto = 0;
+            Object.values(stats).forEach(s => {
+                totalUPM += s.total;
+                totalConCosto += s.conCosto;
+                totalSinCosto += s.sinCosto;
+            });
+            document.getElementById('statsGrafico').innerHTML = 
+                `📊 Total UPM: <span style="color: #3b82f6; font-weight: 700;">${totalUPM}</span> | ` +
+                `💰 Con Costo: <span style="color: #22c55e; font-weight: 700;">${totalConCosto}</span> | ` +
+                `❌ Sin Costo: <span style="color: #ef4444; font-weight: 700;">${totalSinCosto}</span>`;
+        
+            if (provs.length === 0) {
+                if (chartCostosModal) {
+                    chartCostosModal.destroy();
+                    chartCostosModal = null;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('📊 Sin datos para mostrar', canvas.width/2, canvas.height/2);
+                return;
+            }
+        
+            const labels = provs;
+            const datosConCosto = provs.map(p => stats[p].conCosto || 0);
+            const datosSinCosto = provs.map(p => stats[p].sinCosto || 0);
+        
+            if (chartCostosModal) {
+                chartCostosModal.destroy();
+                chartCostosModal = null;
+            }
+        
+            const ctx = canvas.getContext('2d');
+        
+            // Gradientes vibrantes para las barras
+            const gradientVerde = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientVerde.addColorStop(0, '#86efac');
+            gradientVerde.addColorStop(1, '#22c55e');
+        
+            const gradientRojo = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientRojo.addColorStop(0, '#fca5a5');
+            gradientRojo.addColorStop(1, '#ef4444');
+        
+            chartCostosModal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '💰 Con Costo (SI)',
+                            data: datosConCosto,
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: '#22c55e',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(74, 222, 128, 0.95)',
+                            hoverBorderColor: '#16a34a',
+                            hoverBorderWidth: 3,
+                        },
+                        {
+                            label: '❌ Sin Costo (NO)',
+                            data: datosSinCosto,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(248, 113, 113, 0.95)',
+                            hoverBorderColor: '#dc2626',
+                            hoverBorderWidth: 3,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#0f172a',
+                            bodyColor: '#334155',
+                            borderColor: 'rgba(245, 158, 11, 0.3)',
+                            borderWidth: 2,
+                            padding: 14,
+                            cornerRadius: 12,
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} UPM (${porcentaje}%)`;
+                                },
+                                title: function(context) {
+                                    return `📍 ${context[0].label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(226, 232, 240, 0.6)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    size: 11,
+                                    weight: '600',
+                                },
+                                maxRotation: 45,
+                                minRotation: 30,
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(226, 232, 240, 0.6)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    size: 11,
+                                    weight: '600',
+                                },
+                                stepSize: 1,
+                            },
+                            beginAtZero: true,
+                        }
+                    },
+                    animation: {
+                        duration: 1200,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        
         // Función para obtener estadísticas agrupadas por provincia de ejecución
         function obtenerEstadisticasPorEjecucion(listaUPM) {
             const stats = {};
@@ -886,9 +1372,9 @@
             let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
             if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
 
-            let oficinaCercana = null;
+            
             let distanciaMinima = Infinity;
-
+            let oficinaCercana = null; 
             oficinasBuscar.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (coords) {
@@ -1076,14 +1562,19 @@
             // DASHBOARD DE PORCENTAJES - Usando EJECUCION
             // =============================================================
             actualizarManejadorPorcentajes(emlFiltrados);
-
+            
+            // =============================================================
+            // GRÁFICO DE COSTOS
+            // =============================================================
+            actualizarGraficoModal(emlFiltrados);
+            
             // =============================================================
             // RENDERIZAR OFICINAS
             // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-
+            
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -1091,19 +1582,40 @@
                     iconSize: [22, 22],
                     iconAnchor: [11, 11]
                 });
-
-                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
+            
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
+                
+                // Campos básicos
+                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 camposOficina.forEach(campo => {
                     if (props.hasOwnProperty(campo)) {
                         popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
                     }
                 });
+                
+                // Presupuesto (BUDGET) - formateado como moneda
+                const budget = props.BUDGET;
+                if (budget !== undefined && budget !== null && !isNaN(budget)) {
+                    const budgetFormateado = new Intl.NumberFormat('es-PA', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(budget);
+                    popupContent += `
+                        <p style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #93c5fd;">
+                            💰 <strong>Presupuesto:</strong> ${budgetFormateado}
+                        </p>`;
+                } else {
+                    popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
+                }
+                
                 popupContent += `</div>`;
-
+            
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-
+            
+            
             // =============================================================
             // RENDERIZAR POLÍGONOS EML
             // =============================================================
@@ -1235,7 +1747,7 @@
           });
         }
         
-        // Función principal de exportación
+          // Función principal de exportación
         async function exportarCSV() {
             if (emlFiltrados.length === 0) {
                 alert("No hay datos para exportar.");
@@ -1261,20 +1773,25 @@
                 }
         
                 const keys = Object.keys(emlFiltrados[0].properties || {});
-                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION"];
+                // ✅ Headers declarados UNA SOLA VEZ
+                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
                 let csv = headers.join(",") + "\n";
         
                 emlFiltrados.forEach(f => {
                     const props = f.properties || {};
                     const tempLayer = L.geoJSON(f);
                     const centroide = tempLayer.getBounds().getCenter();
-                    const provEml = props.PROV_NOMB?.trim().toUpperCase();
+                    const provEml = (props.PROV_NOMB || '').trim().toUpperCase();
                     const provEjecucion = obtenerProvinciaEjecucion(props);
         
-                    let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+                    let oficinasBuscar = oficinaData.filter(o => {
+                        const provOficina = (o.properties?.PROV_NOMB || '').trim().toUpperCase();
+                        return provOficina === provEml;
+                    });
                     if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
         
                     let distanciaMinima = Infinity;
+                    let oficinaCercana = null;  // ✅ Declarada aquí
         
                     oficinasBuscar.forEach(oficina => {
                         const coords = obtenerCoordenadasOficina(oficina);
@@ -1283,6 +1800,7 @@
                             const dist = centroide.distanceTo(latLngOficina);
                             if (dist < distanciaMinima) {
                                 distanciaMinima = dist;
+                                oficinaCercana = oficina;
                             }
                         }
                     });
@@ -1292,6 +1810,8 @@
                     let row = keys.map(k => `"${props[k] ?? ''}"`);
                     row.push(`"${distanciaKm}"`);
                     row.push(`"${provEjecucion}"`);
+                    const budgetOficina = oficinaCercana ? oficinaCercana.properties.BUDGET : 'N/D';
+                    row.push(`"${budgetOficina}"`);
                     
                     csv += row.join(",") + "\n";
                 });
@@ -1308,6 +1828,40 @@
             }
         }
 
+        // =============================================================
+        // CONTROL DEL MODAL DEL GRÁFICO
+        // =============================================================
+        const btnAbrirGrafico = document.getElementById('btnAbrirGrafico');
+        const btnCerrarGrafico = document.getElementById('btnCerrarGrafico');
+        const modalGrafico = document.getElementById('modalGrafico');
+        
+        // Abrir modal
+        btnAbrirGrafico.addEventListener('click', function() {
+            modalGrafico.style.display = 'flex';
+            // Actualizar gráfico al abrir (por si cambió)
+            actualizarGraficoModal(emlFiltrados);
+        });
+        
+        // Cerrar modal con botón ✕
+        btnCerrarGrafico.addEventListener('click', function() {
+            modalGrafico.style.display = 'none';
+        });
+        
+        // Cerrar modal haciendo clic fuera
+        modalGrafico.addEventListener('click', function(e) {
+            if (e.target === modalGrafico) {
+                modalGrafico.style.display = 'none';
+            }
+        });
+        
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modalGrafico.style.display === 'flex') {
+                modalGrafico.style.display = 'none';
+            }
+        });
+
+        
         cargarGeoJSONs();
     </script>
 
