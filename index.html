@@ -1431,47 +1431,59 @@
         function renderizarContornoProvincia(ejecucionSel, provSel) {
             provinciaContornoLayer.clearLayers();
             
-            // Determinar qué nombre de provincia buscar para el contorno
-            let nombreBuscar = '';
+            // Determinar qué provincias buscar para el contorno
+            let provinciasABuscar = [];
             
-            // Prioridad: si hay PROV_NOMB seleccionado, usar ese
+            // Caso 1: Hay una ubicación específica seleccionada (PROV_NOMB)
             if (provSel && provSel !== 'TODOS') {
-                nombreBuscar = provSel;
+                provinciasABuscar = [provSel];
             } 
-            // Si no, usar EJECUCION
+            // Caso 2: Hay una ejecución seleccionada (EJECUCION) → buscar TODAS las ubicaciones
             else if (ejecucionSel && ejecucionSel !== 'TODAS') {
-                nombreBuscar = ejecucionSel;
+                // Obtener todas las PROV_NOMB que tienen esta EJECUCION
+                const provincias = new Set();
+                emlData.forEach(f => {
+                    const props = f.properties || {};
+                    const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                    if (provEjecucion === ejecucionSel && props.PROV_NOMB) {
+                        provincias.add(props.PROV_NOMB.trim().toUpperCase());
+                    }
+                });
+                provinciasABuscar = Array.from(provincias).sort();
             } else {
                 return; // No hay nada que dibujar
             }
             
-            if (provinciaData.length === 0) return;
+            if (provinciaData.length === 0 || provinciasABuscar.length === 0) return;
         
-            // Buscar la provincia en provinciaData por PROV_NOMB
-            let provFeature = provinciaData.find(
-                f => f.properties && f.properties.PROV_NOMB && 
-                     f.properties.PROV_NOMB.trim().toUpperCase() === nombreBuscar
-            );
-        
-            // Si no se encuentra, intentar buscar por coincidencia parcial
-            if (!provFeature) {
-                provFeature = provinciaData.find(
+            // Buscar cada provincia en provinciaData
+            provinciasABuscar.forEach(nombreBuscar => {
+                // Buscar la provincia en provinciaData por PROV_NOMB
+                let provFeature = provinciaData.find(
                     f => f.properties && f.properties.PROV_NOMB && 
-                         f.properties.PROV_NOMB.trim().toUpperCase().includes(nombreBuscar)
+                         f.properties.PROV_NOMB.trim().toUpperCase() === nombreBuscar
                 );
-            }
         
-            if (provFeature) {
-                L.geoJSON(provFeature, {
-                    style: {
-                        color: '#000000',
-                        weight: 4,
-                        fillOpacity: 0,
-                        interactive: false,
-                        opacity: 0.9
-                    }
-                }).addTo(provinciaContornoLayer);
-            }
+                // Si no se encuentra, intentar buscar por coincidencia parcial
+                if (!provFeature) {
+                    provFeature = provinciaData.find(
+                        f => f.properties && f.properties.PROV_NOMB && 
+                             f.properties.PROV_NOMB.trim().toUpperCase().includes(nombreBuscar)
+                    );
+                }
+        
+                if (provFeature) {
+                    L.geoJSON(provFeature, {
+                        style: {
+                            color: '#000000',
+                            weight: 4,
+                            fillOpacity: 0,
+                            interactive: false,
+                            opacity: 0.9
+                        }
+                    }).addTo(provinciaContornoLayer);
+                }
+            });
         }
 
         function actualizarManejadorPorcentajes(listaUPM) {
