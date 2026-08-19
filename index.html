@@ -1057,11 +1057,12 @@
             // Ordenar provincias alfabéticamente
             const provsEjecucion = Object.keys(statsEjecucion)
                 .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));  // Orden alfabético
+                .sort((a, b) => a.localeCompare(b));
             
             let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
             
             if (provsEjecucion.length > 0) {
+                // ✅ SOLO MOSTRAR EL TOTAL POR PROVINCIA (sin desglose)
                 const detalles = provsEjecucion.map(p => {
                     const stat = statsEjecucion[p];
                     return `${p}: ${stat.total}`;
