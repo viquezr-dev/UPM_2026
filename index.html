@@ -790,23 +790,34 @@
         }
 
         // Obtener DIST_NOMB únicos que tienen una PROV_NOMB específica
-        function obtenerDistritosPorProvincia(provNombre) {
+        function obtenerDistritosPorProvincia(provNombre, ejecucion) {
             const distritos = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const prov = (props.PROV_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                
+                // Si hay ejecución, filtrar por ella
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                
                 if (prov === provNombre && props.DIST_NOMB) {
                     distritos.add(props.DIST_NOMB.trim().toUpperCase());
                 }
             });
             return Array.from(distritos).sort();
         }
-        // Obtener CORR_NOMB únicos que tienen una DIST_NOMB específica
-        function obtenerCorregimientosPorDistrito(distrito) {
+        
+        // Obtener CORR_NOMB únicos que tienen una DIST_NOMB específica y opcionalmente una EJECUCION
+        function obtenerCorregimientosPorDistrito(distrito, ejecucion) {
             const corregimientos = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const dist = (props.DIST_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                
+                // Si hay ejecución, filtrar por ella
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                
                 if (dist === distrito && props.CORR_NOMB) {
                     corregimientos.add(props.CORR_NOMB.trim().toUpperCase());
                 }
@@ -814,25 +825,17 @@
             return Array.from(corregimientos).sort();
         }
         
-        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica
-        function obtenerPobladosPorCorregimiento(corregimiento) {
-            const poblados = new Set();
-            emlData.forEach(f => {
-                const props = f.properties || {};
-                const corr = (props.CORR_NOMB || '').trim().toUpperCase();
-                if (corr === corregimiento && props.LUPO_NOMB) {
-                    poblados.add(props.LUPO_NOMB.trim().toUpperCase());
-                }
-            });
-            return Array.from(poblados).sort();
-        }
-        
-        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica
-        function obtenerLugaresPobladosPorCorregimiento(corregimiento) {
+        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica y opcionalmente una EJECUCION
+        function obtenerLugaresPobladosPorCorregimiento(corregimiento, ejecucion) {
             const lugares = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const corr = (props.CORR_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                
+                // Si hay ejecución, filtrar por ella
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                
                 if (corr === corregimiento && props.LUPO_NOMB) {
                     lugares.add(props.LUPO_NOMB.trim().toUpperCase());
                 }
@@ -1349,9 +1352,11 @@
                 filtrarYRenderizar();
             });
         
-            // 5. Evento de PROV_NOMB → actualiza DIST_NOMB
+            // 5. Evento de PROV_NOMB → actualiza DIST_NOMB (con filtro de EJECUCION)
             selectDist.addEventListener('change', () => {
                 const provSel = selectDist.value;
+                const ejecucionSel = selectProv.value;
+                
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
                 selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
@@ -1360,7 +1365,8 @@
                 selectLupo.disabled = true;
         
                 if (provSel !== 'TODOS') {
-                    const distritos = obtenerDistritosPorProvincia(provSel);
+                    // ✅ PASAR LA EJECUCION
+                    const distritos = obtenerDistritosPorProvincia(provSel, ejecucionSel);
                     selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                     distritos.forEach(d => {
                         selectCorr.add(new Option(d, d));
@@ -1371,16 +1377,19 @@
                 filtrarYRenderizar();
             });
         
-            // 6. Evento de DIST_NOMB → actualiza CORR_NOMB
+            // 6. Evento de DIST_NOMB → actualiza CORR_NOMB (con filtro de EJECUCION)
             selectCorr.addEventListener('change', () => {
                 const distSel = selectCorr.value;
+                const ejecucionSel = selectProv.value;
+                
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
                 selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.disabled = true;
                 selectLupo.disabled = true;
         
                 if (distSel !== 'TODOS') {
-                    const corregimientos = obtenerCorregimientosPorDistrito(distSel);
+                    // ✅ PASAR LA EJECUCION
+                    const corregimientos = obtenerCorregimientosPorDistrito(distSel, ejecucionSel);
                     selectPob.innerHTML = '<option value="TODOS">Todos</option>';
                     corregimientos.forEach(c => {
                         selectPob.add(new Option(c, c));
@@ -1391,14 +1400,17 @@
                 filtrarYRenderizar();
             });
         
-            // 7. Evento de CORR_NOMB → actualiza LUPO_NOMB
+            // 7. Evento de CORR_NOMB → actualiza LUPO_NOMB (con filtro de EJECUCION)
             selectPob.addEventListener('change', () => {
                 const corrSel = selectPob.value;
+                const ejecucionSel = selectProv.value;
+                
                 selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                 selectLupo.disabled = true;
         
                 if (corrSel !== 'TODOS') {
-                    const lugares = obtenerLugaresPobladosPorCorregimiento(corrSel);
+                    // ✅ PASAR LA EJECUCION
+                    const lugares = obtenerLugaresPobladosPorCorregimiento(corrSel, ejecucionSel);
                     selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                     lugares.forEach(l => {
                         selectLupo.add(new Option(l, l));
