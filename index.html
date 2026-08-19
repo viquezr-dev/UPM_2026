@@ -1635,11 +1635,11 @@
         
             const busquedaUpm = inputUpm.value.trim().toUpperCase();
             const segmSel = selectSegm.value;
-            const ejecucionSel = selectProv.value;      // EJECUCION
-            const provSel = selectDist.value;           // PROV_NOMB
-            const distSel = selectCorr.value;           // DIST_NOMB
-            const corrSel = selectPob.value;            // CORR_NOMB
-            const lupoSel = selectLupo.value;           // LUPO_NOMB (NUEVO)
+            const ejecucionSel = selectProv.value;
+            const provSel = selectDist.value;
+            const distSel = selectCorr.value;
+            const corrSel = selectPob.value;
+            const lupoSel = selectLupo.value;
             const costoSel = selectCosto.value;
         
             // =============================================================
@@ -1653,22 +1653,12 @@
                 const corrNombre = (props.CORR_NOMB || '').trim().toUpperCase();
                 const lupoNombre = (props.LUPO_NOMB || '').trim().toUpperCase();
         
-                // ✅ 1. Filtro por EJECUCION (solo si no es TODAS)
                 if (ejecucionSel !== 'TODAS' && provEjecucion !== ejecucionSel) return false;
-        
-                // ✅ 2. Filtro por PROV_NOMB (solo si no es TODOS)
                 if (provSel !== 'TODOS' && provNombre !== provSel) return false;
-        
-                // ✅ 3. Filtro por DIST_NOMB (solo si no es TODOS)
                 if (distSel !== 'TODOS' && distNombre !== distSel) return false;
-        
-                // ✅ 4. Filtro por CORR_NOMB (solo si no es TODOS)
                 if (corrSel !== 'TODOS' && corrNombre !== corrSel) return false;
-        
-                // ✅ 5. Filtro por LUPO_NOMB (solo si no es TODOS) - NUEVO
                 if (lupoSel !== 'TODOS' && lupoNombre !== lupoSel) return false;
         
-                // ✅ 6. Búsqueda por UPM
                 if (busquedaUpm !== '') {
                     const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
                     if (!codigoUPM.startsWith(busquedaUpm)) return false;
@@ -1678,7 +1668,7 @@
             });
         
             // =============================================================
-            // FILTROS ADICIONALES (Tipo, Costo, Verificado)
+            // FILTROS ADICIONALES
             // =============================================================
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
@@ -1707,9 +1697,7 @@
                 const props = f.properties || {};
                 const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
                 
-                // Si hay filtro de EJECUCION, las oficinas se filtran por PROV_NOMB
                 if (ejecucionSel !== 'TODAS') {
-                    // Verificar si esta provincia tiene UPM con esa EJECUCION
                     const tieneUPM = emlBaseGeografica.some(upm => {
                         const p = upm.properties || {};
                         return (p.PROV_NOMB || '').trim().toUpperCase() === provNombre;
@@ -1750,17 +1738,97 @@
             actualizarGraficoModal(emlFiltrados);
         
             // =============================================================
-            // RENDERIZAR OFICINAS
+            // RENDERIZAR OFICINAS (CÓDIGO COMPLETO)
             // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
-                // ... (código existente)
+                const coords = obtenerCoordenadasOficina(oficina);
+                if (!coords) return;
+        
+                const props = oficina.properties || {};
+                const iconOficina = L.divIcon({
+                    className: 'custom-office-icon',
+                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                });
+        
+                let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
+                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
+                camposOficina.forEach(campo => {
+                    if (props.hasOwnProperty(campo)) {
+                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
+                    }
+                });
+                
+                const budget = props.BUDGET;
+                if (budget !== undefined && budget !== null && !isNaN(budget)) {
+                    const budgetFormateado = new Intl.NumberFormat('es-PA', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(budget);
+                    popupContent += `
+                        <p style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #93c5fd;">
+                            💰 <strong>Presupuesto:</strong> ${budgetFormateado}
+                        </p>`;
+                } else {
+                    popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
+                }
+                popupContent += `</div>`;
+        
+                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
         
             // =============================================================
-            // RENDERIZAR POLÍGONOS EML
+            // RENDERIZAR POLÍGONOS EML (CÓDIGO COMPLETO)
             // =============================================================
             emlFiltrados.forEach(feature => {
-                // ... (código existente)
+                const props = feature.properties || {};
+                const provNombre = props.PROV_NOMB || 'Desconocido';
+                const provEjecucion = obtenerProvinciaEjecucion(props);
+                const estaVerificado = esVerificado(props);
+                const costoVal = String(props.COSTO || '').trim().toUpperCase();
+        
+                const provColor = provEjecucion || provNombre;
+                
+                let estiloPoligono;
+        
+                if (estaVerificado) {
+                    estiloPoligono = {
+                        fillColor: '#facc15',
+                        fillOpacity: 0.85,
+                        color: '#dc2626',
+                        weight: 2.5
+                    };
+                } else if (costoSel === 'SI' && costoVal === 'SI') {
+                    estiloPoligono = {
+                        fillColor: '#22c55e',
+                        fillOpacity: 0.65,
+                        color: '#15803d',
+                        weight: 1.5
+                    };
+                } else if (costoSel === 'NO' && costoVal === 'NO') {
+                    estiloPoligono = {
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.65,
+                        color: '#b91c1c',
+                        weight: 1.5
+                    };
+                } else {
+                    estiloPoligono = {
+                        fillColor: obtenerColorProvincia(provColor),
+                        fillOpacity: 0.60,
+                        color: '#1e293b',
+                        weight: 1.2
+                    };
+                }
+        
+                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
+                
+                polyLayer.on('click', function() {
+                    trazarDistanciaYPopup(polyLayer, feature);
+                });
             });
         
             // =============================================================
