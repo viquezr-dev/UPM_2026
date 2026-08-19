@@ -52,7 +52,7 @@
             border-radius: 4px;
             font-size: 11px;
             font-weight: 500;
-            max-width: 60%;
+            max-width: 65%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -196,7 +196,7 @@
             transition: width 0.4s ease;
         }
 
-        /* 4. PANEL DE EJECUCIÓN (NUEVO) */
+        /* 4. PANEL DE EJECUCIÓN */
         #panel-ejecucion {
             background: #0f172a;
             color: #94a3b8;
@@ -260,6 +260,11 @@
 
         .badge-ejecucion .costo-no {
             color: #f87171;
+            font-size: 10px;
+        }
+
+        .badge-ejecucion .verificado {
+            color: #facc15;
             font-size: 10px;
         }
         
@@ -483,7 +488,7 @@
         </div>
     </div>
 
-    <!-- Panel de Ejecución (NUEVO) -->
+    <!-- Panel de Ejecución -->
     <div id="panel-ejecucion">
         <span class="label-ejecucion">📊 Ejecución:</span>
         <div id="detalle-ejecucion">
@@ -568,7 +573,6 @@
             if (!provNombre) return '#64748b';
             const norm = provNombre.trim().toUpperCase();
             
-            // Normalizar comarcas
             const normKey = comarcasMap[norm] || norm;
             
             if (!provinciaColores[normKey]) {
@@ -582,12 +586,10 @@
         function obtenerProvinciaEjecucion(props) {
             if (!props) return '';
             
-            // Si existe EJECUCION y no está vacío, usarlo
             if (props.EJECUCION && props.EJECUCION.trim() !== '') {
                 return props.EJECUCION.trim().toUpperCase();
             }
             
-            // Si no, usar PROV_NOMB
             if (props.PROV_NOMB) {
                 return props.PROV_NOMB.trim().toUpperCase();
             }
@@ -618,21 +620,17 @@
                 
                 stats[provEjecucion].total++;
                 
-                // Costo
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
                 if (costoVal === 'SI') stats[provEjecucion].conCosto++;
                 if (costoVal === 'NO') stats[provEjecucion].sinCosto++;
                 
-                // Verificado
                 if (esVerificado(props)) stats[provEjecucion].verificado++;
                 
-                // Tipo
                 const tipo = normalizarSegmTipo(props.SEGM_TIPO);
                 if (tipo === 'URBANO') stats[provEjecucion].urbano++;
                 if (tipo === 'RURAL') stats[provEjecucion].rural++;
                 if (tipo === 'INDIGENA') stats[provEjecucion].indigena++;
                 
-                // Difícil Acceso
                 if (String(props.DA).trim() === '1') stats[provEjecucion].da++;
             });
             
@@ -706,6 +704,7 @@
                         <span class="prov-count">${stat.total}</span>
                         ${stat.conCosto > 0 ? `<span class="costo-si">💰${stat.conCosto}</span>` : ''}
                         ${stat.sinCosto > 0 ? `<span class="costo-no">❌${stat.sinCosto}</span>` : ''}
+                        ${stat.verificado > 0 ? `<span class="verificado">✅${stat.verificado}</span>` : ''}
                     </span>
                 `;
             });
@@ -769,7 +768,6 @@
 
             actualizarLeyenda();
 
-            // Evento para Búsqueda Incremental por CODE_UPM
             inputUpm.addEventListener('input', filtrarYRenderizar);
             selectSegm.addEventListener('change', filtrarYRenderizar);
             selectCosto.addEventListener('change', filtrarYRenderizar);
@@ -869,9 +867,8 @@
         }
 
         function actualizarManejadorPorcentajes(listaUPM) {
-            // Usar la lista completa de UPM filtradas
             const total = listaUPM.length;
-        
+
             if (total === 0) {
                 ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
                     document.getElementById(`pct-${id}`).textContent = '0.0%';
@@ -880,17 +877,15 @@
                 });
                 return;
             }
-        
-            // Obtener estadísticas por provincia de ejecución
+
             const stats = obtenerEstadisticasPorEjecucion(listaUPM);
             
-            // Totales generales (sumando todas las provincias de ejecución)
             let verifCount = 0;
             let urbanoCount = 0;
             let ruralCount = 0;
             let indigenaCount = 0;
             let daCount = 0;
-        
+
             Object.values(stats).forEach(stat => {
                 verifCount += stat.verificado;
                 urbanoCount += stat.urbano;
@@ -898,21 +893,20 @@
                 indigenaCount += stat.indigena;
                 daCount += stat.da;
             });
-        
+
             const actualizarTarjeta = (id, count) => {
                 const pct = ((count / total) * 100).toFixed(1);
                 document.getElementById(`pct-${id}`).textContent = `${pct}%`;
                 document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
                 document.getElementById(`bar-${id}`).style.width = `${pct}%`;
             };
-        
+
             actualizarTarjeta('verificado', verifCount);
             actualizarTarjeta('urbano', urbanoCount);
             actualizarTarjeta('rural', ruralCount);
             actualizarTarjeta('indigena', indigenaCount);
             actualizarTarjeta('da', daCount);
-        
-            // Actualizar el título del dashboard con el desglose por ejecución
+
             const dashboard = document.getElementById('pct-dashboard');
             const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
@@ -988,7 +982,6 @@
                     📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
                 </p>`;
 
-            // CAMPO EJECUCION
             const ejecucion = props.EJECUCION || 'N/D';
             if (ejecucion !== 'N/D' && ejecucion.trim().toUpperCase() !== (props.PROV_NOMB || '').trim().toUpperCase()) {
                 popupContent += `
@@ -997,7 +990,6 @@
                     </p>`;
             }
 
-            // CAMPO COSTO DESTACADO
             const costoVal = String(props.COSTO || 'N/D').trim().toUpperCase();
             const costoMostrar = props.COSTO || 'N/D';
             const costoColor = costoVal === 'SI' ? '#16a34a' : costoVal === 'NO' ? '#dc2626' : '#64748b';
@@ -1060,7 +1052,7 @@
 
             renderizarContornoProvincia(pSel);
 
-            // 1. BASE GEOGRÁFICA Y BÚSQUEDA DE UPM (usa PROV_NOMB real)
+            // 1. BASE GEOGRÁFICA Y BÚSQUEDA DE UPM
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
                 if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
@@ -1076,10 +1068,7 @@
                 return true;
             });
 
-            // 2. Porcentajes Territoriales (usando EJECUCION internamente)
-            actualizarManejadorPorcentajes(emlBaseGeografica);
-
-            // 3. Filtrar lo que SE DIBUJA en el mapa
+            // 2. Filtrar lo que SE DIBUJA en el mapa
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
@@ -1092,7 +1081,6 @@
                     if (tipoNormalizado !== segmSel) return false;
                 }
 
-                // FILTRO DE COSTO
                 if (costoSel !== 'TODOS') {
                     const costoVal = String(props.COSTO || '').trim().toUpperCase();
                     if (costoVal !== costoSel) return false;
@@ -1107,14 +1095,14 @@
                 return true;
             });
 
-            // Badge Header - Mostrar total y desglose por provincia de ejecución
+            // =============================================================
+            // BADGE HEADER - Usando EJECUCION para los totales
+            // =============================================================
             const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
             const totalVisible = emlFiltrados.length;
-            
-            // Calcular el total de UPM que ejecuta cada provincia (sumando todas las UPM)
+
             let badgeText = `${totalVisible} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
-            
-            // Mostrar desglose por provincia de ejecución (incluyendo comarcas)
+
             const provsEjecucion = Object.keys(statsEjecucion).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
                 badgeText += ' | 📊 ';
@@ -1123,10 +1111,22 @@
                 });
                 badgeText += detalles.join(' | ');
             }
-            
+
             document.getElementById('contador').textContent = badgeText;
 
-            // Renderizar Oficinas
+            // =============================================================
+            // DASHBOARD DE PORCENTAJES - Usando EJECUCION
+            // =============================================================
+            actualizarManejadorPorcentajes(emlFiltrados);
+
+            // =============================================================
+            // PANEL DE EJECUCIÓN
+            // =============================================================
+            actualizarPanelEjecucion(emlFiltrados);
+
+            // =============================================================
+            // RENDERIZAR OFICINAS
+            // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
@@ -1151,7 +1151,9 @@
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
 
-            /// Renderizar Polígonos EML (usando EJECUCION para colores)
+            // =============================================================
+            // RENDERIZAR POLÍGONOS EML
+            // =============================================================
             emlFiltrados.forEach(feature => {
                 const props = feature.properties || {};
                 const provNombre = props.PROV_NOMB || 'Desconocido';
@@ -1159,7 +1161,6 @@
                 const estaVerificado = esVerificado(props);
                 const costoVal = String(props.COSTO || '').trim().toUpperCase();
 
-                // Determinar qué provincia usar para el color
                 const provColor = provEjecucion || provNombre;
                 
                 let estiloPoligono;
@@ -1201,10 +1202,9 @@
                 });
             });
 
-            // Actualizar panel de ejecución
-            actualizarPanelEjecucion(emlFiltrados);
-
-            // LÓGICA DE ZOOM AUTOMÁTICO
+            // =============================================================
+            // ZOOM AUTOMÁTICO
+            // =============================================================
             if (busquedaUpm !== '' && emlFiltrados.length > 0) {
                 const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
                 if (tempGroup.getBounds().isValid()) {
@@ -1214,8 +1214,6 @@
                 const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
                 if (tempGroup.getBounds().isValid()) {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
-                    const tipoCosto = costoSel === 'SI' ? '💰 Con Costo' : '❌ Sin Costo';
-                    console.log(`🔍 Mostrando ${emlFiltrados.length} UPM con ${tipoCosto}`);
                 }
             } else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
                 const provinciaLayer = provinciaContornoLayer.getLayers()[0];
