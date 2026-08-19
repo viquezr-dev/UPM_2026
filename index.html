@@ -1428,20 +1428,36 @@
             return { lat, lon };
         }
 
-        function renderizarContornoProvincia(pSel) {
+        function renderizarContornoProvincia(ejecucionSel, provSel) {
             provinciaContornoLayer.clearLayers();
-            if (pSel === 'TODAS' || provinciaData.length === 0) return;
+            
+            // Determinar qué nombre de provincia buscar para el contorno
+            let nombreBuscar = '';
+            
+            // Prioridad: si hay PROV_NOMB seleccionado, usar ese
+            if (provSel && provSel !== 'TODOS') {
+                nombreBuscar = provSel;
+            } 
+            // Si no, usar EJECUCION
+            else if (ejecucionSel && ejecucionSel !== 'TODAS') {
+                nombreBuscar = ejecucionSel;
+            } else {
+                return; // No hay nada que dibujar
+            }
+            
+            if (provinciaData.length === 0) return;
         
-            // Buscar la provincia en provinciaData (por si existe como ubicación real)
+            // Buscar la provincia en provinciaData por PROV_NOMB
             let provFeature = provinciaData.find(
-                f => f.properties && f.properties.PROV_NOMB && f.properties.PROV_NOMB.trim().toUpperCase() === pSel
+                f => f.properties && f.properties.PROV_NOMB && 
+                     f.properties.PROV_NOMB.trim().toUpperCase() === nombreBuscar
             );
         
-            // Si no se encuentra, intentar buscar por coincidencia parcial (ej: "PANAMÁ" vs "PANAMÁ OESTE")
+            // Si no se encuentra, intentar buscar por coincidencia parcial
             if (!provFeature) {
                 provFeature = provinciaData.find(
                     f => f.properties && f.properties.PROV_NOMB && 
-                         f.properties.PROV_NOMB.trim().toUpperCase().includes(pSel)
+                         f.properties.PROV_NOMB.trim().toUpperCase().includes(nombreBuscar)
                 );
             }
         
@@ -1449,9 +1465,10 @@
                 L.geoJSON(provFeature, {
                     style: {
                         color: '#000000',
-                        weight: 3.5,
+                        weight: 4,
                         fillOpacity: 0,
-                        interactive: false
+                        interactive: false,
+                        opacity: 0.9
                     }
                 }).addTo(provinciaContornoLayer);
             }
@@ -1830,28 +1847,38 @@
                     trazarDistanciaYPopup(polyLayer, feature);
                 });
             });
-        
+            // =============================================================
+            // CONTORNO DE PROVINCIA
+            // =============================================================
+            renderizarContornoProvincia(ejecucionSel, provSel);
+            
             // =============================================================
             // ZOOM AUTOMÁTICO
             // =============================================================
-            if (busquedaUpm !== '' && emlFiltrados.length > 0) {
-                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-                if (tempGroup.getBounds().isValid()) {
+            if (emlFiltrados.length > 0) {
+            // Crear un grupo temporal con todos los polígonos visibles
+            const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+            if (tempGroup.getBounds().isValid()) {
+                // Si hay búsqueda de UPM, zoom más cercano
+                if (busquedaUpm !== '') {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                }
-            } else if (costoSel !== 'TODOS' && emlFiltrados.length > 0) {
-                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-                if (tempGroup.getBounds().isValid()) {
+                } 
+                // Si hay filtro de costo, zoom moderado
+                else if (costoSel !== 'TODOS') {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
                 }
-            } else if (ejecucionSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
-                const provinciaLayer = provinciaContornoLayer.getLayers()[0];
-                if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
-                    map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
+                // Si hay filtro de ejecución, provincia o distrito, zoom adecuado
+                else if (ejecucionSel !== 'TODAS' || provSel !== 'TODOS' || distSel !== 'TODOS' || corrSel !== 'TODOS' || lupoSel !== 'TODOS') {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 13 });
                 }
-            } else if (ejecucionSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
-                map.setView([8.5, -80.0], 8);
+                // Zoom normal para otros casos
+                else {
+                    map.fitBounds(tempGroup.getBounds(), { padding: [20, 20] });
+                }
             }
+        } else {
+            // Si no hay polígonos visibles, volver a la vista general
+            map.setView([8.5, -80.0], 8);
         }
             
         function resetMap() {
