@@ -234,83 +234,7 @@
             transition: width 0.4s ease;
         }
         
-        /* 4. PANEL EJECUCION - SIN SCROLL */
-        #panel-ejecucion {
-            background: #0f172a;
-            color: #94a3b8;
-            padding: 4px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border-bottom: 1px solid #334155;
-            z-index: 998;
-            font-size: 11px;
-            overflow: hidden;
-            flex-wrap: wrap;
-            min-height: 28px;
-            flex-shrink: 0;
-        }
-        
-        #panel-ejecucion .label-ejecucion {
-            color: #e2e8f0;
-            font-weight: 600;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        #detalle-ejecucion {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .badge-ejecucion {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            background: #1e293b;
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .badge-ejecucion .color-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 2px;
-            border: 1px solid #475569;
-            flex-shrink: 0;
-        }
-        
-        .badge-ejecucion .prov-nombre {
-            color: #e2e8f0;
-            font-weight: 500;
-            font-size: 10px;
-        }
-        
-        .badge-ejecucion .prov-count {
-            color: #94a3b8;
-            font-size: 10px;
-        }
-        
-        .badge-ejecucion .costo-si {
-            color: #4ade80;
-            font-size: 9px;
-        }
-        
-        .badge-ejecucion .costo-no {
-            color: #f87171;
-            font-size: 9px;
-        }
-        
-        .badge-ejecucion .verificado {
-            color: #facc15;
-            font-size: 9px;
-        }
+       
         
         /* 5. MAPA */
         #map {
@@ -534,14 +458,6 @@
         </div>
     </div>
 
-    <!-- Panel de Ejecución -->
-    <div id="panel-ejecucion">
-        <span class="label-ejecucion">📊 Ejecución:</span>
-        <div id="detalle-ejecucion">
-            <span style="color:#64748b;">Cargando...</span>
-        </div>
-    </div>
-    
     <div id="map"></div>
     
     <div class="footer">
@@ -727,36 +643,7 @@
             div.innerHTML = html;
         }
 
-        function actualizarPanelEjecucion(listaUPM) {
-            const panel = document.getElementById('detalle-ejecucion');
-            if (!panel) return;
-            
-            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            const provs = Object.keys(stats).filter(p => p !== '').sort();
-            
-            if (provs.length === 0) {
-                panel.innerHTML = '<span style="color:#64748b;">Sin datos</span>';
-                return;
-            }
-            
-            let html = '';
-            provs.forEach(p => {
-                const stat = stats[p];
-                const color = obtenerColorProvincia(p);
-                html += `
-                    <span class="badge-ejecucion">
-                        <span class="color-dot" style="background: ${color};"></span>
-                        <span class="prov-nombre">${p}</span>
-                        <span class="prov-count">${stat.total}</span>
-                        ${stat.conCosto > 0 ? `<span class="costo-si">💰${stat.conCosto}</span>` : ''}
-                        ${stat.sinCosto > 0 ? `<span class="costo-no">❌${stat.sinCosto}</span>` : ''}
-                        ${stat.verificado > 0 ? `<span class="verificado">✅${stat.verificado}</span>` : ''}
-                    </span>
-                `;
-            });
-            
-            panel.innerHTML = html;
-        }
+        
 
         async function cargarGeoJSONs() {
             try {
@@ -1172,11 +1059,6 @@
             // DASHBOARD DE PORCENTAJES - Usando EJECUCION
             // =============================================================
             actualizarManejadorPorcentajes(emlFiltrados);
-
-            // =============================================================
-            // PANEL DE EJECUCIÓN
-            // =============================================================
-            actualizarPanelEjecucion(emlFiltrados);
 
             // =============================================================
             // RENDERIZAR OFICINAS
