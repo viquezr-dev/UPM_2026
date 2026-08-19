@@ -864,7 +864,7 @@
             const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
                 let titulo = '📊 Distribución por provincia de ejecución: ';
-                const detalles = provsEjecucion.map(p => {
+                .map(p => {
                     return `${p} (${stats[p].total})`;
                 });
                 dashboard.title = titulo + detalles.join(' | ');
@@ -1064,11 +1064,7 @@
             if (provsEjecucion.length > 0) {
                 const detalles = provsEjecucion.map(p => {
                     const stat = statsEjecucion[p];
-                    let detalle = `${p}: ${stat.total}`;
-                    if (stat.conCosto > 0) detalle += ` 💰${stat.conCosto}`;
-                    if (stat.sinCosto > 0) detalle += ` ❌${stat.sinCosto}`;
-                    if (stat.verificado > 0) detalle += ` ✅${stat.verificado}`;
-                    return detalle;
+                    return `${p}: ${stat.total}`;
                 });
                 badgeText += ' | ' + detalles.join(' | ');
             }
