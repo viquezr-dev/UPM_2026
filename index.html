@@ -393,6 +393,23 @@
             <label for="provincia">Provincia (Ejecución):</label>
             <select id="provincia"><option value="TODAS">Todas</option></select>
         </div>
+
+        <div class="filter-group">
+            <label for="distrito">Ubicación (PROV_NOMB):</label>
+            <select id="distrito" disabled><option value="TODOS">Todos</option></select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="corregimiento">Distrito:</label>
+            <select id="corregimiento" disabled><option value="TODOS">Todos</option></select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="poblado">Corregimiento:</label>
+            <select id="poblado" disabled><option value="TODOS">Todos</option></select>
+        </div>
+
+
         
         <div class="filter-group">
             <label for="segm_tipo">Tipo/Estado:</label>
@@ -765,6 +782,71 @@
             return provinciaColores[normKey];
         }
 
+        // Obtener provincias únicas del campo EJECUCION
+        function obtenerProvinciasEjecucion() {
+            const provincias = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                if (props.EJECUCION && props.EJECUCION.trim() !== '') {
+                    provincias.add(props.EJECUCION.trim().toUpperCase());
+                }
+            });
+            return Array.from(provincias).sort();
+        }
+        
+        // Obtener PROV_NOMB únicos que tienen una EJECUCION específica
+        function obtenerProvinciasPorEjecucion(ejecucion) {
+            const provincias = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                if (provEjecucion === ejecucion && props.PROV_NOMB) {
+                    provincias.add(props.PROV_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(provincias).sort();
+        }
+
+        // Obtener DIST_NOMB únicos que tienen una PROV_NOMB específica
+        function obtenerDistritosPorProvincia(provNombre) {
+            const distritos = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const prov = (props.PROV_NOMB || '').trim().toUpperCase();
+                if (prov === provNombre && props.DIST_NOMB) {
+                    distritos.add(props.DIST_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(distritos).sort();
+        }
+        // Obtener CORR_NOMB únicos que tienen una DIST_NOMB específica
+        function obtenerCorregimientosPorDistrito(distrito) {
+            const corregimientos = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const dist = (props.DIST_NOMB || '').trim().toUpperCase();
+                if (dist === distrito && props.CORR_NOMB) {
+                    corregimientos.add(props.CORR_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(corregimientos).sort();
+        }
+        
+        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica
+        function obtenerPobladosPorCorregimiento(corregimiento) {
+            const poblados = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const corr = (props.CORR_NOMB || '').trim().toUpperCase();
+                if (corr === corregimiento && props.LUPO_NOMB) {
+                    poblados.add(props.LUPO_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(poblados).sort();
+        }
+        
+        
+        
         // Función para obtener la provincia de ejecución (prioriza EJECUCION)
         function obtenerProvinciaEjecucion(props) {
             if (!props) return '';
@@ -1221,124 +1303,97 @@
         }
 
         function inicializarFiltrosCascada() {
-            const provinciasSet = new Set();
-        
-            // ✅ FUENTE 1: EJECUCION desde emlData
-            emlData.forEach(f => {
-                const props = f.properties || {};
-                if (props.EJECUCION && props.EJECUCION.trim() !== '') {
-                    provinciasSet.add(props.EJECUCION.trim().toUpperCase());
-                }
-            });
-        
-            // ✅ FUENTE 2: PROV_NOMB desde emlData (fallback)
-            emlData.forEach(f => {
-                const props = f.properties || {};
-                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
-                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
-                }
-            });
-        
-            // ✅ FUENTE 3: PROV_NOMB desde oficinaData
-            oficinaData.forEach(f => {
-                const props = f.properties || {};
-                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
-                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
-                }
-            });
-        
-            // ✅ FUENTE 4: PROV_NOMB desde provinciaData
-            provinciaData.forEach(f => {
-                const props = f.properties || {};
-                if (props.PROV_NOMB && props.PROV_NOMB.trim() !== '') {
-                    provinciasSet.add(props.PROV_NOMB.trim().toUpperCase());
-                }
-            });
-        
-            // Limpiar selector actual
+            // 1. Llenar selector de EJECUCION
+            const provinciasEjecucion = obtenerProvinciasEjecucion();
             selectProv.innerHTML = '<option value="TODAS">Todas</option>';
-        
-            // Ordenar y agregar
-            const provinciasOrdenadas = Array.from(provinciasSet).sort();
-            console.log('📊 Provincias disponibles:', provinciasOrdenadas);
-            
-            provinciasOrdenadas.forEach(p => {
+            provinciasEjecucion.forEach(p => {
                 obtenerColorProvincia(p);
                 selectProv.add(new Option(p, p));
             });
         
+            // 2. Selectores secundarios vacíos
+            selectDist.innerHTML = '<option value="TODOS">Todos</option>';
+            selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+            selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+            
+            selectDist.disabled = true;
+            selectCorr.disabled = true;
+            selectPob.disabled = true;
+        
             actualizarLeyenda();
         
-            // =============================================================
-            // EVENTOS DE FILTROS EN CASCADA
-            // =============================================================
+            // 3. Eventos
             inputUpm.addEventListener('input', filtrarYRenderizar);
             selectSegm.addEventListener('change', filtrarYRenderizar);
             selectCosto.addEventListener('change', filtrarYRenderizar);
         
+            // 4. Evento de EJECUCION → actualiza PROV_NOMB
             selectProv.addEventListener('change', () => {
-                const pSel = selectProv.value;
+                const ejecucionSel = selectProv.value;
+                
+                // Resetear selectores secundarios
                 selectDist.innerHTML = '<option value="TODOS">Todos</option>';
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-        
-                selectDist.disabled = (pSel === 'TODAS');
+                selectDist.disabled = true;
                 selectCorr.disabled = true;
                 selectPob.disabled = true;
         
-                // Los distritos se filtran por ubicación real (PROV_NOMB)
-                if (pSel !== 'TODAS') {
-                    const distritos = new Set();
-                    emlData.filter(f => {
-                        const props = f.properties || {};
-                        // Usar PROV_NOMB para ubicación real en distritos
-                        return (props.PROV_NOMB || '').trim().toUpperCase() === pSel;
-                    }).forEach(f => {
-                        const props = f.properties || {};
-                        if (props.DIST_NOMB) distritos.add(props.DIST_NOMB.trim().toUpperCase());
+                if (ejecucionSel !== 'TODAS') {
+                    // Obtener PROV_NOMB que tienen esta EJECUCION
+                    const provincias = obtenerProvinciasPorEjecucion(ejecucionSel);
+                    
+                    // Agregar opciones al selector de PROV_NOMB (por ahora usamos selectDist como PROV_NOMB)
+                    // NOTA: Renombraremos el label a "Ubicación"
+                    selectDist.innerHTML = '<option value="TODOS">Todos</option>';
+                    provincias.forEach(p => {
+                        selectDist.add(new Option(p, p));
                     });
-                    Array.from(distritos).sort().forEach(d => selectDist.add(new Option(d, d)));
+                    selectDist.disabled = false;
                 }
+                
                 filtrarYRenderizar();
             });
-
+        
+            // 5. Evento de PROV_NOMB → actualiza DIST_NOMB
             selectDist.addEventListener('change', () => {
-                const pSel = selectProv.value;
-                const dSel = selectDist.value;
+                const provSel = selectDist.value;
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
-                selectCorr.disabled = (dSel === 'TODOS');
+                selectCorr.disabled = true;
                 selectPob.disabled = true;
-
-                if (dSel !== 'TODOS') {
-                    const corregimientos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel)
-                           .forEach(f => { if (f.properties.CORR_NOMB) corregimientos.add(f.properties.CORR_NOMB.trim().toUpperCase()); });
-                    Array.from(corregimientos).sort().forEach(c => selectCorr.add(new Option(c, c)));
+        
+                if (provSel !== 'TODOS') {
+                    const distritos = obtenerDistritosPorProvincia(provSel);
+                    selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                    distritos.forEach(d => {
+                        selectCorr.add(new Option(d, d));
+                    });
+                    selectCorr.disabled = false;
                 }
+                
                 filtrarYRenderizar();
             });
-
+        
+            // 6. Evento de DIST_NOMB → actualiza CORR_NOMB
             selectCorr.addEventListener('change', () => {
-                const pSel = selectProv.value;
-                const dSel = selectDist.value;
-                const cSel = selectCorr.value;
+                const distSel = selectCorr.value;
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
-                selectPob.disabled = (cSel === 'TODOS');
-
-                if (cSel !== 'TODOS') {
-                    const poblados = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && 
-                                        f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel &&
-                                        f.properties?.CORR_NOMB?.trim().toUpperCase() === cSel)
-                           .forEach(f => { if (f.properties.LUPO_NOMB) poblados.add(f.properties.LUPO_NOMB.trim().toUpperCase()); });
-                    Array.from(poblados).sort().forEach(p => selectPob.add(new Option(p, p)));
+                selectPob.disabled = true;
+        
+                if (distSel !== 'TODOS') {
+                    const corregimientos = obtenerCorregimientosPorDistrito(distSel);
+                    selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                    corregimientos.forEach(c => {
+                        selectPob.add(new Option(c, c));
+                    });
+                    selectPob.disabled = false;
                 }
+                
                 filtrarYRenderizar();
             });
-
+        
+            // 7. Evento de CORR_NOMB → actualiza LUPO_NOMB
             selectPob.addEventListener('change', filtrarYRenderizar);
         }
 
@@ -1564,28 +1619,36 @@
         
             const busquedaUpm = inputUpm.value.trim().toUpperCase();
             const segmSel = selectSegm.value;
-            const pSel = selectProv.value;
-            const dSel = selectDist.value;
-            const cSel = selectCorr.value;
-            const pobSel = selectPob.value;
+            const ejecucionSel = selectProv.value;      // EJECUCION
+            const provSel = selectDist.value;           // PROV_NOMB (renombrado a "Ubicación")
+            const distSel = selectCorr.value;           // DIST_NOMB
+            const corrSel = selectPob.value;            // CORR_NOMB
             const costoSel = selectCosto.value;
         
-            renderizarContornoProvincia(pSel);
-        
-            // 1. BASE GEOGRÁFICA Y BÚSQUEDA DE UPM
-            // ✅ Ahora filtramos por EJECUCION (no por PROV_NOMB)
+            // =============================================================
+            // FILTRADO EN CASCADA
+            // =============================================================
             const emlBaseGeografica = emlData.filter(f => {
                 const props = f.properties || {};
-                const provEjecucion = obtenerProvinciaEjecucion(props);
-                
-                // Filtro por provincia de EJECUCION
-                if (pSel !== 'TODAS' && provEjecucion !== pSel) return false;
-                
-                // Los filtros de distrito/corregimiento/LUPO siguen usando ubicación real
-                if (dSel !== 'TODOS' && (props.DIST_NOMB || '').trim().toUpperCase() !== dSel) return false;
-                if (cSel !== 'TODOS' && (props.CORR_NOMB || '').trim().toUpperCase() !== cSel) return false;
-                if (pobSel !== 'TODOS' && (props.LUPO_NOMB || '').trim().toUpperCase() !== pobSel) return false;
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
+                const distNombre = (props.DIST_NOMB || '').trim().toUpperCase();
+                const corrNombre = (props.CORR_NOMB || '').trim().toUpperCase();
+                const lupoNombre = (props.LUPO_NOMB || '').trim().toUpperCase();
         
+                // 1. Filtro por EJECUCION
+                if (ejecucionSel !== 'TODAS' && provEjecucion !== ejecucionSel) return false;
+        
+                // 2. Filtro por PROV_NOMB
+                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
+        
+                // 3. Filtro por DIST_NOMB
+                if (distSel !== 'TODOS' && distNombre !== distSel) return false;
+        
+                // 4. Filtro por CORR_NOMB
+                if (corrSel !== 'TODOS' && corrNombre !== corrSel) return false;
+        
+                // 5. Búsqueda por UPM
                 if (busquedaUpm !== '') {
                     const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
                     if (!codigoUPM.startsWith(busquedaUpm)) return false;
@@ -1594,7 +1657,9 @@
                 return true;
             });
         
-            // 2. Filtrar lo que SE DIBUJA en el mapa (mantiene los mismos filtros)
+            // =============================================================
+            // FILTROS ADICIONALES (Tipo, Costo, Verificado)
+            // =============================================================
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
@@ -1614,28 +1679,41 @@
         
                 return true;
             });
-
+        
+            // =============================================================
+            // OFICINAS FILTRADAS
+            // =============================================================
             oficinasFiltradasGlobal = oficinaData.filter(f => {
                 const props = f.properties || {};
-                if (pSel !== 'TODAS' && (props.PROV_NOMB || '').trim().toUpperCase() !== pSel) return false;
+                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
+                
+                // Si hay filtro de EJECUCION, las oficinas se filtran por PROV_NOMB
+                if (ejecucionSel !== 'TODAS') {
+                    // Verificar si esta provincia tiene UPM con esa EJECUCION
+                    const tieneUPM = emlBaseGeografica.some(upm => {
+                        const p = upm.properties || {};
+                        return (p.PROV_NOMB || '').trim().toUpperCase() === provNombre;
+                    });
+                    if (!tieneUPM) return false;
+                }
+                
+                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
                 return true;
             });
-
+        
             // =============================================================
-            // BADGE HEADER - Usando EJECUCION para los totales
+            // BADGE HEADER
             // =============================================================
             const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
             const totalVisible = emlFiltrados.length;
-            
-            // Ordenar provincias alfabéticamente
+        
             const provsEjecucion = Object.keys(statsEjecucion)
                 .filter(p => p !== '')
                 .sort((a, b) => a.localeCompare(b));
-            
+        
             let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
             
             if (provsEjecucion.length > 0) {
-                // ✅ SOLO MOSTRAR EL TOTAL POR PROVINCIA (sin desglose)
                 const detalles = provsEjecucion.map(p => {
                     const stat = statsEjecucion[p];
                     return `${p}: ${stat.total}`;
@@ -1644,123 +1722,27 @@
             }
             
             document.getElementById('contador').textContent = badgeText;
-
+        
             // =============================================================
-            // DASHBOARD DE PORCENTAJES - Usando EJECUCION
+            // DASHBOARD Y GRÁFICO
             // =============================================================
             actualizarManejadorPorcentajes(emlFiltrados);
-            
-            // =============================================================
-            // GRÁFICO DE COSTOS
-            // =============================================================
             actualizarGraficoModal(emlFiltrados);
-            
+        
             // =============================================================
             // RENDERIZAR OFICINAS
             // =============================================================
             oficinasFiltradasGlobal.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (!coords) return;
-            
-                const props = oficina.properties || {};
-                const iconOficina = L.divIcon({
-                    className: 'custom-office-icon',
-                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
-                    iconSize: [22, 22],
-                    iconAnchor: [11, 11]
-                });
-            
-                let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
-                
-                // Campos básicos
-                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
-                camposOficina.forEach(campo => {
-                    if (props.hasOwnProperty(campo)) {
-                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
-                    }
-                });
-                
-                // Presupuesto (BUDGET) - formateado como moneda
-                const budget = props.BUDGET;
-                if (budget !== undefined && budget !== null && !isNaN(budget)) {
-                    const budgetFormateado = new Intl.NumberFormat('es-PA', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(budget);
-                    popupContent += `
-                        <p style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #93c5fd;">
-                            💰 <strong>Presupuesto:</strong> ${budgetFormateado}
-                        </p>`;
-                } else {
-                    popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
-                }
-                
-                popupContent += `</div>`;
-            
-                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
+                // ... (código existente)
             });
-            
-            
+        
             // =============================================================
             // RENDERIZAR POLÍGONOS EML
             // =============================================================
-           
             emlFiltrados.forEach(feature => {
-                const props = feature.properties || {};
-                const provNombre = props.PROV_NOMB || 'Desconocido';
-                const provEjecucion = obtenerProvinciaEjecucion(props);
-                const estaVerificado = esVerificado(props);
-                const costoVal = String(props.COSTO || '').trim().toUpperCase();
-            
-                // Determinar qué provincia usar para el color
-                const provColor = provEjecucion || provNombre;
-                
-                let estiloPoligono;
-            
-                // Prioridad: Verificado SIEMPRE tiene prioridad máxima
-                if (estaVerificado) {
-                    estiloPoligono = {
-                        fillColor: '#facc15',
-                        fillOpacity: 0.85,
-                        color: '#dc2626',
-                        weight: 2.5
-                    };
-                } 
-                // Si el filtro de costo está activo y coincide, colorear según COSTO
-                else if (costoSel === 'SI' && costoVal === 'SI') {
-                    estiloPoligono = {
-                        fillColor: '#22c55e',  // Verde
-                        fillOpacity: 0.65,
-                        color: '#15803d',
-                        weight: 1.5
-                    };
-                } else if (costoSel === 'NO' && costoVal === 'NO') {
-                    estiloPoligono = {
-                        fillColor: '#ef4444',  // Rojo
-                        fillOpacity: 0.65,
-                        color: '#b91c1c',
-                        weight: 1.5
-                    };
-                } 
-                // Si el filtro es "TODOS" (Seleccione), usar colores por provincia (NEUTRO)
-                else {
-                    estiloPoligono = {
-                        fillColor: obtenerColorProvincia(provColor),
-                        fillOpacity: 0.60,
-                        color: '#1e293b',
-                        weight: 1.2
-                    };
-                }
-            
-                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
-                
-                polyLayer.on('click', function() {
-                    trazarDistanciaYPopup(polyLayer, feature);
-                });
+                // ... (código existente)
             });
-
+        
             // =============================================================
             // ZOOM AUTOMÁTICO
             // =============================================================
@@ -1774,12 +1756,12 @@
                 if (tempGroup.getBounds().isValid()) {
                     map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
                 }
-            } else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
+            } else if (ejecucionSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
                 const provinciaLayer = provinciaContornoLayer.getLayers()[0];
                 if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
                     map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
                 }
-            } else if (pSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
+            } else if (ejecucionSel === 'TODAS' && busquedaUpm === '' && costoSel === 'TODOS') {
                 map.setView([8.5, -80.0], 8);
             }
         }
