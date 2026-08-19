@@ -27,74 +27,54 @@
             flex-direction: column;
         }
         
-        /* 1. HEADER COMPACTO */
-            .header {
-                background: #1e293b;
-                color: #f8fafc;
-                padding: 4px 12px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                z-index: 1001;
-                gap: 8px;
-                flex-shrink: 0;
-                min-height: 36px;
-            }
-            
-            .header h1 {
-                font-size: 13px;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-            
-            .stats-badge {
-                background: #334155;
-                color: #f8fafc;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 10px;
-                font-weight: 500;
-                max-width: 90%;
-                overflow-x: auto;
-                white-space: nowrap;
-                scrollbar-width: thin;
-                scrollbar-color: #475569 #1e293b;
-                display: flex;
-                align-items: center;
-                min-height: 24px;
-                flex-shrink: 1;
-                cursor: default;
-                scroll-behavior: smooth;
-            }
-            
-            .stats-badge::-webkit-scrollbar {
-                height: 5px;
-            }
-            
-            .stats-badge::-webkit-scrollbar-track {
-                background: #1e293b;
-                border-radius: 3px;
-            }
-            
-            .stats-badge::-webkit-scrollbar-thumb {
-                background: #475569;
-                border-radius: 3px;
-            }
-            
-            .stats-badge::-webkit-scrollbar-thumb:hover {
-                background: #64748b;
-            }
+        /* 1. HEADER COMPACTO - SIN SCROLL */
+        .header {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1001;
+            gap: 8px;
+            flex-shrink: 0;
+            min-height: 36px;
+        }
         
-        /* 2. FILA DE CONTROLES Y FILTROS */
+        .header h1 {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .stats-badge {
+            background: #334155;
+            color: #f8fafc;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            min-height: 24px;
+            flex-shrink: 1;
+            cursor: default;
+        }
+        
+        /* 2. CONTROLES - UNICO SCROLL HORIZONTAL */
         .controls {
             background: white;
             padding: 6px 12px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 8px;
             border-bottom: 1px solid #e2e8f0;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
@@ -106,21 +86,21 @@
             min-height: 40px;
             flex-shrink: 0;
         }
-
+        
         .controls::-webkit-scrollbar {
             height: 6px;
         }
-
+        
         .controls::-webkit-scrollbar-track {
             background: #f1f5f9;
             border-radius: 3px;
         }
-
+        
         .controls::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
-
+        
         .controls::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -131,7 +111,7 @@
             gap: 4px;
             flex-shrink: 0;
         }
-
+        
         .controls label {
             font-weight: 600;
             color: #475569;
@@ -153,12 +133,12 @@
             min-width: 110px;
             cursor: pointer;
         }
-
+        
         .controls select:focus, .controls input:focus {
             border-color: #3b82f6;
             background: white;
         }
-
+        
         .btn-group {
             display: flex;
             gap: 6px;
@@ -180,11 +160,11 @@
         
         .btn-reset { background: #fee2e2; color: #991b1b; }
         .btn-reset:hover { background: #fca5a5; }
-
+        
         .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-export:hover { background: #bbf7d0; }
-
-        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES */
+        
+        /* 3. DASHBOARD - SIN SCROLL */
         .pct-dashboard {
             background: #0f172a;
             color: white;
@@ -195,26 +175,12 @@
             gap: 8px;
             border-bottom: 1px solid #334155;
             z-index: 999;
-            overflow-x: auto;
+            overflow: hidden;
             flex-shrink: 0;
-            scrollbar-width: thin;
-            scrollbar-color: #475569 #0f172a;
             min-height: 36px;
+            flex-wrap: wrap;
         }
-
-        .pct-dashboard::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .pct-dashboard::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        .pct-dashboard::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 2px;
-        }
-
+        
         .pct-card {
             display: flex;
             align-items: center;
@@ -224,22 +190,22 @@
             border-radius: 5px;
             border: 1px solid #334155;
             flex: 1;
-            min-width: 140px;
-            max-width: 220px;
+            min-width: 120px;
+            max-width: 200px;
             flex-shrink: 0;
         }
-
+        
         .pct-val {
             font-size: 13px;
             font-weight: 700;
             min-width: 40px;
             text-align: right;
         }
-
+        
         .pct-info {
             flex: 1;
         }
-
+        
         .pct-label {
             font-size: 10px;
             color: #94a3b8;
@@ -247,12 +213,12 @@
             display: flex;
             justify-content: space-between;
         }
-
+        
         .pct-label small {
             color: #cbd5e1;
             font-size: 9px;
         }
-
+        
         .pct-progress-bg {
             width: 100%;
             height: 4px;
@@ -261,14 +227,14 @@
             margin-top: 3px;
             overflow: hidden;
         }
-
+        
         .pct-progress-fill {
             height: 100%;
             width: 0%;
             transition: width 0.4s ease;
         }
-
-        /* 4. PANEL DE EJECUCIÓN */
+        
+        /* 4. PANEL EJECUCION - SIN SCROLL */
         #panel-ejecucion {
             background: #0f172a;
             color: #94a3b8;
@@ -276,89 +242,77 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
             border-bottom: 1px solid #334155;
             z-index: 998;
             font-size: 11px;
-            overflow-x: auto;
-            flex-wrap: nowrap;
+            overflow: hidden;
+            flex-wrap: wrap;
             min-height: 28px;
             flex-shrink: 0;
-            scrollbar-width: thin;
-            scrollbar-color: #475569 #0f172a;
         }
-
-        #panel-ejecucion::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        #panel-ejecucion::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        #panel-ejecucion::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 2px;
-        }
-
+        
         #panel-ejecucion .label-ejecucion {
             color: #e2e8f0;
             font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
         }
-
+        
         #detalle-ejecucion {
             display: flex;
-            gap: 8px;
-            flex-wrap: nowrap;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-
+        
         .badge-ejecucion {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             background: #1e293b;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
             white-space: nowrap;
             flex-shrink: 0;
         }
-
+        
         .badge-ejecucion .color-dot {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 2px;
             border: 1px solid #475569;
             flex-shrink: 0;
         }
-
+        
         .badge-ejecucion .prov-nombre {
             color: #e2e8f0;
             font-weight: 500;
-        }
-
-        .badge-ejecucion .prov-count {
-            color: #94a3b8;
-        }
-
-        .badge-ejecucion .costo-si {
-            color: #4ade80;
-            font-size: 10px;
-        }
-
-        .badge-ejecucion .costo-no {
-            color: #f87171;
-            font-size: 10px;
-        }
-
-        .badge-ejecucion .verificado {
-            color: #facc15;
             font-size: 10px;
         }
         
-        /* 5. MAPA BASE */
+        .badge-ejecucion .prov-count {
+            color: #94a3b8;
+            font-size: 10px;
+        }
+        
+        .badge-ejecucion .costo-si {
+            color: #4ade80;
+            font-size: 9px;
+        }
+        
+        .badge-ejecucion .costo-no {
+            color: #f87171;
+            font-size: 9px;
+        }
+        
+        .badge-ejecucion .verificado {
+            color: #facc15;
+            font-size: 9px;
+        }
+        
+        /* 5. MAPA */
         #map {
             flex: 1;
             width: 100%;
