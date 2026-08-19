@@ -430,6 +430,11 @@
             <select id="poblado" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
     
+        <div class="filter-group">
+            <label for="lupo">📍 Lugar Poblado:</label>
+            <select id="lupo" disabled><option value="TODOS">Todos</option></select>
+        </div>
+        
         <div class="btn-group">
             <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
             <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
@@ -822,7 +827,18 @@
             return Array.from(poblados).sort();
         }
         
-        
+        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica
+        function obtenerLugaresPobladosPorCorregimiento(corregimiento) {
+            const lugares = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const corr = (props.CORR_NOMB || '').trim().toUpperCase();
+                if (corr === corregimiento && props.LUPO_NOMB) {
+                    lugares.add(props.LUPO_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(lugares).sort();
+        }
         
         // Función para obtener la provincia de ejecución (prioriza EJECUCION)
         function obtenerProvinciaEjecucion(props) {
@@ -1183,6 +1199,7 @@
         const selectCorr = document.getElementById('corregimiento');
         const selectPob = document.getElementById('poblado');
         const selectCosto = document.getElementById('filtro_costo');
+        const selectLupo = document.getElementById('lupo'); 
 
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function () {
@@ -1292,10 +1309,12 @@
             selectDist.innerHTML = '<option value="TODOS">Todos</option>';
             selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
             selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+            selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
             
             selectDist.disabled = true;
             selectCorr.disabled = true;
             selectPob.disabled = true;
+            selectLupo.disabled = true;
         
             actualizarLeyenda();
         
@@ -1312,16 +1331,14 @@
                 selectDist.innerHTML = '<option value="TODOS">Todos</option>';
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                 selectDist.disabled = true;
                 selectCorr.disabled = true;
                 selectPob.disabled = true;
+                selectLupo.disabled = true;
         
                 if (ejecucionSel !== 'TODAS') {
-                    // Obtener PROV_NOMB que tienen esta EJECUCION
                     const provincias = obtenerProvinciasPorEjecucion(ejecucionSel);
-                    
-                    // Agregar opciones al selector de PROV_NOMB (por ahora usamos selectDist como PROV_NOMB)
-                    // NOTA: Renombraremos el label a "Ubicación"
                     selectDist.innerHTML = '<option value="TODOS">Todos</option>';
                     provincias.forEach(p => {
                         selectDist.add(new Option(p, p));
@@ -1337,8 +1354,10 @@
                 const provSel = selectDist.value;
                 selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                 selectCorr.disabled = true;
                 selectPob.disabled = true;
+                selectLupo.disabled = true;
         
                 if (provSel !== 'TODOS') {
                     const distritos = obtenerDistritosPorProvincia(provSel);
@@ -1356,7 +1375,9 @@
             selectCorr.addEventListener('change', () => {
                 const distSel = selectCorr.value;
                 selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
                 selectPob.disabled = true;
+                selectLupo.disabled = true;
         
                 if (distSel !== 'TODOS') {
                     const corregimientos = obtenerCorregimientosPorDistrito(distSel);
@@ -1371,7 +1392,25 @@
             });
         
             // 7. Evento de CORR_NOMB → actualiza LUPO_NOMB
-            selectPob.addEventListener('change', filtrarYRenderizar);
+            selectPob.addEventListener('change', () => {
+                const corrSel = selectPob.value;
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.disabled = true;
+        
+                if (corrSel !== 'TODOS') {
+                    const lugares = obtenerLugaresPobladosPorCorregimiento(corrSel);
+                    selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                    lugares.forEach(l => {
+                        selectLupo.add(new Option(l, l));
+                    });
+                    selectLupo.disabled = false;
+                }
+                
+                filtrarYRenderizar();
+            });
+        
+            // 8. Evento de LUPO_NOMB
+            selectLupo.addEventListener('change', filtrarYRenderizar);
         }
 
         function obtenerCoordenadasOficina(feature) {
@@ -1597,9 +1636,10 @@
             const busquedaUpm = inputUpm.value.trim().toUpperCase();
             const segmSel = selectSegm.value;
             const ejecucionSel = selectProv.value;      // EJECUCION
-            const provSel = selectDist.value;           // PROV_NOMB (renombrado a "Ubicación")
+            const provSel = selectDist.value;           // PROV_NOMB
             const distSel = selectCorr.value;           // DIST_NOMB
             const corrSel = selectPob.value;            // CORR_NOMB
+            const lupoSel = selectLupo.value;           // LUPO_NOMB (NUEVO)
             const costoSel = selectCosto.value;
         
             // =============================================================
@@ -1613,19 +1653,22 @@
                 const corrNombre = (props.CORR_NOMB || '').trim().toUpperCase();
                 const lupoNombre = (props.LUPO_NOMB || '').trim().toUpperCase();
         
-                // 1. Filtro por EJECUCION
+                // ✅ 1. Filtro por EJECUCION (solo si no es TODAS)
                 if (ejecucionSel !== 'TODAS' && provEjecucion !== ejecucionSel) return false;
         
-                // 2. Filtro por PROV_NOMB
+                // ✅ 2. Filtro por PROV_NOMB (solo si no es TODOS)
                 if (provSel !== 'TODOS' && provNombre !== provSel) return false;
         
-                // 3. Filtro por DIST_NOMB
+                // ✅ 3. Filtro por DIST_NOMB (solo si no es TODOS)
                 if (distSel !== 'TODOS' && distNombre !== distSel) return false;
         
-                // 4. Filtro por CORR_NOMB
+                // ✅ 4. Filtro por CORR_NOMB (solo si no es TODOS)
                 if (corrSel !== 'TODOS' && corrNombre !== corrSel) return false;
         
-                // 5. Búsqueda por UPM
+                // ✅ 5. Filtro por LUPO_NOMB (solo si no es TODOS) - NUEVO
+                if (lupoSel !== 'TODOS' && lupoNombre !== lupoSel) return false;
+        
+                // ✅ 6. Búsqueda por UPM
                 if (busquedaUpm !== '') {
                     const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
                     if (!codigoUPM.startsWith(busquedaUpm)) return false;
@@ -1751,18 +1794,19 @@
             selectDist.value = 'TODOS';
             selectCorr.value = 'TODOS';
             selectPob.value = 'TODOS';
+            selectLupo.value = 'TODOS';  // ✅ NUEVO
             
             selectDist.disabled = true;
             selectCorr.disabled = true;
             selectPob.disabled = true;
-
+            selectLupo.disabled = true;  // ✅ NUEVO
+        
             lineasDistanciaLayer.clearLayers();
             ultimoPoligonoSeleccionado = null;
             
             filtrarYRenderizar();
             map.setView([8.5, -80.0], 8);
         }
-
         // Función auxiliar para pedir la contraseña usando el modal oculto
         function pedirPasswordModal() {
           return new Promise((resolve) => {
