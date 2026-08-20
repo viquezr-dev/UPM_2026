@@ -1785,6 +1785,33 @@
                 maxWidth: 300,
                 minWidth: 240
             }).openPopup();
+            // =============================================================
+            // ASIGNAR POPUP Y MANEJAR CIERRE
+            // =============================================================
+            const popup = layer.bindPopup(popupContent, {
+                className: 'custom-popup-white',
+                maxWidth: 300,
+                minWidth: 240
+            }).openPopup();
+        
+            // ✅ Limpiar al cerrar el popup
+            popup.on('remove', limpiarLineasDistancia);
+            
+            // ✅ Limpiar al hacer clic en el mapa
+            map.off('click', limpiarLineasDistancia);
+            map.on('click', limpiarLineasDistancia);
+            
+            // ✅ EVENTO: Cuando el popup se cierra, eliminar líneas y etiquetas
+            popup.on('remove', function() {
+                lineasDistanciaLayer.clearLayers();
+                ultimoPoligonoSeleccionado = null;
+            });
+        
+            // ✅ También eliminar al hacer clic en el mapa fuera del popup
+            map.once('click', function() {
+                lineasDistanciaLayer.clearLayers();
+                ultimoPoligonoSeleccionado = null;
+            });
         }
 
         function filtrarYRenderizar() {
@@ -2041,6 +2068,7 @@
         
             lineasDistanciaLayer.clearLayers();
             ultimoPoligonoSeleccionado = null;
+            map.off('click', limpiarLineas); // ✅ Limpiar event listener
             
             filtrarYRenderizar();
             map.setView([8.5, -80.0], 8);
@@ -2188,7 +2216,14 @@
                 modalGrafico.style.display = 'none';
             }
         });
-
+        // =============================================================
+        // LIMPIAR LÍNEAS DE DISTANCIA
+        // =============================================================
+        function limpiarLineasDistancia() {
+            lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = null;
+            map.off('click', limpiarLineasDistancia);
+        }
         
         cargarGeoJSONs();
     </script>
