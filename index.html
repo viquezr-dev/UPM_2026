@@ -1783,7 +1783,9 @@
             layer.bindPopup(popupContent, {
                 className: 'custom-popup-white',
                 maxWidth: 300,
-                minWidth: 240
+                minWidth: 240,
+                offset: L.point(0, -35),  // ⬆️ 35px hacia arriba
+                autoPan: false            // ❌ No mueve el mapa automáticamente
             });
             
             // ✅ Guardar referencia al popup
