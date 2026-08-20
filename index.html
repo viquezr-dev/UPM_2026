@@ -306,7 +306,7 @@
         .leaflet-popup-content { margin: 8px 10px !important; }
 
         .legend {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.92);
             padding: 8px 10px;
             line-height: 13px;
             color: #334155;
@@ -373,35 +373,43 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
             white-space: nowrap;
         }
-                /* ESTILOS PARA POPUP TRANSPARENTE */
-        .custom-popup .leaflet-popup-content-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            padding: 0 !important;
-        }
-        
-        .custom-popup .leaflet-popup-tip {
-            background: rgba(15, 23, 42, 0.92) !important;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
-        
-        .custom-popup .leaflet-popup-content {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        
-        /* Si quieres un borde brillante en el popup */
-        .custom-popup .leaflet-popup-content-wrapper::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.1));
-            z-index: -1;
-            filter: blur(4px);
-        }
+                /* =============================================================
+                   POPUP TRANSPARENTE CON EFECTO VIDRIO
+                   ============================================================= */
+                
+                /* Fondo del popup completamente transparente */
+                .custom-popup-transparent .leaflet-popup-content-wrapper {
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                /* La flecha del popup también transparente */
+                .custom-popup-transparent .leaflet-popup-tip {
+                    background: rgba(15, 23, 42, 0.92) !important;
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(99, 102, 241, 0.25);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+                }
+                
+                /* Eliminar márgenes internos */
+                .custom-popup-transparent .leaflet-popup-content {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                /* Efecto de borde brillante (opcional) */
+                .custom-popup-transparent .leaflet-popup-content-wrapper::before {
+                    content: '';
+                    position: absolute;
+                    inset: -2px;
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.05));
+                    z-index: -1;
+                    filter: blur(8px);
+                }
 
         
     </style>
