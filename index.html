@@ -1718,7 +1718,7 @@
                         margin-bottom: 3px;
                         border: 1px solid rgba(99, 102, 241, 0.08);
                     ">
-                        <span style="color: #1e40af; font-weight: 600; font-size: 9px;">📏</span>
+                        <span style="color: #1e40af; font-weight: 600; font-size: 9px;">📏 Distancia:</span>
                         <span style="color: #0f172a; font-weight: 700; font-size: 10px;">${distanciaKm} km</span>
                     </div>
                     
@@ -1732,7 +1732,7 @@
                         margin-bottom: 4px;
                         border: 1px solid ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.15)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(100, 116, 139, 0.1)'};
                     ">
-                        <span style="color: #334155; font-weight: 600; font-size: 9px;">💰</span>
+                        <span style="color: #334155; font-weight: 600; font-size: 9px;">💰 Viático:</span>
                         <span style="color: ${costoVal === 'SI' ? '#15803d' : costoVal === 'NO' ? '#b91c1c' : '#475569'}; font-weight: 700; font-size: 10px;">
                             ${costoIcono} ${costoMostrar}
                         </span>
@@ -1747,27 +1747,27 @@
                         border-top: 1px dashed rgba(148, 163, 184, 0.3);
                         padding-top: 4px;
                     ">
-                        <div style="color: #64748b; font-weight: 500;">Ejecuta</div>
+                        <div style="color: #64748b; font-weight: 500;">Ejecuta:</div>
                         <div style="color: #0f172a; font-weight: 600; text-align: right; font-size: 9px;">${ejecucion}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Provincia</div>
+                        <div style="color: #64748b; font-weight: 500;">Provincia:</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${provNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Distrito</div>
+                        <div style="color: #64748b; font-weight: 500;">Distrito:</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${distNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Corregimiento</div>
+                        <div style="color: #64748b; font-weight: 500;">Corregimiento:</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${corrNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Poblado</div>
+                        <div style="color: #64748b; font-weight: 500;">Poblado:</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${lupoNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Tipo</div>
+                        <div style="color: #64748b; font-weight: 500;">Tipo:</div>
                         <div style="color: ${colorTipo}; font-weight: 600; text-align: right; font-size: 9px;">
                             ${segmTipoDesc}
                         </div>
                         
-                        <div style="color: #64748b; font-weight: 500;">✅ Verificado</div>
+                        <div style="color: #64748b; font-weight: 500;">✅ Verificado:</div>
                         <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: right; font-size: 9px;">
                             ${verificadoIcono} ${verificado}
                         </div>
