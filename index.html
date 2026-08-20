@@ -433,7 +433,7 @@
                 <option value="URBANO">Urbano</option>
                 <option value="RURAL">Rural</option>
                 <option value="INDIGENA">Indígena</option>
-                <option value="DIFICIL_ACCESO">⚠️ DA</option>
+                <option value="DIFICIL_ACCESO">⚠️ Dificil Acceso</option>
                 <option value="VERIFICADO">✅ Verificado</option>
             </select>
         </div>
@@ -1932,7 +1932,7 @@
             oficinasFiltradasGlobal.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (!coords) return;
-        
+            
                 const props = oficina.properties || {};
                 const iconOficina = L.divIcon({
                     className: 'custom-office-icon',
@@ -1940,8 +1940,10 @@
                     iconSize: [22, 22],
                     iconAnchor: [11, 11]
                 });
-        
+            
                 let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
+                
+                // Campos básicos
                 const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
                 camposOficina.forEach(campo => {
                     if (props.hasOwnProperty(campo)) {
@@ -1949,6 +1951,7 @@
                     }
                 });
                 
+                // Presupuesto (BUDGET) - formateado como moneda
                 const budget = props.BUDGET;
                 if (budget !== undefined && budget !== null && !isNaN(budget)) {
                     const budgetFormateado = new Intl.NumberFormat('es-PA', {
@@ -1964,11 +1967,32 @@
                 } else {
                     popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
                 }
+            
+                // ✅ OBSERVACION - Nuevo campo
+                const observacion = props.OBSERVACION;
+                if (observacion && observacion.trim() !== '') {
+                    popupContent += `
+                        <p style="
+                            background: #fef3c7;
+                            color: #92400e;
+                            padding: 6px 8px;
+                            border-radius: 4px;
+                            margin: 4px 0;
+                            border-left: 3px solid #f59e0b;
+                            font-size: 10px;
+                            font-style: italic;
+                        ">
+                            📝 <strong>Observación:</strong> ${observacion}
+                        </p>`;
+                } else {
+                    popupContent += `<p><strong>📝 Observación:</strong> N/D</p>`;
+                }
+                
                 popupContent += `</div>`;
-        
+            
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-        
+       
             // =============================================================
             // RENDERIZAR POLÍGONOS EML (CÓDIGO COMPLETO)
             // =============================================================
