@@ -1662,6 +1662,8 @@
             const lupoNombre = props.LUPO_NOMB || 'N/D';
             const segmTipo = props.SEGM_TIPO || 'N/D';
             const verificado = props.VERIFICADO || 'N/D';
+            const segmTipoDesc = obtenerDescripcionTipo(segmTipo); 
+            const colorTipo = obtenerColorTipo(segmTipo);
             const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
             
             // Popup compacto
@@ -1761,7 +1763,9 @@
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${lupoNombre}</div>
                         
                         <div style="color: #64748b; font-weight: 500;">Tipo</div>
-                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${segmTipo}</div>
+                        <div style="color: ${colorTipo}; font-weight: 600; text-align: right; font-size: 9px;">
+                            ${segmTipoDesc}
+                        </div>
                         
                         <div style="color: #64748b; font-weight: 500;">✅ Verif.</div>
                         <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: right; font-size: 9px;">
@@ -1794,8 +1798,24 @@
             map.on('click', limpiarLineasDistancia);
         }
             
-           
-
+        // Función para obtener la descripción del tipo de segmento
+        function obtenerDescripcionTipo(segmTipo) {
+            const tipoMap = {
+                '01': 'URBANO',
+                '02': 'RURAL',
+                '03': 'INDÍGENA'
+            };
+            
+            const tipoStr = String(segmTipo || '').trim();
+            return tipoMap[tipoStr] || tipoStr || 'N/D';
+        }   
+        function obtenerColorTipo(segmTipo) {
+            const tipoStr = String(segmTipo || '').trim();
+            if (tipoStr === '01') return '#2563eb';
+            if (tipoStr === '02') return '#16a34a';
+            if (tipoStr === '03') return '#7c3aed';
+            return '#64748b';
+        }
         function filtrarYRenderizar() {
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
