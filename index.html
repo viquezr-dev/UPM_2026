@@ -303,7 +303,7 @@
             margin: 0 0 2px 0; 
             padding: 0;
         }
-        .leaflet-popup-content { margin: 8px 10px !important; }
+        
 
         .legend {
             background: rgba(255, 255, 255, 0.92);
@@ -374,10 +374,10 @@
             white-space: nowrap;
         }
                 /* =============================================================
-                   POPUP TRANSPARENTE CON EFECTO VIDRIO
+                   POPUP BLANCO TRANSPARENTE CON EFECTO VIDRIO
                    ============================================================= */
                 
-                /* Fondo del popup completamente transparente */
+                /* Contenedor principal - FONDO TRANSPARENTE */
                 .custom-popup-white .leaflet-popup-content-wrapper {
                     background: transparent !important;
                     box-shadow: none !important;
@@ -385,30 +385,26 @@
                     padding: 0 !important;
                 }
                 
-                /* La flecha del popup también blanca */
+                /* La flecha del popup - BLANCA TRANSLÚCIDA */
                 .custom-popup-white .leaflet-popup-tip {
-                    background: rgba(255, 255, 255, 0.92) !important;
+                    background: rgba(255, 255, 255, 0.94) !important;
                     backdrop-filter: blur(12px);
                     -webkit-backdrop-filter: blur(12px);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                    border: none !important;
                 }
                 
-                /* Eliminar márgenes internos */
+                /* Contenido del popup - SIN MARGEN */
                 .custom-popup-white .leaflet-popup-content {
                     margin: 0 !important;
                     padding: 0 !important;
+                    min-width: 240px !important;
+                    max-width: 300px !important;
                 }
                 
                 /* Efecto de borde brillante (opcional) */
                 .custom-popup-white .leaflet-popup-content-wrapper::before {
-                    content: '';
-                    position: absolute;
-                    inset: -2px;
-                    border-radius: 14px;
-                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
-                    z-index: -1;
-                    filter: blur(8px);
+                    display: none !important;
                 }
 
         
