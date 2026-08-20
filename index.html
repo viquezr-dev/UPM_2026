@@ -1992,27 +1992,7 @@
             
                 L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
             });
-                
-                const budget = props.BUDGET;
-                if (budget !== undefined && budget !== null && !isNaN(budget)) {
-                    const budgetFormateado = new Intl.NumberFormat('es-PA', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(budget);
-                    popupContent += `
-                        <p style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #93c5fd;">
-                            💰 <strong>Presupuesto:</strong> ${budgetFormateado}
-                        </p>`;
-                } else {
-                    popupContent += `<p><strong>💰 Presupuesto:</strong> N/D</p>`;
-                }
-                popupContent += `</div>`;
-        
-                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
-            });
-        }
+       
             // =============================================================
             // RENDERIZAR POLÍGONOS EML (CÓDIGO COMPLETO)
             // =============================================================
