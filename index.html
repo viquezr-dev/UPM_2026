@@ -374,10 +374,9 @@
             white-space: nowrap;
         }
                 /* =============================================================
-                   POPUP BLANCO TRANSPARENTE CON EFECTO VIDRIO
+                   POPUP BLANCO TRANSPARENTE - VERSIÓN COMPACTA
                    ============================================================= */
                 
-                /* Contenedor principal - FONDO TRANSPARENTE */
                 .custom-popup-white .leaflet-popup-content-wrapper {
                     background: transparent !important;
                     box-shadow: none !important;
@@ -385,21 +384,24 @@
                     padding: 0 !important;
                 }
                 
-                /* La flecha del popup - BLANCA TRANSLÚCIDA */
                 .custom-popup-white .leaflet-popup-tip {
                     background: rgba(255, 255, 255, 0.94) !important;
                     backdrop-filter: blur(12px);
                     -webkit-backdrop-filter: blur(12px);
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
                     border: none !important;
                 }
                 
-                /* Contenido del popup - SIN MARGEN */
                 .custom-popup-white .leaflet-popup-content {
                     margin: 0 !important;
                     padding: 0 !important;
-                    min-width: 240px !important;
-                    max-width: 300px !important;
+                    min-width: 160px !important;
+                    max-width: 220px !important;
+                }
+                
+                /* Eliminar cualquier borde extra */
+                .custom-popup-white .leaflet-popup-content-wrapper::before {
+                    display: none !important;
                 }
                 
                 /* Efecto de borde brillante (opcional) */
@@ -1644,10 +1646,10 @@
             }).addTo(lineasDistanciaLayer);
         
             // =============================================================
-            // NUEVO POPUP MEJORADO Y ORGANIZADO
+            // POPUP MÁS PEQUEÑO Y COMPACTO
             // =============================================================
             
-           // Obtener valores
+            // Obtener valores
             const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
             const costoVal = String(props.COSTO || '').trim().toUpperCase();
             const costoMostrar = props.COSTO || 'N/D';
@@ -1659,145 +1661,131 @@
             const corrNombre = props.CORR_NOMB || 'N/D';
             const lupoNombre = props.LUPO_NOMB || 'N/D';
             const segmTipo = props.SEGM_TIPO || 'N/D';
-            const shapeArea = props.SHAPE_Area ? parseFloat(props.SHAPE_Area).toLocaleString('es-PA', {maximumFractionDigits: 2}) : 'N/D';
             const verificado = props.VERIFICADO || 'N/D';
             const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
             
-            // Construir el popup con fuentes más oscuras
+            // Popup compacto
             let popupContent = `
                 <div style="
                     background: rgba(255, 255, 255, 0.94);
                     backdrop-filter: blur(12px);
                     -webkit-backdrop-filter: blur(12px);
-                    border-radius: 12px;
-                    padding: 14px 16px;
+                    border-radius: 10px;
+                    padding: 8px 12px;
                     color: #0f172a;
-                    font-size: 11px;
-                    line-height: 1.6;
-                    min-width: 220px;
-                    max-width: 280px;
+                    font-size: 10px;
+                    line-height: 1.4;
+                    min-width: 160px;
+                    max-width: 200px;
                     border: 1px solid rgba(255, 255, 255, 0.3);
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
                 ">
-                    <!-- Encabezado -->
+                    <!-- Encabezado compacto -->
                     <div style="
-                        border-bottom: 2px solid rgba(99, 102, 241, 0.25);
-                        padding-bottom: 6px;
-                        margin-bottom: 8px;
+                        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+                        padding-bottom: 3px;
+                        margin-bottom: 4px;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
                     ">
-                        <div style="
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                        ">
-                            <span style="
-                                background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                                padding: 2px 8px;
-                                border-radius: 6px;
-                                font-size: 10px;
-                                font-weight: 700;
-                                color: white;
-                            ">📍</span>
-                            <span style="
-                                font-size: 14px;
-                                font-weight: 800;
-                                color: #0f172a;
-                                letter-spacing: 0.3px;
-                            ">UPM ${codigoUPM}</span>
-                        </div>
+                        <span style="
+                            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                            padding: 1px 6px;
+                            border-radius: 4px;
+                            font-size: 8px;
+                            font-weight: 700;
+                            color: white;
+                        ">📍</span>
+                        <span style="
+                            font-size: 11px;
+                            font-weight: 700;
+                            color: #0f172a;
+                        ">UPM ${codigoUPM}</span>
                     </div>
                     
-                    <!-- Distancia y Costo -->
+                    <!-- Distancia y Costo en una línea -->
                     <div style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        background: rgba(99, 102, 241, 0.08);
-                        border-radius: 8px;
-                        padding: 5px 10px;
-                        margin-bottom: 6px;
-                        border: 1px solid rgba(99, 102, 241, 0.15);
+                        gap: 8px;
+                        background: rgba(99, 102, 241, 0.06);
+                        border-radius: 6px;
+                        padding: 2px 8px;
+                        margin-bottom: 3px;
+                        border: 1px solid rgba(99, 102, 241, 0.08);
                     ">
-                        <span style="color: #1e40af; font-weight: 700; font-size: 11px;">📏 Distancia</span>
-                        <span style="color: #0f172a; font-weight: 800; font-size: 12px;">${distanciaKm} km</span>
+                        <span style="color: #1e40af; font-weight: 600; font-size: 9px;">📏</span>
+                        <span style="color: #0f172a; font-weight: 700; font-size: 10px;">${distanciaKm} km</span>
                     </div>
                     
                     <div style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        background: ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.12)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(100, 116, 139, 0.06)'};
-                        border-radius: 8px;
-                        padding: 5px 10px;
-                        margin-bottom: 10px;
-                        border: 1px solid ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.25)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(100, 116, 139, 0.15)'};
+                        background: ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.1)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(100, 116, 139, 0.05)'};
+                        border-radius: 6px;
+                        padding: 2px 8px;
+                        margin-bottom: 4px;
+                        border: 1px solid ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.15)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(100, 116, 139, 0.1)'};
                     ">
-                        <span style="color: #334155; font-weight: 700; font-size: 11px;">💰 Costo</span>
-                        <span style="color: ${costoVal === 'SI' ? '#15803d' : costoVal === 'NO' ? '#b91c1c' : '#475569'}; font-weight: 800; font-size: 12px;">
+                        <span style="color: #334155; font-weight: 600; font-size: 9px;">💰</span>
+                        <span style="color: ${costoVal === 'SI' ? '#15803d' : costoVal === 'NO' ? '#b91c1c' : '#475569'}; font-weight: 700; font-size: 10px;">
                             ${costoIcono} ${costoMostrar}
                         </span>
                     </div>
                     
-                    <!-- Separador -->
-                    <div style="
-                        border-top: 1px dashed rgba(148, 163, 184, 0.4);
-                        margin-bottom: 8px;
-                    "></div>
-                    
-                    <!-- Información en 2 columnas con fuentes oscuras -->
+                    <!-- Información compacta en 2 columnas -->
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 3px 12px;
-                        font-size: 10.5px;
+                        gap: 1px 8px;
+                        font-size: 9px;
+                        border-top: 1px dashed rgba(148, 163, 184, 0.3);
+                        padding-top: 4px;
                     ">
-                        <div style="color: #475569; font-weight: 600;">🏛️ Ejecución</div>
-                        <div style="color: #0f172a; font-weight: 700; text-align: right;">${ejecucion}</div>
+                        <div style="color: #64748b; font-weight: 500;">Ejec.</div>
+                        <div style="color: #0f172a; font-weight: 600; text-align: right; font-size: 9px;">${ejecucion}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">📍 Provincia</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${provNombre}</div>
+                        <div style="color: #64748b; font-weight: 500;">Prov.</div>
+                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${provNombre}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">🏙️ Distrito</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${distNombre}</div>
+                        <div style="color: #64748b; font-weight: 500;">Dist.</div>
+                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${distNombre}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">📌 Corregimiento</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${corrNombre}</div>
+                        <div style="color: #64748b; font-weight: 500;">Corr.</div>
+                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${corrNombre}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">📍 Lugar Poblado</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${lupoNombre}</div>
+                        <div style="color: #64748b; font-weight: 500;">LUPO</div>
+                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${lupoNombre}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">📋 Tipo</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${segmTipo}</div>
+                        <div style="color: #64748b; font-weight: 500;">Tipo</div>
+                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${segmTipo}</div>
                         
-                        <div style="color: #475569; font-weight: 600;">📐 Área (m²)</div>
-                        <div style="color: #1e293b; font-weight: 600; text-align: right;">${shapeArea}</div>
-                        
-                        <div style="color: #475569; font-weight: 600;">✅ Verificado</div>
-                        <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 700; text-align: right;">
+                        <div style="color: #64748b; font-weight: 500;">✅ Verif.</div>
+                        <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: right; font-size: 9px;">
                             ${verificadoIcono} ${verificado}
                         </div>
                     </div>
                 </div>
             `;
             
+            // Asignar popup más pequeño
             layer.bindPopup(popupContent, {
                 className: 'custom-popup-white',
-                maxWidth: 300,
-                minWidth: 240,
-                offset: L.point(0, -35),  // ⬆️ 35px hacia arriba
-                autoPan: false            // ❌ No mueve el mapa automáticamente
+                maxWidth: 220,
+                minWidth: 160,
+                offset: L.point(0, -25),
+                autoPan: false
             });
             
-            // ✅ Guardar referencia al popup
             const popup = layer.getPopup();
-            
-            // ✅ Evento: cuando el popup se cierra (clic en ✕ o clic fuera)
             popup.on('remove', function() {
                 lineasDistanciaLayer.clearLayers();
                 ultimoPoligonoSeleccionado = null;
             });
-        
-            // ✅ Abrir el popup
+            
             layer.openPopup();
         
             // ✅ También limpiar al hacer clic en el mapa (fuera del popup)
