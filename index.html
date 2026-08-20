@@ -373,6 +373,37 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
             white-space: nowrap;
         }
+                /* ESTILOS PARA POPUP TRANSPARENTE */
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.92) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .custom-popup .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Si quieres un borde brillante en el popup */
+        .custom-popup .leaflet-popup-content-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.1));
+            z-index: -1;
+            filter: blur(4px);
+        }
+
+        
     </style>
 </head>
 <body>
@@ -573,7 +604,7 @@
                         ">📊</div>
                         <div>
                             <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
-                                Distribución de Costos
+                                Distribución de UPM que paga viáticos
                             </h3>
                             <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">
                                 📍 Análisis por provincia de ejecución
@@ -1542,7 +1573,7 @@
             const dashboard = document.getElementById('pct-dashboard');
             const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
             if (provsEjecucion.length > 0) {
-                let titulo = '📊 Distribución por provincia de ejecución: ';
+                let titulo = '📊 Distribución de UPM que paga viáticos por provincia: ';
                 const detalles = provsEjecucion.map(p => {  // ✅ CORREGIDO
                     return `${p} (${stats[p].total})`;
                 });
@@ -1554,20 +1585,20 @@
         function trazarDistanciaYPopup(layer, feature) {
             lineasDistanciaLayer.clearLayers();
             ultimoPoligonoSeleccionado = { layer, feature };
-
+        
             const props = feature.properties || {};
             const centroide = layer.getBounds().getCenter();
-
+        
             if (oficinaData.length === 0) return;
-
+        
             const provEml = props.PROV_NOMB?.trim().toUpperCase();
             
             let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
             if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-
-            
+        
             let distanciaMinima = Infinity;
             let oficinaCercana = null; 
+            
             oficinasBuscar.forEach(oficina => {
                 const coords = obtenerCoordenadasOficina(oficina);
                 if (coords) {
@@ -1579,25 +1610,25 @@
                     }
                 }
             });
-
+        
             if (!oficinaCercana) return;
-
+        
             const distanciaKm = (distanciaMinima / 1000).toFixed(2);
-
+        
             const polyline = L.polyline([centroide, oficinaCercana.coords], {
                 color: '#ef4444',
                 weight: 2.5,
                 dashArray: '6, 6',
                 interactive: false
             }).addTo(lineasDistanciaLayer);
-
+        
             const puntoMedio = L.latLng(
                 (centroide.lat + oficinaCercana.coords.lat) / 2,
                 (centroide.lng + oficinaCercana.coords.lng) / 2
             );
-
+        
             const estiloClase = (mapaActual === 'satelite') ? 'distance-label-satelite' : 'distance-label-callejero';
-
+        
             L.marker(puntoMedio, {
                 icon: L.divIcon({
                     className: estiloClase,
@@ -1607,65 +1638,148 @@
                 }),
                 interactive: false
             }).addTo(lineasDistanciaLayer);
-
-            let popupContent = `<div class="info-popup">
-                <h3>📍 UPM ${props.CODE_UPM || props.UPM || ''}</h3>
-                <p style="background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; border: 1px solid #bae6fd;">
-                    📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
-                </p>`;
-
-            const ejecucion = props.EJECUCION || 'N/D';
-            if (ejecucion !== 'N/D' && ejecucion.trim().toUpperCase() !== (props.PROV_NOMB || '').trim().toUpperCase()) {
-                popupContent += `
-                    <p style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0; border: 1px solid #f59e0b;">
-                        🏛️ <strong>Ejecutado por:</strong> ${ejecucion}
-                    </p>`;
-            }
-
-            const costoVal = String(props.COSTO || 'N/D').trim().toUpperCase();
+        
+            // =============================================================
+            // NUEVO POPUP MEJORADO Y ORGANIZADO
+            // =============================================================
+            
+            // Obtener valores
+            const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
+            const costoVal = String(props.COSTO || '').trim().toUpperCase();
             const costoMostrar = props.COSTO || 'N/D';
-            const costoColor = costoVal === 'SI' ? '#16a34a' : costoVal === 'NO' ? '#dc2626' : '#64748b';
-            const costoFondo = costoVal === 'SI' ? '#dcfce7' : costoVal === 'NO' ? '#fee2e2' : '#f1f5f9';
-            const costoBorde = costoVal === 'SI' ? '#bbf7d0' : costoVal === 'NO' ? '#fca5a5' : '#e2e8f0';
             const costoIcono = costoVal === 'SI' ? '✅' : costoVal === 'NO' ? '❌' : '❓';
             
-            popupContent += `
-                <p style="background: ${costoFondo}; 
-                          color: ${costoColor}; 
-                          padding: 4px 8px; 
-                          border-radius: 4px; 
-                          font-weight: bold; 
-                          margin: 4px 0; 
-                          border: 1px solid ${costoBorde};">
-                    ${costoIcono} <strong>💰 Costo:</strong> ${costoMostrar}
-                </p>`;
-
-            for (let k in props) {
-                const kUpper = k.trim().toUpperCase();
-                const valRaw = String(props[k] ?? 'N/D').trim();
-                const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-
-                if (esCampoVerificacion) {
-                    const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
-
-                    if (esValorSi) {
-                        popupContent += `
-                            <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
-                            </p>`;
-                    } else {
-                        popupContent += `
-                            <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
-                            </p>`;
-                    }
-                } else {
-                    popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
-                }
-            }
-            popupContent += `</div>`;
-
-            layer.bindPopup(popupContent).openPopup();
+            const ejecucion = props.EJECUCION || 'N/D';
+            const provNombre = props.PROV_NOMB || 'N/D';
+            const distNombre = props.DIST_NOMB || 'N/D';
+            const corrNombre = props.CORR_NOMB || 'N/D';
+            const lupoNombre = props.LUPO_NOMB || 'N/D';
+            const segmTipo = props.SEGM_TIPO || 'N/D';
+            const shapeArea = props.SHAPE_Area ? parseFloat(props.SHAPE_Area).toLocaleString('es-PA', {maximumFractionDigits: 2}) : 'N/D';
+            const verificado = props.VERIFICADO || 'N/D';
+            const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
+            
+            // Construir el popup con diseño mejorado
+            let popupContent = `
+                <div class="info-popup" style="
+                    background: rgba(15, 23, 42, 0.92);
+                    backdrop-filter: blur(8px);
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                    color: #e2e8f0;
+                    font-size: 11px;
+                    line-height: 1.5;
+                    min-width: 220px;
+                    max-width: 280px;
+                    border: 1px solid rgba(99, 102, 241, 0.2);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+                ">
+                    <!-- Encabezado -->
+                    <div style="
+                        border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+                        padding-bottom: 6px;
+                        margin-bottom: 8px;
+                    ">
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <span style="
+                                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                                padding: 2px 8px;
+                                border-radius: 6px;
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: white;
+                            ">📍</span>
+                            <span style="
+                                font-size: 13px;
+                                font-weight: 700;
+                                color: #f8fafc;
+                                letter-spacing: 0.3px;
+                            ">UPM ${codigoUPM}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Distancia y Costo (destacados) -->
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(99, 102, 241, 0.1);
+                        border-radius: 8px;
+                        padding: 4px 10px;
+                        margin-bottom: 8px;
+                        border: 1px solid rgba(99, 102, 241, 0.15);
+                    ">
+                        <span style="color: #60a5fa; font-weight: 600;">📏 Distancia</span>
+                        <span style="color: #f8fafc; font-weight: 700;">${distanciaKm} km</span>
+                    </div>
+                    
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.15)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(100, 116, 139, 0.1)'};
+                        border-radius: 8px;
+                        padding: 4px 10px;
+                        margin-bottom: 10px;
+                        border: 1px solid ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.3)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(100, 116, 139, 0.2)'};
+                    ">
+                        <span style="color: #94a3b8; font-weight: 600;">💰 Costo</span>
+                        <span style="color: ${costoVal === 'SI' ? '#4ade80' : costoVal === 'NO' ? '#f87171' : '#94a3b8'}; font-weight: 700;">
+                            ${costoIcono} ${costoMostrar}
+                        </span>
+                    </div>
+                    
+                    <!-- Separador -->
+                    <div style="
+                        border-top: 1px dashed rgba(148, 163, 184, 0.2);
+                        margin-bottom: 8px;
+                    "></div>
+                    
+                    <!-- Información organizada en 2 columnas -->
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 2px 12px;
+                        font-size: 10px;
+                    ">
+                        <div style="color: #94a3b8; font-weight: 500;">🏛️ Ejecución</div>
+                        <div style="color: #e2e8f0; font-weight: 600; text-align: right;">${ejecucion}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">📍 Provincia</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${provNombre}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">🏙️ Distrito</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${distNombre}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">📌 Corregimiento</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${corrNombre}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">📍 Lugar Poblado</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${lupoNombre}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">📋 Tipo</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${segmTipo}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">📐 Área (m²)</div>
+                        <div style="color: #e2e8f0; font-weight: 500; text-align: right;">${shapeArea}</div>
+                        
+                        <div style="color: #94a3b8; font-weight: 500;">✅ Verificado</div>
+                        <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#4ade80' : '#f87171'}; font-weight: 600; text-align: right;">
+                            ${verificadoIcono} ${verificado}
+                        </div>
+                    </div>
+                </div>
+            `;
+        
+            layer.bindPopup(popupContent, {
+                className: 'custom-popup',
+                maxWidth: 300,
+                minWidth: 240
+            }).openPopup();
         }
 
         function filtrarYRenderizar() {
