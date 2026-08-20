@@ -1643,7 +1643,7 @@
             // NUEVO POPUP MEJORADO Y ORGANIZADO
             // =============================================================
             
-            // Obtener valores
+           // Obtener valores
             const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
             const costoVal = String(props.COSTO || '').trim().toUpperCase();
             const costoMostrar = props.COSTO || 'N/D';
@@ -1659,20 +1659,21 @@
             const verificado = props.VERIFICADO || 'N/D';
             const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
             
-            // Construir el popup con diseño mejorado
+            // Construir el popup con diseño transparente
             let popupContent = `
-                <div class="info-popup" style="
-                    background: rgba(15, 23, 42, 0.92);
-                    backdrop-filter: blur(8px);
+                <div style="
+                    background: rgba(15, 23, 42, 0.88);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
                     border-radius: 12px;
-                    padding: 12px 14px;
+                    padding: 14px 16px;
                     color: #e2e8f0;
                     font-size: 11px;
                     line-height: 1.5;
                     min-width: 220px;
                     max-width: 280px;
-                    border: 1px solid rgba(99, 102, 241, 0.2);
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+                    border: 1px solid rgba(99, 102, 241, 0.25);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
                 ">
                     <!-- Encabezado -->
                     <div style="
@@ -1702,7 +1703,7 @@
                         </div>
                     </div>
                     
-                    <!-- Distancia y Costo (destacados) -->
+                    <!-- Distancia y Costo -->
                     <div style="
                         display: flex;
                         justify-content: space-between;
@@ -1710,7 +1711,7 @@
                         background: rgba(99, 102, 241, 0.1);
                         border-radius: 8px;
                         padding: 4px 10px;
-                        margin-bottom: 8px;
+                        margin-bottom: 6px;
                         border: 1px solid rgba(99, 102, 241, 0.15);
                     ">
                         <span style="color: #60a5fa; font-weight: 600;">📏 Distancia</span>
@@ -1739,7 +1740,7 @@
                         margin-bottom: 8px;
                     "></div>
                     
-                    <!-- Información organizada en 2 columnas -->
+                    <!-- Información en 2 columnas -->
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
@@ -1774,9 +1775,9 @@
                     </div>
                 </div>
             `;
-        
+            
             layer.bindPopup(popupContent, {
-                className: 'custom-popup',
+                className: 'custom-popup-transparent',
                 maxWidth: 300,
                 minWidth: 240
             }).openPopup();
