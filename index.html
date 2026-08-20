@@ -448,22 +448,22 @@
         </div>
     
         <div class="filter-group">
-            <label for="provincia">🏛️ Ejec.:</label>
+            <label for="provincia">🏛️ Ejecuta:</label>
             <select id="provincia" style="min-width: 100px;"><option value="TODAS">Todas</option></select>
         </div>
     
         <div class="filter-group">
-            <label for="distrito">📍 Ubic.:</label>
+            <label for="distrito">📍 Provincia:</label>
             <select id="distrito" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
     
         <div class="filter-group">
-            <label for="corregimiento">🏙️ Dist.:</label>
+            <label for="corregimiento">🏙️ Distrito:</label>
             <select id="corregimiento" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
     
         <div class="filter-group">
-            <label for="poblado">📌 Corr.:</label>
+            <label for="poblado">📌 Corregimiento:</label>
             <select id="poblado" disabled style="min-width: 90px;"><option value="TODOS">Todos</option></select>
         </div>
     
@@ -1747,19 +1747,19 @@
                         border-top: 1px dashed rgba(148, 163, 184, 0.3);
                         padding-top: 4px;
                     ">
-                        <div style="color: #64748b; font-weight: 500;">Ejec.</div>
+                        <div style="color: #64748b; font-weight: 500;">Ejecuta</div>
                         <div style="color: #0f172a; font-weight: 600; text-align: right; font-size: 9px;">${ejecucion}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Prov.</div>
+                        <div style="color: #64748b; font-weight: 500;">Provincia</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${provNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Dist.</div>
+                        <div style="color: #64748b; font-weight: 500;">Distrito</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${distNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">Corr.</div>
+                        <div style="color: #64748b; font-weight: 500;">Corregimiento</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${corrNombre}</div>
                         
-                        <div style="color: #64748b; font-weight: 500;">LUPO</div>
+                        <div style="color: #64748b; font-weight: 500;">Poblado</div>
                         <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${lupoNombre}</div>
                         
                         <div style="color: #64748b; font-weight: 500;">Tipo</div>
@@ -1767,7 +1767,7 @@
                             ${segmTipoDesc}
                         </div>
                         
-                        <div style="color: #64748b; font-weight: 500;">✅ Verif.</div>
+                        <div style="color: #64748b; font-weight: 500;">✅ Verificado</div>
                         <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: right; font-size: 9px;">
                             ${verificadoIcono} ${verificado}
                         </div>
