@@ -561,7 +561,7 @@
             }
         </style>
         
-        <!-- MODAL CON FONDO BRILLANTE -->
+        <!-- MODAL CON DOS GRÁFICAS -->
         <div id="modalGrafico" style="
             display: none;
             position: fixed;
@@ -579,21 +579,21 @@
             <div style="
                 background: linear-gradient(145deg, #ffffff, #f8fafc);
                 border-radius: 24px;
-                padding: 28px 32px 24px;
-                max-width: 900px;
-                width: 92%;
-                max-height: 85vh;
+                padding: 24px 28px 20px;
+                max-width: 1100px;
+                width: 94%;
+                max-height: 90vh;
                 box-shadow: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
                 position: relative;
                 border: 2px solid rgba(245, 158, 11, 0.2);
                 animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             ">
-                <!-- Cabecera con diseño colorido -->
+                <!-- Cabecera -->
                 <div style="
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 16px;
+                    margin-bottom: 12px;
                     color: #1e293b;
                 ">
                     <div style="display: flex; align-items: center; gap: 14px;">
@@ -609,11 +609,11 @@
                             box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
                         ">📊</div>
                         <div>
-                            <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
-                                Distribución de UPM que paga viáticos
+                            <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
+                                📊 Dashboard de UPM
                             </h3>
                             <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">
-                                📍 Análisis por provincia de ejecución
+                                Distribución de viáticos y verificación por provincia
                             </p>
                         </div>
                     </div>
@@ -634,61 +634,108 @@
                     ">✕</button>
                 </div>
                 
-                <!-- Contenedor del gráfico con fondo claro -->
+                <!-- Contenedor de dos gráficas -->
                 <div style="
-                    width: 100%;
-                    height: 420px;
-                    position: relative;
-                    background: linear-gradient(135deg, #f8fafc, #ffffff);
-                    border-radius: 16px;
-                    padding: 16px;
-                    border: 2px solid #e2e8f0;
-                    box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    max-height: 65vh;
                 ">
-                    <canvas id="graficoCostosModal"></canvas>
+                    <!-- Gráfica 1: Distribución de Costos -->
+                    <div style="
+                        background: linear-gradient(135deg, #f8fafc, #ffffff);
+                        border-radius: 16px;
+                        padding: 12px 14px 10px;
+                        border: 2px solid #e2e8f0;
+                        box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
+                        display: flex;
+                        flex-direction: column;
+                    ">
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 6px;
+                        ">
+                            <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 UPM con Viático</span>
+                            <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
+                        </div>
+                        <div style="flex: 1; min-height: 200px; position: relative;">
+                            <canvas id="graficoCostosModal"></canvas>
+                        </div>
+                        <div style="
+                            display: flex;
+                            justify-content: center;
+                            gap: 16px;
+                            margin-top: 6px;
+                            font-size: 10px;
+                            color: #94a3b8;
+                            flex-wrap: wrap;
+                        ">
+                            <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Con Viático</span>
+                            <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Sin Viático</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfica 2: Progreso de Verificación -->
+                    <div style="
+                        background: linear-gradient(135deg, #f8fafc, #ffffff);
+                        border-radius: 16px;
+                        padding: 12px 14px 10px;
+                        border: 2px solid #e2e8f0;
+                        box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
+                        display: flex;
+                        flex-direction: column;
+                    ">
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 6px;
+                        ">
+                            <span style="font-size: 13px; font-weight: 700; color: #0f172a;">✅ Progreso de Verificación</span>
+                            <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
+                        </div>
+                        <div style="flex: 1; min-height: 200px; position: relative;">
+                            <canvas id="graficoVerificacionModal"></canvas>
+                        </div>
+                        <div style="
+                            display: flex;
+                            justify-content: center;
+                            gap: 16px;
+                            margin-top: 6px;
+                            font-size: 10px;
+                            color: #94a3b8;
+                            flex-wrap: wrap;
+                        ">
+                            <span><span style="display:inline-block; width:12px; height:12px; background:#facc15; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Verificadas</span>
+                            <span><span style="display:inline-block; width:12px; height:12px; background:#64748b; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Pendientes</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Leyenda colorida -->
+                <!-- Footer con estadísticas -->
                 <div style="
-                    display: flex;
-                    justify-content: center;
-                    gap: 28px;
-                    margin-top: 16px;
-                    font-size: 13px;
-                    flex-wrap: wrap;
-                ">
-                    <div style="display: flex; align-items: center; gap: 10px; background: #dcfce7; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #86efac; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);">
-                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 6px; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);"></span>
-                        <span style="color: #166534; font-weight: 700;">💰 Con Costo (SI)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; background: #fee2e2; padding: 6px 18px 6px 14px; border-radius: 30px; border: 2px solid #fca5a5; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
-                        <span style="display:inline-block; width:16px; height:16px; background: linear-gradient(135deg, #f87171, #ef4444); border-radius: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);"></span>
-                        <span style="color: #991b1b; font-weight: 700;">❌ Sin Costo (NO)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 11px; background: #f1f5f9; padding: 6px 14px; border-radius: 30px; border: 1px solid #e2e8f0;">
-                        <span>💡</span>
-                        <span>Pasa el mouse para ver detalles</span>
-                    </div>
-                </div>
-                
-                <!-- Mini footer con estadísticas en color -->
-                <div style="
-                    margin-top: 14px;
-                    padding-top: 14px;
+                    margin-top: 12px;
+                    padding-top: 10px;
                     border-top: 2px solid #e2e8f0;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    font-size: 12px;
+                    font-size: 11px;
                     color: #64748b;
                     font-weight: 500;
+                    flex-wrap: wrap;
+                    gap: 8px;
                 ">
                     <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">
                         📊 Total UPM: <span style="color: #3b82f6;">0</span> | 
-                        💰 Con Costo: <span style="color: #22c55e;">0</span> | 
-                        ❌ Sin Costo: <span style="color: #ef4444;">0</span>
+                        💰 Con Viático: <span style="color: #22c55e;">0</span> | 
+                        ❌ Sin Viático: <span style="color: #ef4444;">0</span> |
+                        ✅ Verificadas: <span style="color: #facc15;">0</span> |
+                        ⏳ Pendientes: <span style="color: #64748b;">0</span>
                     </span>
-                    <span style="color: #94a3b8; font-size: 11px;">🔄 Actualizado en tiempo real</span>
+                    <span style="color: #94a3b8; font-size: 10px;">🔄 Actualizado en tiempo real</span>
                 </div>
             </div>
         </div>
@@ -1040,19 +1087,27 @@
                 .filter(p => p !== '')
                 .sort((a, b) => a.localeCompare(b));
         
-            // Actualizar estadísticas en el footer
-            let totalUPM = 0;
-            let totalConCosto = 0;
-            let totalSinCosto = 0;
-            Object.values(stats).forEach(s => {
-                totalUPM += s.total;
-                totalConCosto += s.conCosto;
-                totalSinCosto += s.sinCosto;
-            });
-            document.getElementById('statsGrafico').innerHTML = 
-                `📊 Total UPM: <span style="color: #3b82f6; font-weight: 700;">${totalUPM}</span> | ` +
-                `💰 Con Costo: <span style="color: #22c55e; font-weight: 700;">${totalConCosto}</span> | ` +
-                `❌ Sin Costo: <span style="color: #ef4444; font-weight: 700;">${totalSinCosto}</span>`;
+                // ✅ Actualizar estadísticas en el footer (incluyendo verificación)
+                let totalUPM = 0;
+                let totalConCosto = 0;
+                let totalSinCosto = 0;
+                let totalVerificado = 0;
+                let totalPendiente = 0;
+                
+                Object.values(stats).forEach(s => {
+                    totalUPM += s.total;
+                    totalConCosto += s.conCosto;
+                    totalSinCosto += s.sinCosto;
+                    totalVerificado += s.verificado;
+                    totalPendiente += (s.total - s.verificado);
+                });
+                
+                document.getElementById('statsGrafico').innerHTML = 
+                    `📊 Total UPM: <span style="color: #3b82f6; font-weight: 700;">${totalUPM}</span> | ` +
+                    `💰 Con Viático: <span style="color: #22c55e; font-weight: 700;">${totalConCosto}</span> | ` +
+                    `❌ Sin Viático: <span style="color: #ef4444; font-weight: 700;">${totalSinCosto}</span> | ` +
+                    `✅ Verificadas: <span style="color: #facc15; font-weight: 700;">${totalVerificado}</span> | ` +
+                    `⏳ Pendientes: <span style="color: #64748b; font-weight: 700;">${totalPendiente}</span>`;
         
             if (provs.length === 0) {
                 if (chartCostosModal) {
@@ -1186,6 +1241,152 @@
                 }
             });
         }
+        
+        // Variable global para el gráfico de verificación
+        let chartVerificacionModal = null;
+        
+        // Función para actualizar el gráfico de verificación en el modal
+        function actualizarGraficoVerificacionModal(listaUPM) {
+            const canvas = document.getElementById('graficoVerificacionModal');
+            if (!canvas) return;
+        
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            
+            const provs = Object.keys(stats)
+                .filter(p => p !== '')
+                .sort((a, b) => a.localeCompare(b));
+        
+            if (provs.length === 0) {
+                if (chartVerificacionModal) {
+                    chartVerificacionModal.destroy();
+                    chartVerificacionModal = null;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('📊 Sin datos para mostrar', canvas.width/2, canvas.height/2);
+                return;
+            }
+        
+            const labels = provs;
+            const datosVerificadas = provs.map(p => stats[p].verificado || 0);
+            const datosPendientes = provs.map(p => (stats[p].total || 0) - (stats[p].verificado || 0));
+        
+            if (chartVerificacionModal) {
+                chartVerificacionModal.destroy();
+                chartVerificacionModal = null;
+            }
+        
+            const ctx = canvas.getContext('2d');
+        
+            // Gradientes para las barras
+            const gradientVerde = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientVerde.addColorStop(0, '#fde047');
+            gradientVerde.addColorStop(1, '#facc15');
+        
+            const gradientGris = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientGris.addColorStop(0, '#94a3b8');
+            gradientGris.addColorStop(1, '#64748b');
+        
+            chartVerificacionModal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '✅ Verificadas',
+                            data: datosVerificadas,
+                            backgroundColor: 'rgba(250, 204, 21, 0.8)',
+                            borderColor: '#facc15',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            hoverBackgroundColor: 'rgba(234, 179, 8, 0.9)',
+                            hoverBorderColor: '#ca8a04',
+                            hoverBorderWidth: 3,
+                        },
+                        {
+                            label: '⏳ Pendientes',
+                            data: datosPendientes,
+                            backgroundColor: 'rgba(148, 163, 184, 0.7)',
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            hoverBackgroundColor: 'rgba(100, 116, 139, 0.85)',
+                            hoverBorderColor: '#64748b',
+                            hoverBorderWidth: 3,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#0f172a',
+                            bodyColor: '#334155',
+                            borderColor: 'rgba(250, 204, 21, 0.3)',
+                            borderWidth: 2,
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} UPM (${porcentaje}%)`;
+                                },
+                                title: function(context) {
+                                    return `📍 ${context[0].label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(226, 232, 240, 0.6)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    size: 10,
+                                    weight: '600',
+                                },
+                                maxRotation: 45,
+                                minRotation: 30,
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(226, 232, 240, 0.6)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    size: 10,
+                                },
+                                stepSize: 1,
+                            },
+                            beginAtZero: true,
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        
         
         // Función para obtener estadísticas agrupadas por provincia de ejecución
         function obtenerEstadisticasPorEjecucion(listaUPM) {
@@ -1925,6 +2126,7 @@
             // =============================================================
             actualizarManejadorPorcentajes(emlFiltrados);
             actualizarGraficoModal(emlFiltrados);
+            actualizarGraficoVerificacionModal(emlFiltrados);
         
             // =============================================================
             // RENDERIZAR OFICINAS (CÓDIGO COMPLETO)
@@ -2222,6 +2424,7 @@
             modalGrafico.style.display = 'flex';
             // Actualizar gráfico al abrir (por si cambió)
             actualizarGraficoModal(emlFiltrados);
+            actualizarGraficoVerificacionModal(emlFiltrados);
         });
         
         // Cerrar modal con botón ✕
