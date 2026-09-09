@@ -428,13 +428,14 @@
     
         <div class="filter-group">
             <label for="segm_tipo">Tipo:</label>
-            <select id="segm_tipo" style="min-width: 90px;">
+            <select id="segm_tipo" style="min-width: 100px;">
                 <option value="TODOS">Todos</option>
                 <option value="URBANO">Urbano</option>
                 <option value="RURAL">Rural</option>
                 <option value="INDIGENA">Indígena</option>
-                <option value="DIFICIL_ACCESO">⚠️ Dificil Acceso</option>
+                <option value="DIFICIL_ACCESO">⚠️ DA</option>
                 <option value="VERIFICADO">✅ Verificado</option>
+                <option value="NO_VERIFICADO">❌ No verificado</option>  <!-- NUEVO -->
             </select>
         </div>
     
@@ -2063,20 +2064,30 @@
             emlFiltrados = emlBaseGeografica.filter(f => {
                 const props = f.properties || {};
                 
+                // Filtro por DIFICIL_ACCESO
                 if (segmSel === 'DIFICIL_ACCESO') {
                     if (String(props.DA).trim() !== '1') return false;
-                } else if (segmSel === 'VERIFICADO') {
+                } 
+                // Filtro por VERIFICADO
+                else if (segmSel === 'VERIFICADO') {
                     if (!esVerificado(props)) return false;
-                } else if (segmSel !== 'TODOS') {
+                } 
+                // ✅ NUEVO: Filtro por NO VERIFICADO
+                else if (segmSel === 'NO_VERIFICADO') {
+                    if (esVerificado(props)) return false;  // Solo NO verificadas
+                } 
+                // Filtro por tipo de segmento (Urbano, Rural, Indígena)
+                else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
                 }
-        
+            
+                // Filtro de COSTO
                 if (costoSel !== 'TODOS') {
                     const costoVal = String(props.COSTO || '').trim().toUpperCase();
                     if (costoVal !== costoSel) return false;
                 }
-        
+            
                 return true;
             });
         
@@ -2277,16 +2288,16 @@
             selectDist.value = 'TODOS';
             selectCorr.value = 'TODOS';
             selectPob.value = 'TODOS';
-            selectLupo.value = 'TODOS';  // ✅ NUEVO
+            selectLupo.value = 'TODOS';
             
             selectDist.disabled = true;
             selectCorr.disabled = true;
             selectPob.disabled = true;
-            selectLupo.disabled = true;  // ✅ NUEVO
+            selectLupo.disabled = true;
         
             lineasDistanciaLayer.clearLayers();
             ultimoPoligonoSeleccionado = null;
-            map.off('click', limpiarLineasDistancia); // ✅ Limpiar event listener
+            map.off('click', limpiarLineasDistancia);
             
             filtrarYRenderizar();
             map.setView([8.5, -80.0], 8);
