@@ -186,6 +186,15 @@
         .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-export:hover { background: #bbf7d0; }
         
+        .btn-back { 
+            background: #dbeafe; 
+            color: #1e40af; 
+            border: 1px solid #93c5fd;
+        }
+        .btn-back:hover { 
+            background: #93c5fd; 
+            color: #1e3a8a;
+        }
         /* 3. DASHBOARD - SIN SCROLL */
         .pct-dashboard {
             background: #0f172a;
@@ -474,8 +483,9 @@
         </div>
         
         <div class="btn-group">
-            <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
-            <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
+                <button class="btn-back" onclick="volverAtras()">⬅️ Regresar</button>
+                <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
+                <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
         </div>
     </div>
 
@@ -2280,6 +2290,118 @@
             map.setView([8.5, -80.0], 8);
             }
          }    
+
+        // =============================================================
+        // FUNCIÓN: VOLVER ATRÁS (Deshacer filtros en cascada)
+        // =============================================================
+        function volverAtras() {
+            // Obtener valores actuales
+            const ejecucionSel = selectProv.value;
+            const provSel = selectDist.value;
+            const distSel = selectCorr.value;
+            const corrSel = selectPob.value;
+            const lupoSel = selectLupo.value;
+            
+            // =============================================================
+            // CASO 1: Hay Lugar Poblado seleccionado → limpiar LUPO
+            // =============================================================
+            if (lupoSel !== 'TODOS') {
+                selectLupo.value = 'TODOS';
+                console.log('⬅️ Regresando: Lugar Poblado → Corregimiento');
+                filtrarYRenderizar();
+                return;
+            }
+            
+            // =============================================================
+            // CASO 2: Hay Corregimiento seleccionado → limpiar CORR
+            // =============================================================
+            if (corrSel !== 'TODOS') {
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                selectLupo.disabled = true;
+                
+                // Restaurar el selector de Lugar Poblado (vacío)
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                
+                console.log('⬅️ Regresando: Corregimiento → Distrito');
+                filtrarYRenderizar();
+                return;
+            }
+            
+            // =============================================================
+            // CASO 3: Hay Distrito seleccionado → limpiar DIST
+            // =============================================================
+            if (distSel !== 'TODOS') {
+                selectCorr.value = 'TODOS';
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                
+                // Restaurar los selectores vacíos
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                
+                console.log('⬅️ Regresando: Distrito → Provincia');
+                filtrarYRenderizar();
+                return;
+            }
+            
+            // =============================================================
+            // CASO 4: Hay Provincia seleccionada → limpiar PROV
+            // =============================================================
+            if (provSel !== 'TODOS') {
+                selectDist.value = 'TODOS';
+                selectCorr.value = 'TODOS';
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                
+                // Restaurar los selectores vacíos
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                
+                console.log('⬅️ Regresando: Provincia → Ejecución');
+                filtrarYRenderizar();
+                return;
+            }
+            
+            // =============================================================
+            // CASO 5: Hay Ejecución seleccionada → limpiar EJECUCION
+            // =============================================================
+            if (ejecucionSel !== 'TODAS') {
+                selectProv.value = 'TODAS';
+                selectDist.value = 'TODOS';
+                selectDist.disabled = true;
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                
+                // Restaurar los selectores vacíos
+                selectDist.innerHTML = '<option value="TODOS">Todos</option>';
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                
+                console.log('⬅️ Regresando: Ejecución → Todos');
+                filtrarYRenderizar();
+                return;
+            }
+            
+            // =============================================================
+            // CASO 6: No hay filtros de cascada → mostrar mensaje
+            // =============================================================
+            console.log('ℹ️ No hay filtros en cascada para regresar');
+            // Opcional: mostrar mensaje visual
+            // alert('No hay filtros en cascada para regresar');
+        }
+        
         function resetMap() {
             inputUpm.value = '';
             selectSegm.value = 'TODOS';
