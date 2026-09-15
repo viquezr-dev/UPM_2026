@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>UPM Mercado Laboral - Móvil</title>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #334155;
+            position: fixed;
+            overscroll-behavior: none;
+        }
+        
+        /* ============================================================
+           HEADER CON MENÚ HAMBURGUESA
+           ============================================================ */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 52px;
+            background: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            z-index: 2000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            padding-top: env(safe-area-inset-top);
+            height: calc(52px + env(safe-area-inset-top));
+        }
+        
+        .btn-hamburger {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .btn-hamburger:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.2;
+            padding: 0 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            letter-spacing: 0.3px;
+        }
+        
+        .header-title small {
+            display: block;
+            font-size: 9px;
+            font-weight: 500;
+            color: #94a3b8;
+            margin-top: 1px;
+        }
+        
+        .btn-dashboard-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .btn-dashboard-toggle:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .btn-dashboard-toggle.active {
+            background: #f59e0b;
+            border-color: #f59e0b;
+        }
+        
+        /* ============================================================
+           DRAWER DE FILTROS (MENÚ LATERAL)
+           ============================================================ */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+        
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 85%;
+            max-width: 340px;
+            background: white;
+            z-index: 3001;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .drawer.active {
+            transform: translateX(0);
+        }
+        
+        .drawer-header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #3b82f6;
+            padding-top: calc(16px + env(safe-area-inset-top));
+        }
+        
+        .drawer-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-close-drawer {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-close-drawer:active {
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .drawer-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .drawer-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .drawer-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        
+        .filter-group-mobile {
+            margin-bottom: 14px;
+        }
+        
+        .filter-group-mobile label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filter-group-mobile select,
+        .filter-group-mobile input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #334155;
+            outline: none;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .filter-group-mobile select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23334155%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 11px;
+            padding-right: 32px;
+        }
+        
+        .filter-group-mobile select:focus,
+        .filter-group-mobile input:focus {
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        
+        .filter-group-mobile select:disabled {
+            background: #f1f5f9;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* ============================================================
+           DASHBOARD COLAPSABLE (ENCIMA DEL MAPA)
+           ============================================================ */
+        .dashboard-mobile {
+            position: fixed;
+            top: calc(52px + env(safe-area-inset-top));
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            z-index: 1500;
+            transform: translateY(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-bottom: 2px solid #3b82f6;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+        
+        .dashboard-mobile.active {
+            transform: translateY(0);
+        }
+        
+        .dashboard-content {
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        
+        .pct-card-mobile {
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 62px;
+        }
+        
+        .pct-card-mobile .pct-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pct-card-mobile .pct-val-mobile {
+            font-size: 17px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        
+        .pct-card-mobile .pct-label-mobile {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .pct-card-mobile .pct-count-mobile {
+            font-size: 9px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .pct-progress-bg-mobile {
+            width: 100%;
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .pct-progress-fill-mobile {
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        
+        /* ============================================================
+           MAPA
+           ============================================================ */
+        #map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: calc(56px + env(safe-area-inset-bottom));
+            width: 100%;
+            z-index: 1;
+            background: #e2e8f0;
+        }
+        
+        /* Ajustes de Leaflet para móvil */
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+        
+        .leaflet-control-attribution {
+            font-size: 8px !important;
+            background: rgba(255,255,255,0.7) !important;
+            padding: 2px 4px !important;
+            max-width: 60%;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            padding: 0 !important;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-width: 200px !important;
+            max-width: 260px !important;
+        }
+        
+        /* ============================================================
+           BOTTOM BAR (BARRA INFERIOR FIJA)
+           ============================================================ */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(56px + env(safe-area-inset-bottom));
+            background: #1e293b;
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 2000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            border-top: 1px solid #334155;
+        }
+        
+        .bottom-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            height: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 4px;
+            position: relative;
+        }
+        
+        .bottom-btn .icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        
+        .bottom-btn:active {
+            background: rgba(255,255,255,0.05);
+            transform: scale(0.95);
+        }
+        
+        .bottom-btn.primary {
+            color: #3b82f6;
+        }
+        
+        .bottom-btn.danger:active {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .bottom-btn.success:active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        
+        .bottom-btn.grafico {
+            color: #f59e0b;
+        }
+        
+        /* Contador de UPM flotante */
+        .counter-badge {
+            position: fixed;
+            top: calc(60px + env(safe-area-inset-top));
+            right: 10px;
+            background: rgba(30, 41, 59, 0.95);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 1400;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+            pointer-events: none;
+            max-width: 60%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ============================================================
+           MODAL DE GRÁFICOS A PANTALLA COMPLETA
+           ============================================================ */
+        .modal-fullscreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 4000;
+            flex-direction: column;
+            animation: slideUpFull 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modal-fullscreen.active {
+            display: flex;
+        }
+        
+        @keyframes slideUpFull {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .modal-fs-header {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 14px 16px;
+            padding-top: calc(14px + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+        
+        .modal-fs-header h2 {
+            font-size: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-close-modal {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-close-modal:active {
+            background: rgba(255,255,255,0.35);
+        }
+        
+        .modal-fs-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .chart-container-mobile {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 2px solid #e2e8f0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.03);
+        }
+        
+        .chart-title-mobile {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chart-title-mobile small {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 280px;
+        }
+        
+        .modal-fs-footer {
+            padding: 10px 14px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            border-top: 2px solid #e2e8f0;
+            background: #f8fafc;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        
+        .modal-fs-footer .stats {
+            font-size: 10px;
+            color: #475569;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        
+        .modal-fs-footer .stats span {
+            display: inline-block;
+            margin: 2px 4px;
+        }
+        
+        /* ============================================================
+           BOTTOM SHEET PARA POPUP DE UPM
+           ============================================================ */
+        .bottom-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            z-index: 3500;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
+            max-height: 75vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+        
+        .bottom-sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            margin: 8px auto 4px;
+            flex-shrink: 0;
+        }
+        
+        .bottom-sheet-header {
+            padding: 8px 16px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .bottom-sheet-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-close-sheet {
+            background: #f1f5f9;
+            border: none;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-close-sheet:active {
+            background: #e2e8f0;
+        }
+        
+        .bottom-sheet-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Estilos para el contenido del popup en el bottom sheet */
+        .sheet-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .sheet-highlight {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .sheet-highlight-item {
+            padding: 10px 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .sheet-highlight-item .label {
+            font-size: 10px;
+            font-weight: 600;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .sheet-highlight-item .value {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+        
+        .sheet-highlight-item.distancia {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .sheet-highlight-item.costo-si {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+        
+        .sheet-highlight-item.costo-no {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+        
+        .sheet-highlight-item.costo-na {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .sheet-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            font-size: 12px;
+        }
+        
+        .sheet-info-row .key {
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .sheet-info-row .value {
+            color: #0f172a;
+            font-weight: 700;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+        
+        /* ============================================================
+           LEYENDA FLOTANTE (OCULTA POR DEFECTO EN MÓVIL)
+           ============================================================ */
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 8px;
+            line-height: 13px;
+            color: #334155;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size: 9px;
+            width: auto;
+            max-width: 160px;
+        }
+        
+        .legend h4 {
+            margin: 0 0 3px 0;
+            color: #475569;
+            font-size: 10px;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 2px;
+        }
+        
+        .legend p {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1px;
+            white-space: nowrap;
+        }
+        
+        .legend i {
+            width: 9px;
+            height: 9px;
+            margin-right: 4px;
+            border-radius: 2px;
+            border: 1px solid #334155;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        
+        /* ============================================================
+           ETIQUETAS DE DISTANCIA
+           ============================================================ */
+        .distance-label-callejero {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: #000000;
+            font-weight: 800;
+            font-size: 10px;
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+            white-space: nowrap;
+        }
+        
+        .distance-label-satelite {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 10px;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            white-space: nowrap;
+        }
+        
+        /* ============================================================
+           MODAL DE CONTRASEÑA
+           ============================================================ */
+        .modal-password {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-password.active {
+            display: flex;
+        }
+        
+        .modal-password-content {
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-password-content h3 {
+            font-size: 16px;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        
+        .modal-password-content p {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        
+        .modal-password-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            text-align: center;
+            outline: none;
+        }
+        
+        .modal-password-content input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        
+        .modal-password-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .modal-password-buttons button {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-cancel-pass {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-cancel-pass:active {
+            background: #cbd5e1;
+        }
+        
+        .btn-confirm-pass {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-confirm-pass:active {
+            background: #1d4ed8;
+        }
+        
+        /* ============================================================
+           TOAST NOTIFICATIONS
+           ============================================================ */
+        .toast {
+            position: fixed;
+            top: calc(80px + env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #1e293b;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            z-index: 6000;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast.success { background: #15803d; }
+        .toast.error { background: #b91c1c; }
+        .toast.info { background: #1e40af; }
+        
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <div class="header">
+        <button class="btn-hamburger" id="btnHamburger">☰</button>
+        <div class="header-title">
+            🏢 UPM Mercado Laboral 2026
+            <small>Actualización Precensal</small>
+        </div>
+        <button class="btn-dashboard-toggle" id="btnDashboardToggle">📊</button>
+    </div>
+
+    <!-- ============================================================
+         CONTADOR FLOTANTE
+         ============================================================ -->
+    <div class="counter-badge" id="counterBadge">0 UPM | 0 Oficinas</div>
+
+    <!-- ============================================================
+         MAPA
+         ============================================================ -->
+    <div id="map"></div>
+
+    <!-- ============================================================
+         DASHBOARD COLAPSABLE
+         ============================================================ -->
+    <div class="dashboard-mobile" id="dashboardMobile">
+        <div class="dashboard-content">
+            <div class="pct-card-mobile">
+                <div class="pct-row">
+                    <span class="pct-val-mobile" id="pct-verificado-m" style="color:#facc15;">0%</span>
+                    <span class="pct-count-mobile" id="cnt-verificado-m">(0/0)</span>
+                </div>
+                <span class="pct-label-mobile">✅ Verificados</span>
+                <div class="pct-progress-bg-mobile"><div class="pct-progress-fill-mobile" style="background:#facc15;" id="bar-verificado-m"></div></div>
+            </div>
+
+            <div class="pct-card-mobile">
+                <div class="pct-row">
+                    <span class="pct-val-mobile" id="pct-urbano-m" style="color:#60a5fa;">0%</span>
+                    <span class="pct-count-mobile" id="cnt-urbano-m">(0/0)</span>
+                </div>
+                <span class="pct-label-mobile">🏙️ Urbano</span>
+                <div class="pct-progress-bg-mobile"><div class="pct-progress-fill-mobile" style="background:#60a5fa;" id="bar-urbano-m"></div></div>
+            </div>
+
+            <div class="pct-card-mobile">
+                <div class="pct-row">
+                    <span class="pct-val-mobile" id="pct-rural-m" style="color:#4ade80;">0%</span>
+                    <span class="pct-count-mobile" id="cnt-rural-m">(0/0)</span>
+                </div>
+                <span class="pct-label-mobile">🌾 Rural</span>
+                <div class="pct-progress-bg-mobile"><div class="pct-progress-fill-mobile" style="background:#4ade80;" id="bar-rural-m"></div></div>
+            </div>
+
+            <div class="pct-card-mobile">
+                <div class="pct-row">
+                    <span class="pct-val-mobile" id="pct-indigena-m" style="color:#c084fc;">0%</span>
+                    <span class="pct-count-mobile" id="cnt-indigena-m">(0/0)</span>
+                </div>
+                <span class="pct-label-mobile">🏞️ Indígena</span>
+                <div class="pct-progress-bg-mobile"><div class="pct-progress-fill-mobile" style="background:#c084fc;" id="bar-indigena-m"></div></div>
+            </div>
+
+            <div class="pct-card-mobile" style="grid-column: span 2;">
+                <div class="pct-row">
+                    <span class="pct-val-mobile" id="pct-da-m" style="color:#f87171;">0%</span>
+                    <span class="pct-count-mobile" id="cnt-da-m">(0/0)</span>
+                </div>
+                <span class="pct-label-mobile">⚠️ Difícil Acceso</span>
+                <div class="pct-progress-bg-mobile"><div class="pct-progress-fill-mobile" style="background:#f87171;" id="bar-da-m"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         BOTTOM BAR (ACCIONES PRINCIPALES)
+         ============================================================ -->
+    <div class="bottom-bar">
+        <button class="bottom-btn" id="btnRegresar">
+            <span class="icon">⬅️</span>
+            <span>Regresar</span>
+        </button>
+        <button class="bottom-btn primary" id="btnFiltros">
+            <span class="icon">🔍</span>
+            <span>Filtros</span>
+        </button>
+        <button class="bottom-btn grafico" id="btnGrafico">
+            <span class="icon">📊</span>
+            <span>Gráfico</span>
+        </button>
+        <button class="bottom-btn success" id="btnExportar">
+            <span class="icon">📥</span>
+            <span>CSV</span>
+        </button>
+        <button class="bottom-btn danger" id="btnReset">
+            <span class="icon">🔄</span>
+            <span>Reset</span>
+        </button>
+    </div>
+
+    <!-- ============================================================
+         DRAWER DE FILTROS
+         ============================================================ -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer" id="drawerFiltros">
+        <div class="drawer-header">
+            <h2>🔍 Filtros</h2>
+            <button class="btn-close-drawer" id="btnCloseDrawer">✕</button>
+        </div>
+        <div class="drawer-content">
+            
+            <div class="filter-group-mobile">
+                <label for="buscar_upm">🔎 Buscar UPM</label>
+                <input type="text" id="buscar_upm" placeholder="Ej. 0101..." inputmode="numeric">
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="segm_tipo">📋 Tipo</label>
+                <select id="segm_tipo">
+                    <option value="TODOS">Todos</option>
+                    <option value="URBANO">🏙️ Urbano</option>
+                    <option value="RURAL">🌾 Rural</option>
+                    <option value="INDIGENA">🏞️ Indígena</option>
+                    <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso</option>
+                    <option value="VERIFICADO">✅ Verificado</option>
+                    <option value="NO_VERIFICADO">❌ No Verificado</option>
+                </select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="filtro_costo">💰 Costo</label>
+                <select id="filtro_costo">
+                    <option value="TODOS">Todos</option>
+                    <option value="SI">✅ Con Viático</option>
+                    <option value="NO">❌ Sin Viático</option>
+                </select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="provincia">🏛️ Ejecuta</label>
+                <select id="provincia"><option value="TODAS">Todas</option></select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="distrito">📍 Provincia (Ubicación)</label>
+                <select id="distrito" disabled><option value="TODOS">Todas</option></select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="corregimiento">🏙️ Distrito</label>
+                <select id="corregimiento" disabled><option value="TODOS">Todos</option></select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="poblado">📌 Corregimiento</label>
+                <select id="poblado" disabled><option value="TODOS">Todos</option></select>
+            </div>
+
+            <div class="filter-group-mobile">
+                <label for="lupo">📍 Lugar Poblado</label>
+                <select id="lupo" disabled><option value="TODOS">Todos</option></select>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL DE GRÁFICOS (PANTALLA COMPLETA)
+         ============================================================ -->
+    <div class="modal-fullscreen" id="modalGraficos">
+        <div class="modal-fs-header">
+            <h2>📊 Dashboard UPM</h2>
+            <button class="btn-close-modal" id="btnCerrarModal">✕</button>
+        </div>
+        <div class="modal-fs-content">
+            
+            <div class="chart-container-mobile">
+                <div class="chart-title-mobile">
+                    <span>💰 Viáticos</span>
+                    <small>Por ejecución</small>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="graficoCostosModal"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container-mobile">
+                <div class="chart-title-mobile">
+                    <span>✅ Verificación</span>
+                    <small>Por ejecución</small>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="graficoVerificacionModal"></canvas>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-fs-footer">
+            <div class="stats" id="statsGrafico">
+                📊 Cargando...
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         BOTTOM SHEET PARA POPUP DE UPM
+         ============================================================ -->
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-header">
+            <h3 id="sheetTitle">📍 UPM</h3>
+            <button class="btn-close-sheet" id="btnCloseSheet">✕</button>
+        </div>
+        <div class="bottom-sheet-content" id="sheetContent">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL DE CONTRASEÑA
+         ============================================================ -->
+    <div class="modal-password" id="modalPassword">
+        <div class="modal-password-content">
+            <h3>🔒 Confirmación</h3>
+            <p>Ingresa la contraseña para descargar el CSV</p>
+            <input type="password" id="inputPassModal" placeholder="Contraseña">
+            <div class="modal-password-buttons">
+                <button class="btn-cancel-pass" id="btnCancelarModal">Cancelar</button>
+                <button class="btn-confirm-pass" id="btnAceptarModal">Descargar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         TOAST NOTIFICATION
+         ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // =============================================================
+        // 1. INICIALIZACIÓN DEL MAPA
+        // =============================================================
+        const map = L.map('map', {
+            center: [8.5, -80.0],
+            zoom: 8,
+            zoomControl: false,
+            attributionControl: true,
+            tap: true
+        });
+
+        const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OSM',
+            maxZoom: 19
+        }).addTo(map);
+
+        const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; Esri',
+            maxZoom: 19
+        });
+
+        L.control.layers({ "🗺️ Callejero": streetMap, "🛰️ Satélite": satelliteMap }, null, { position: 'topright' }).addTo(map);
+
+        // Botones de zoom personalizados
+        const ZoomControl = L.Control.extend({
+            options: { position: 'bottomleft' },
+            onAdd: function() {
+                const container = L.DomUtil.create('div');
+                container.style.cssText = 'display:flex; flex-direction:column; gap:6px; margin-bottom:70px; margin-left:10px;';
+                
+                const btnStyle = 'width:44px; height:44px; background:rgba(30,41,59,0.95); color:white; border:2px solid rgba(59,130,246,0.4); border-radius:12px; font-size:22px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.3); backdrop-filter:blur(8px);';
+                
+                const btnIn = L.DomUtil.create('button', '', container);
+                btnIn.innerHTML = '+';
+                btnIn.style.cssText = btnStyle;
+                btnIn.onclick = function(e) { L.DomEvent.stopPropagation(e); map.zoomIn(); };
+                
+                const btnOut = L.DomUtil.create('button', '', container);
+                btnOut.innerHTML = '−';
+                btnOut.style.cssText = btnStyle;
+                btnOut.onclick = function(e) { L.DomEvent.stopPropagation(e); map.zoomOut(); };
+                
+                return container;
+            }
+        });
+        map.addControl(new ZoomControl());
+
+        // =============================================================
+        // 2. VARIABLES GLOBALES
+        // =============================================================
+        const provinciaContornoLayer = L.layerGroup().addTo(map);
+        const poligonosEmlLayer = L.layerGroup().addTo(map);
+        const oficinasLayer = L.layerGroup().addTo(map);
+        const lineasDistanciaLayer = L.layerGroup().addTo(map);
+
+        let emlData = [];
+        let oficinaData = [];
+        let provinciaData = [];
+        let emlFiltrados = [];
+        let oficinasFiltradasGlobal = [];
+        let mapaActual = 'callejero';
+        let ultimoPoligonoSeleccionado = null;
+        let featureActualSheet = null;
+
+        const provinciaColores = {};
+        const paletaColores = [
+            '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+            '#911eb4', '#46f0f0', '#f032e6', '#bcfd4c', '#fabebe',
+            '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000'
+        ];
+
+        const comarcasMap = {
+            'NGÄBE-BUGLÉ': 'NGABE-BUGLE',
+            'GULA YALA': 'GULA-YALA',
+            'MADUGANDI': 'MADUGANDI',
+            'KUNA DE WARGANDI': 'KUNA-DE-WARGANDI',
+            'EMBERÁ': 'EMBERA'
+        };
+
+        function obtenerColorProvincia(provNombre) {
+            if (!provNombre) return '#64748b';
+            const norm = provNombre.trim().toUpperCase();
+            const normKey = comarcasMap[norm] || norm;
+            if (!provinciaColores[normKey]) {
+                const index = Object.keys(provinciaColores).length % paletaColores.length;
+                provinciaColores[normKey] = paletaColores[index];
+            }
+            return provinciaColores[normKey];
+        }
+
+        // Referencias DOM
+        const inputUpm = document.getElementById('buscar_upm');
+        const selectSegm = document.getElementById('segm_tipo');
+        const selectProv = document.getElementById('provincia');
+        const selectDist = document.getElementById('distrito');
+        const selectCorr = document.getElementById('corregimiento');
+        const selectPob = document.getElementById('poblado');
+        const selectCosto = document.getElementById('filtro_costo');
+        const selectLupo = document.getElementById('lupo');
+
+        // =============================================================
+        // 3. CONTROL DEL DRAWER
+        // =============================================================
+        const drawer = document.getElementById('drawerFiltros');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+
+        function abrirDrawer() {
+            drawer.classList.add('active');
+            drawerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarDrawer() {
+            drawer.classList.remove('active');
+            drawerOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('btnHamburger').addEventListener('click', abrirDrawer);
+        document.getElementById('btnCloseDrawer').addEventListener('click', cerrarDrawer);
+        document.getElementById('btnFiltros').addEventListener('click', abrirDrawer);
+        drawerOverlay.addEventListener('click', cerrarDrawer);
+
+        // =============================================================
+        // 4. DASHBOARD COLAPSABLE
+        // =============================================================
+        const dashboardMobile = document.getElementById('dashboardMobile');
+        const btnDashboardToggle = document.getElementById('btnDashboardToggle');
+
+        btnDashboardToggle.addEventListener('click', function() {
+            dashboardMobile.classList.toggle('active');
+            btnDashboardToggle.classList.toggle('active');
+        });
+
+        // =============================================================
+        // 5. BOTTOM SHEET
+        // =============================================================
+        const bottomSheet = document.getElementById('bottomSheet');
+        const sheetTitle = document.getElementById('sheetTitle');
+        const sheetContent = document.getElementById('sheetContent');
+
+        function abrirBottomSheet(titulo, contenidoHTML) {
+            sheetTitle.innerHTML = titulo;
+            sheetContent.innerHTML = contenidoHTML;
+            bottomSheet.classList.add('active');
+        }
+
+        function cerrarBottomSheet() {
+            bottomSheet.classList.remove('active');
+            featureActualSheet = null;
+            lineasDistanciaLayer.clearLayers();
+        }
+
+        document.getElementById('btnCloseSheet').addEventListener('click', cerrarBottomSheet);
+
+        // =============================================================
+        // 6. MODAL DE GRÁFICOS
+        // =============================================================
+        const modalGraficos = document.getElementById('modalGraficos');
+
+        document.getElementById('btnGrafico').addEventListener('click', function() {
+            modalGraficos.classList.add('active');
+            actualizarGraficoModal(emlFiltrados);
+            actualizarGraficoVerificacionModal(emlFiltrados);
+        });
+
+        document.getElementById('btnCerrarModal').addEventListener('click', function() {
+            modalGraficos.classList.remove('active');
+        });
+
+        // =============================================================
+        // 7. TOAST
+        // =============================================================
+        let toastTimeout = null;
+        function mostrarToast(mensaje, tipo = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensaje;
+            toast.className = 'toast show ' + tipo;
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // =============================================================
+        // 8. UTILIDADES
+        // =============================================================
+        function normalizarSegmTipo(val) {
+            const segmStr = String(val ?? '').trim();
+            if (segmStr === '01' || segmStr === '1' || segmStr.toUpperCase() === 'URBANO') return 'URBANO';
+            if (segmStr === '02' || segmStr === '2' || segmStr.toUpperCase() === 'RURAL') return 'RURAL';
+            if (segmStr === '03' || segmStr === '3' || segmStr.toUpperCase() === 'INDIGENA') return 'INDIGENA';
+            return segmStr;
+        }
+
+        function esVerificado(props) {
+            if (!props) return false;
+            return String(props.VERIFICADO || '').trim().toUpperCase() === 'SI';
+        }
+
+        function obtenerProvinciaEjecucion(props) {
+            if (!props) return '';
+            if (props.EJECUCION && props.EJECUCION.trim() !== '') return props.EJECUCION.trim().toUpperCase();
+            if (props.PROV_NOMB) return props.PROV_NOMB.trim().toUpperCase();
+            return '';
+        }
+
+        function obtenerCoordenadasOficina(feature) {
+            const props = feature.properties || {};
+            let lat = parseFloat(props.OFICE_LAT);
+            let lon = parseFloat(props.OFICE_LONG);
+            if (isNaN(lat) || isNaN(lon)) {
+                if (feature.geometry && feature.geometry.type === 'Point') {
+                    lon = feature.geometry.coordinates[0];
+                    lat = feature.geometry.coordinates[1];
+                }
+            }
+            if (isNaN(lat) || isNaN(lon)) return null;
+            return { lat, lon };
+        }
+
+        function obtenerDescripcionTipo(segmTipo) {
+            const tipoMap = { '01': 'URBANO', '02': 'RURAL', '03': 'INDÍGENA' };
+            return tipoMap[String(segmTipo || '').trim()] || String(segmTipo || '') || 'N/D';
+        }
+
+        function obtenerColorTipo(segmTipo) {
+            const tipoStr = String(segmTipo || '').trim();
+            if (tipoStr === '01') return '#2563eb';
+            if (tipoStr === '02') return '#16a34a';
+            if (tipoStr === '03') return '#7c3aed';
+            return '#64748b';
+        }
+
+        // =============================================================
+        // 9. OBTENCIÓN DE DATOS EN CASCADA
+        // =============================================================
+        function obtenerProvinciasEjecucion() {
+            const provincias = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                if (props.EJECUCION && props.EJECUCION.trim() !== '') {
+                    provincias.add(props.EJECUCION.trim().toUpperCase());
+                }
+            });
+            return Array.from(provincias).sort();
+        }
+
+        function obtenerProvinciasPorEjecucion(ejecucion) {
+            const provincias = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                if (provEjecucion === ejecucion && props.PROV_NOMB) {
+                    provincias.add(props.PROV_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(provincias).sort();
+        }
+
+        function obtenerDistritosPorProvincia(provNombre, ejecucion) {
+            const distritos = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const prov = (props.PROV_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                if (prov === provNombre && props.DIST_NOMB) {
+                    distritos.add(props.DIST_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(distritos).sort();
+        }
+
+        function obtenerCorregimientosPorDistrito(distrito, ejecucion) {
+            const corregimientos = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const dist = (props.DIST_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                if (dist === distrito && props.CORR_NOMB) {
+                    corregimientos.add(props.CORR_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(corregimientos).sort();
+        }
+
+        function obtenerLugaresPobladosPorCorregimiento(corregimiento, ejecucion) {
+            const lugares = new Set();
+            emlData.forEach(f => {
+                const props = f.properties || {};
+                const corr = (props.CORR_NOMB || '').trim().toUpperCase();
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
+                if (corr === corregimiento && props.LUPO_NOMB) {
+                    lugares.add(props.LUPO_NOMB.trim().toUpperCase());
+                }
+            });
+            return Array.from(lugares).sort();
+        }
+
+        // =============================================================
+        // 10. ESTADÍSTICAS
+        // =============================================================
+        function obtenerEstadisticasPorEjecucion(listaUPM) {
+            const stats = {};
+            listaUPM.forEach(f => {
+                const props = f.properties || {};
+                const provEjecucion = obtenerProvinciaEjecucion(props);
+                if (!stats[provEjecucion]) {
+                    stats[provEjecucion] = {
+                        total: 0, conCosto: 0, sinCosto: 0, verificado: 0,
+                        urbano: 0, rural: 0, indigena: 0, da: 0
+                    };
+                }
+                stats[provEjecucion].total++;
+                const costoVal = String(props.COSTO || '').trim().toUpperCase();
+                if (costoVal === 'SI') stats[provEjecucion].conCosto++;
+                if (costoVal === 'NO') stats[provEjecucion].sinCosto++;
+                if (esVerificado(props)) stats[provEjecucion].verificado++;
+                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
+                if (tipo === 'URBANO') stats[provEjecucion].urbano++;
+                if (tipo === 'RURAL') stats[provEjecucion].rural++;
+                if (tipo === 'INDIGENA') stats[provEjecucion].indigena++;
+                if (String(props.DA).trim() === '1') stats[provEjecucion].da++;
+            });
+            return stats;
+        }
+
+        function actualizarDashboardMobile(listaUPM) {
+            const total = listaUPM.length;
+            if (total === 0) {
+                ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
+                    document.getElementById(`pct-${id}-m`).textContent = '0%';
+                    document.getElementById(`cnt-${id}-m`).textContent = '(0/0)';
+                    document.getElementById(`bar-${id}-m`).style.width = '0%';
+                });
+                return;
+            }
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            let v = 0, u = 0, r = 0, i = 0, d = 0;
+            Object.values(stats).forEach(s => {
+                v += s.verificado; u += s.urbano; r += s.rural; i += s.indigena; d += s.da;
+            });
+            const upd = (id, count) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                document.getElementById(`pct-${id}-m`).textContent = `${pct}%`;
+                document.getElementById(`cnt-${id}-m`).textContent = `(${count}/${total})`;
+                document.getElementById(`bar-${id}-m`).style.width = `${pct}%`;
+            };
+            upd('verificado', v);
+            upd('urbano', u);
+            upd('rural', r);
+            upd('indigena', i);
+            upd('da', d);
+        }
+
+        // =============================================================
+        // 11. GRÁFICOS
+        // =============================================================
+        let chartCostosModal = null;
+        let chartVerificacionModal = null;
+
+        function actualizarGraficoModal(listaUPM) {
+            const canvas = document.getElementById('graficoCostosModal');
+            if (!canvas) return;
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            const provs = Object.keys(stats).filter(p => p !== '').sort();
+
+            let totalUPM = 0, totalCon = 0, totalSin = 0, totalVer = 0, totalPen = 0;
+            Object.values(stats).forEach(s => {
+                totalUPM += s.total;
+                totalCon += s.conCosto;
+                totalSin += s.sinCosto;
+                totalVer += s.verificado;
+                totalPen += (s.total - s.verificado);
+            });
+
+            document.getElementById('statsGrafico').innerHTML =
+                `📊 Total: <strong style="color:#3b82f6;">${totalUPM}</strong> | ` +
+                `💰 Con: <strong style="color:#22c55e;">${totalCon}</strong> | ` +
+                `❌ Sin: <strong style="color:#ef4444;">${totalSin}</strong><br>` +
+                `✅ Verif: <strong style="color:#facc15;">${totalVer}</strong> | ` +
+                `⏳ Pend: <strong style="color:#94a3b8;">${totalPen}</strong>`;
+
+            if (provs.length === 0) {
+                if (chartCostosModal) { chartCostosModal.destroy(); chartCostosModal = null; }
+                return;
+            }
+
+            if (chartCostosModal) { chartCostosModal.destroy(); chartCostosModal = null; }
+            const ctx = canvas.getContext('2d');
+
+            chartCostosModal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: provs,
+                    datasets: [
+                        {
+                            label: 'Con Viático',
+                            data: provs.map(p => stats[p].conCosto || 0),
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: '#22c55e',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Sin Viático',
+                            data: provs.map(p => stats[p].sinCosto || 0),
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { font: { size: 10, weight: '600' }, padding: 8, boxWidth: 12 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ${ctx.raw} UPM`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 9, weight: '600' }, maxRotation: 45, minRotation: 30, color: '#475569' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { size: 10 }, color: '#475569', stepSize: 1 },
+                            grid: { color: 'rgba(226,232,240,0.6)' }
+                        }
+                    },
+                    animation: { duration: 800 }
+                }
+            });
+        }
+
+        function actualizarGraficoVerificacionModal(listaUPM) {
+            const canvas = document.getElementById('graficoVerificacionModal');
+            if (!canvas) return;
+            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
+            const provs = Object.keys(stats).filter(p => p !== '').sort();
+
+            if (provs.length === 0) {
+                if (chartVerificacionModal) { chartVerificacionModal.destroy(); chartVerificacionModal = null; }
+                return;
+            }
+
+            if (chartVerificacionModal) { chartVerificacionModal.destroy(); chartVerificacionModal = null; }
+            const ctx = canvas.getContext('2d');
+
+            chartVerificacionModal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: provs,
+                    datasets: [
+                        {
+                            label: '✅ Verificadas',
+                            data: provs.map(p => stats[p].verificado || 0),
+                            backgroundColor: 'rgba(250, 204, 21, 0.85)',
+                            borderColor: '#facc15',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: '⏳ Pendientes',
+                            data: provs.map(p => (stats[p].total || 0) - (stats[p].verificado || 0)),
+                            backgroundColor: 'rgba(148, 163, 184, 0.7)',
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { font: { size: 10, weight: '600' }, padding: 8, boxWidth: 12 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ${ctx.raw} UPM`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 9, weight: '600' }, maxRotation: 45, minRotation: 30, color: '#475569' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { size: 10 }, color: '#475569', stepSize: 1 },
+                            grid: { color: 'rgba(226,232,240,0.6)' }
+                        }
+                    },
+                    animation: { duration: 800 }
+                }
+            });
+        }
+
+        // =============================================================
+        // 12. TRAZAR DISTANCIA Y BOTTOM SHEET
+        // =============================================================
+        function trazarDistanciaYPopup(layer, feature) {
+            lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = { layer, feature };
+            featureActualSheet = feature;
+
+            const props = feature.properties || {};
+            const centroide = layer.getBounds().getCenter();
+
+            // Buscar oficina más cercana
+            let distanciaMinima = Infinity;
+            let oficinaCercana = null;
+
+            if (oficinaData.length > 0) {
+                const provEml = props.PROV_NOMB?.trim().toUpperCase();
+                let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
+                if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+
+                oficinasBuscar.forEach(oficina => {
+                    const coords = obtenerCoordenadasOficina(oficina);
+                    if (coords) {
+                        const latLngOficina = L.latLng(coords.lat, coords.lon);
+                        const dist = centroide.distanceTo(latLngOficina);
+                        if (dist < distanciaMinima) {
+                            distanciaMinima = dist;
+                            oficinaCercana = { coords: latLngOficina, props: oficina.properties };
+                        }
+                    }
+                });
+            }
+
+            const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : 'N/D';
+
+            // Dibujar línea de distancia
+            if (oficinaCercana) {
+                L.polyline([centroide, oficinaCercana.coords], {
+                    color: '#ef4444',
+                    weight: 2.5,
+                    dashArray: '6, 6',
+                    interactive: false
+                }).addTo(lineasDistanciaLayer);
+
+                const puntoMedio = L.latLng(
+                    (centroide.lat + oficinaCercana.coords.lat) / 2,
+                    (centroide.lng + oficinaCercana.coords.lng) / 2
+                );
+
+                const estiloClase = (mapaActual === 'satelite') ? 'distance-label-satelite' : 'distance-label-callejero';
+
+                L.marker(puntoMedio, {
+                    icon: L.divIcon({
+                        className: estiloClase,
+                        html: `📏 ${distanciaKm} km`,
+                        iconSize: [80, 20],
+                        iconAnchor: [40, 10]
+                    }),
+                    interactive: false
+                }).addTo(lineasDistanciaLayer);
+            }
+
+            // Construir contenido del bottom sheet
+            const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
+            const costoVal = String(props.COSTO || '').trim().toUpperCase();
+            const costoMostrar = props.COSTO || 'N/D';
+            const costoIcono = costoVal === 'SI' ? '✅' : costoVal === 'NO' ? '❌' : '❓';
+            const costoClass = costoVal === 'SI' ? 'costo-si' : costoVal === 'NO' ? 'costo-no' : 'costo-na';
+
+            const ejecucion = props.EJECUCION || 'N/D';
+            const provNombre = props.PROV_NOMB || 'N/D';
+            const distNombre = props.DIST_NOMB || 'N/D';
+            const corrNombre = props.CORR_NOMB || 'N/D';
+            const lupoNombre = props.LUPO_NOMB || 'N/D';
+            const segmTipo = props.SEGM_TIPO || 'N/D';
+            const verificado = props.VERIFICADO || 'N/D';
+            const segmTipoDesc = obtenerDescripcionTipo(segmTipo);
+            const colorTipo = obtenerColorTipo(segmTipo);
+            const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
+
+            const contenidoHTML = `
+                <div class="sheet-info-grid">
+                    <div class="sheet-highlight">
+                        <div class="sheet-highlight-item distancia">
+                            <span class="label">📏 Distancia</span>
+                            <span class="value">${distanciaKm} km</span>
+                        </div>
+                        <div class="sheet-highlight-item ${costoClass}">
+                            <span class="label">💰 Viático</span>
+                            <span class="value">${costoIcono} ${costoMostrar}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sheet-info-row">
+                        <span class="key">🏛️ Ejecuta:</span>
+                        <span class="value">${ejecucion}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">📍 Provincia:</span>
+                        <span class="value">${provNombre}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">🏙️ Distrito:</span>
+                        <span class="value">${distNombre}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">🏘️ Corregimiento:</span>
+                        <span class="value">${corrNombre}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">📌 Lugar Poblado:</span>
+                        <span class="value">${lupoNombre}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">📋 Tipo:</span>
+                        <span class="value" style="color: ${colorTipo};">${segmTipoDesc}</span>
+                    </div>
+                    <div class="sheet-info-row">
+                        <span class="key">✅ Verificado:</span>
+                        <span class="value" style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'};">${verificadoIcono} ${verificado}</span>
+                    </div>
+                </div>
+            `;
+
+            abrirBottomSheet(`📍 UPM ${codigoUPM}`, contenidoHTML);
+        }
+
+        // =============================================================
+        // 13. LIMPIAR LÍNEAS
+        // =============================================================
+        function limpiarLineasDistancia() {
+            if (lineasDistanciaLayer) lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = null;
+        }
+
+        map.on('click', function(e) {
+            if (!e.originalEvent.target.closest('.bottom-sheet') && !e.originalEvent.target.closest('.leaflet-marker-icon') && !e.originalEvent.target.closest('.leaflet-interactive')) {
+                cerrarBottomSheet();
+            }
+        });
+
+        map.on('baselayerchange', function(e) {
+            mapaActual = e.name.includes('Satélite') ? 'satelite' : 'callejero';
+            if (ultimoPoligonoSeleccionado) {
+                trazarDistanciaYPopup(ultimoPoligonoSeleccionado.layer, ultimoPoligonoSeleccionado.feature);
+            }
+        });
+
+        // =============================================================
+        // 14. RENDERIZAR CONTORNO PROVINCIA
+        // =============================================================
+        function renderizarContornoProvincia(ejecucionSel, provSel) {
+            provinciaContornoLayer.clearLayers();
+            let provinciasABuscar = [];
+
+            if (provSel && provSel !== 'TODOS') {
+                provinciasABuscar = [provSel];
+            } else if (ejecucionSel && ejecucionSel !== 'TODAS') {
+                const provincias = new Set();
+                emlData.forEach(f => {
+                    const props = f.properties || {};
+                    const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                    if (provEjecucion === ejecucionSel && props.PROV_NOMB) {
+                        provincias.add(props.PROV_NOMB.trim().toUpperCase());
+                    }
+                });
+                provinciasABuscar = Array.from(provincias).sort();
+            } else {
+                return;
+            }
+
+            if (provinciaData.length === 0 || provinciasABuscar.length === 0) return;
+
+            provinciasABuscar.forEach(nombreBuscar => {
+                let provFeature = provinciaData.find(f => f.properties && f.properties.PROV_NOMB &&
+                    f.properties.PROV_NOMB.trim().toUpperCase() === nombreBuscar);
+                if (!provFeature) {
+                    provFeature = provinciaData.find(f => f.properties && f.properties.PROV_NOMB &&
+                        f.properties.PROV_NOMB.trim().toUpperCase().includes(nombreBuscar));
+                }
+                if (provFeature) {
+                    L.geoJSON(provFeature, {
+                        style: { color: '#000', weight: 2, fillOpacity: 0, interactive: false, opacity: 0.9 }
+                    }).addTo(provinciaContornoLayer);
+                }
+            });
+        }
+
+        // =============================================================
+        // 15. FILTROS CASCADA
+        // =============================================================
+        function inicializarFiltrosCascada() {
+            const provinciasEjecucion = obtenerProvinciasEjecucion();
+            selectProv.innerHTML = '<option value="TODAS">Todas</option>';
+            provinciasEjecucion.forEach(p => {
+                obtenerColorProvincia(p);
+                selectProv.add(new Option(p, p));
+            });
+
+            selectDist.innerHTML = '<option value="TODOS">Todas</option>';
+            selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+            selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+            selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+            selectDist.disabled = true;
+            selectCorr.disabled = true;
+            selectPob.disabled = true;
+            selectLupo.disabled = true;
+
+            // Eventos
+            inputUpm.addEventListener('input', filtrarYRenderizar);
+            selectSegm.addEventListener('change', filtrarYRenderizar);
+            selectCosto.addEventListener('change', filtrarYRenderizar);
+
+            selectProv.addEventListener('change', () => {
+                const ejecucionSel = selectProv.value;
+                selectDist.innerHTML = '<option value="TODOS">Todas</option>';
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                selectDist.disabled = true;
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+
+                if (ejecucionSel !== 'TODAS') {
+                    const provincias = obtenerProvinciasPorEjecucion(ejecucionSel);
+                    provincias.forEach(p => selectDist.add(new Option(p, p)));
+                    selectDist.disabled = false;
+                }
+                filtrarYRenderizar();
+            });
+
+            selectDist.addEventListener('change', () => {
+                const provSel = selectDist.value;
+                const ejecucionSel = selectProv.value;
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+
+                if (provSel !== 'TODOS') {
+                    const distritos = obtenerDistritosPorProvincia(provSel, ejecucionSel);
+                    distritos.forEach(d => selectCorr.add(new Option(d, d)));
+                    selectCorr.disabled = false;
+                }
+                filtrarYRenderizar();
+            });
+
+            selectCorr.addEventListener('change', () => {
+                const distSel = selectCorr.value;
+                const ejecucionSel = selectProv.value;
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+
+                if (distSel !== 'TODOS') {
+                    const corregimientos = obtenerCorregimientosPorDistrito(distSel, ejecucionSel);
+                    corregimientos.forEach(c => selectPob.add(new Option(c, c)));
+                    selectPob.disabled = false;
+                }
+                filtrarYRenderizar();
+            });
+
+            selectPob.addEventListener('change', () => {
+                const corrSel = selectPob.value;
+                const ejecucionSel = selectProv.value;
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.disabled = true;
+
+                if (corrSel !== 'TODOS') {
+                    const lugares = obtenerLugaresPobladosPorCorregimiento(corrSel, ejecucionSel);
+                    lugares.forEach(l => selectLupo.add(new Option(l, l)));
+                    selectLupo.disabled = false;
+                }
+                filtrarYRenderizar();
+            });
+
+            selectLupo.addEventListener('change', filtrarYRenderizar);
+        }
+
+        // =============================================================
+        // 16. FILTRAR Y RENDERIZAR
+        // =============================================================
+        function filtrarYRenderizar() {
+            poligonosEmlLayer.clearLayers();
+            oficinasLayer.clearLayers();
+            lineasDistanciaLayer.clearLayers();
+            cerrarBottomSheet();
+            ultimoPoligonoSeleccionado = null;
+
+            const busquedaUpm = inputUpm.value.trim().toUpperCase();
+            const segmSel = selectSegm.value;
+            const ejecucionSel = selectProv.value;
+            const provSel = selectDist.value;
+            const distSel = selectCorr.value;
+            const corrSel = selectPob.value;
+            const lupoSel = selectLupo.value;
+            const costoSel = selectCosto.value;
+
+            const emlBaseGeografica = emlData.filter(f => {
+                const props = f.properties || {};
+                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
+                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
+                const distNombre = (props.DIST_NOMB || '').trim().toUpperCase();
+                const corrNombre = (props.CORR_NOMB || '').trim().toUpperCase();
+                const lupoNombre = (props.LUPO_NOMB || '').trim().toUpperCase();
+
+                if (ejecucionSel !== 'TODAS' && provEjecucion !== ejecucionSel) return false;
+                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
+                if (distSel !== 'TODOS' && distNombre !== distSel) return false;
+                if (corrSel !== 'TODOS' && corrNombre !== corrSel) return false;
+                if (lupoSel !== 'TODOS' && lupoNombre !== lupoSel) return false;
+
+                if (busquedaUpm !== '') {
+                    const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
+                    if (!codigoUPM.startsWith(busquedaUpm)) return false;
+                }
+                return true;
+            });
+
+            emlFiltrados = emlBaseGeografica.filter(f => {
+                const props = f.properties || {};
+                if (segmSel === 'DIFICIL_ACCESO') {
+                    if (String(props.DA).trim() !== '1') return false;
+                } else if (segmSel === 'VERIFICADO') {
+                    if (!esVerificado(props)) return false;
+                } else if (segmSel === 'NO_VERIFICADO') {
+                    if (esVerificado(props)) return false;
+                } else if (segmSel !== 'TODOS') {
+                    const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
+                    if (tipoNormalizado !== segmSel) return false;
+                }
+                if (costoSel !== 'TODOS') {
+                    const costoVal = String(props.COSTO || '').trim().toUpperCase();
+                    if (costoVal !== costoSel) return false;
+                }
+                return true;
+            });
+
+            // Oficinas
+            oficinasFiltradasGlobal = oficinaData.filter(f => {
+                const props = f.properties || {};
+                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
+                if (ejecucionSel !== 'TODAS') {
+                    const tieneUPM = emlBaseGeografica.some(upm => {
+                        const p = upm.properties || {};
+                        return (p.PROV_NOMB || '').trim().toUpperCase() === provNombre;
+                    });
+                    if (!tieneUPM) return false;
+                }
+                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
+                return true;
+            });
+
+            // Actualizar contador
+            const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
+            const totalVisible = emlFiltrados.length;
+            const provsEjecucion = Object.keys(statsEjecucion).filter(p => p !== '').sort();
+
+            let badgeText = `📊 ${totalVisible} UPM`;
+            if (oficinasFiltradasGlobal.length > 0) badgeText += ` | 🏢 ${oficinasFiltradasGlobal.length}`;
+
+            document.getElementById('counterBadge').textContent = badgeText;
+
+            // Dashboard
+            actualizarDashboardMobile(emlFiltrados);
+
+            // Oficinas en el mapa
+            oficinasFiltradasGlobal.forEach(oficina => {
+                const coords = obtenerCoordenadasOficina(oficina);
+                if (!coords) return;
+                const props = oficina.properties || {};
+                const iconOficina = L.divIcon({
+                    className: 'custom-office-icon',
+                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">🏢</div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+
+                let popupContent = `<div style="padding:12px; font-family:'Segoe UI',sans-serif;">
+                    <h3 style="color:#0f172a; font-size:14px; margin:0 0 8px 0; border-bottom:2px solid #3b82f6; padding-bottom:4px;">🏢 Oficina Central</h3>
+                    <p style="margin:4px 0; font-size:12px;"><strong>Provincia:</strong> ${props.PROV_NOMB || 'N/D'}</p>
+                    <p style="margin:4px 0; font-size:12px;"><strong>Código:</strong> ${props.PROV_ID || 'N/D'}</p>
+                    <p style="margin:4px 0; font-size:12px;"><strong>PLUS CODE:</strong> ${props.PLUS_CODE || 'N/D'}</p>`;
+                if (props.OBSERVACION && props.OBSERVACION.trim() !== '') {
+                    popupContent += `<p style="background:#fef3c7; color:#92400e; padding:6px 8px; border-radius:6px; margin:6px 0; border-left:3px solid #f59e0b; font-size:11px; font-style:italic;">📝 ${props.OBSERVACION}</p>`;
+                }
+                popupContent += `</div>`;
+
+                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
+            });
+
+            // Polígonos EML
+            emlFiltrados.forEach(feature => {
+                const props = feature.properties || {};
+                const provNombre = props.PROV_NOMB || 'Desconocido';
+                const provEjecucion = obtenerProvinciaEjecucion(props);
+                const estaVerificado = esVerificado(props);
+                const costoVal = String(props.COSTO || '').trim().toUpperCase();
+                const provColor = provEjecucion || provNombre;
+
+                let estiloPoligono;
+                if (estaVerificado) {
+                    estiloPoligono = { fillColor: '#facc15', fillOpacity: 0.85, color: '#dc2626', weight: 2.5 };
+                } else if (costoSel === 'SI' && costoVal === 'SI') {
+                    estiloPoligono = { fillColor: '#22c55e', fillOpacity: 0.65, color: '#15803d', weight: 1.5 };
+                } else if (costoSel === 'NO' && costoVal === 'NO') {
+                    estiloPoligono = { fillColor: '#ef4444', fillOpacity: 0.65, color: '#b91c1c', weight: 1.5 };
+                } else {
+                    estiloPoligono = { fillColor: obtenerColorProvincia(provColor), fillOpacity: 0.60, color: '#1e293b', weight: 1.2 };
+                }
+
+                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
+                polyLayer.on('click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    trazarDistanciaYPopup(polyLayer, feature);
+                });
+            });
+
+            // Contorno
+            renderizarContornoProvincia(ejecucionSel, provSel);
+
+            // Zoom automático
+            if (emlFiltrados.length > 0) {
+                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
+                if (tempGroup.getBounds().isValid()) {
+                    if (busquedaUpm !== '') {
+                        map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
+                    } else if (costoSel !== 'TODOS') {
+                        map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
+                    } else if (ejecucionSel !== 'TODAS' || provSel !== 'TODOS' || distSel !== 'TODOS' || corrSel !== 'TODOS' || lupoSel !== 'TODOS') {
+                        map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 13 });
+                    } else {
+                        map.fitBounds(tempGroup.getBounds(), { padding: [20, 20] });
+                    }
+                }
+            } else {
+                map.setView([8.5, -80.0], 8);
+            }
+        }
+
+        // =============================================================
+        // 17. BOTÓN REGRESAR
+        // =============================================================
+        function volverAtras() {
+            const ejecucionSel = selectProv.value;
+            const provSel = selectDist.value;
+            const distSel = selectCorr.value;
+            const corrSel = selectPob.value;
+            const lupoSel = selectLupo.value;
+
+            if (lupoSel !== 'TODOS') {
+                selectLupo.value = 'TODOS';
+                mostrarToast('⬅️ Regresando: Lugar Poblado → Corregimiento', 'info');
+                filtrarYRenderizar();
+                return;
+            }
+            if (corrSel !== 'TODOS') {
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                selectLupo.disabled = true;
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                mostrarToast('⬅️ Regresando: Corregimiento → Distrito', 'info');
+                filtrarYRenderizar();
+                return;
+            }
+            if (distSel !== 'TODOS') {
+                selectCorr.value = 'TODOS';
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                mostrarToast('⬅️ Regresando: Distrito → Provincia', 'info');
+                filtrarYRenderizar();
+                return;
+            }
+            if (provSel !== 'TODOS') {
+                selectDist.value = 'TODOS';
+                selectCorr.value = 'TODOS';
+                selectPob.value = 'TODOS';
+                selectLupo.value = 'TODOS';
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                mostrarToast('⬅️ Regresando: Provincia → Ejecución', 'info');
+                filtrarYRenderizar();
+                return;
+            }
+            if (ejecucionSel !== 'TODAS') {
+                selectProv.value = 'TODAS';
+                selectDist.value = 'TODOS';
+                selectDist.disabled = true;
+                selectCorr.disabled = true;
+                selectPob.disabled = true;
+                selectLupo.disabled = true;
+                selectDist.innerHTML = '<option value="TODOS">Todas</option>';
+                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
+                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
+                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
+                mostrarToast('⬅️ Regresando: Ejecución → Todos', 'info');
+                filtrarYRenderizar();
+                return;
+            }
+
+            mostrarToast('ℹ️ No hay filtros para regresar', 'info');
+        }
+
+        document.getElementById('btnRegresar').addEventListener('click', volverAtras);
+
+        // =============================================================
+        // 18. BOTÓN RESET
+        // =============================================================
+        document.getElementById('btnReset').addEventListener('click', function() {
+            inputUpm.value = '';
+            selectSegm.value = 'TODOS';
+            selectCosto.value = 'TODOS';
+            selectProv.value = 'TODAS';
+            selectDist.value = 'TODOS';
+            selectCorr.value = 'TODOS';
+            selectPob.value = 'TODOS';
+            selectLupo.value = 'TODOS';
+            selectDist.disabled = true;
+            selectCorr.disabled = true;
+            selectPob.disabled = true;
+            selectLupo.disabled = true;
+            lineasDistanciaLayer.clearLayers();
+            ultimoPoligonoSeleccionado = null;
+            cerrarBottomSheet();
+            filtrarYRenderizar();
+            map.setView([8.5, -80.0], 8);
+            mostrarToast('🔄 Filtros reseteados', 'success');
+        });
+
+        // =============================================================
+        // 19. EXPORTAR CSV CON CONTRASEÑA
+        // =============================================================
+        const modalPassword = document.getElementById('modalPassword');
+        const inputPassModal = document.getElementById('inputPassModal');
+        const btnAceptarModal = document.getElementById('btnAceptarModal');
+        const btnCancelarModal = document.getElementById('btnCancelarModal');
+
+        function pedirPasswordModal() {
+            return new Promise((resolve) => {
+                inputPassModal.value = '';
+                modalPassword.classList.add('active');
+                setTimeout(() => inputPassModal.focus(), 200);
+
+                const cerrar = (valor) => {
+                    modalPassword.classList.remove('active');
+                    btnAceptarModal.onclick = null;
+                    btnCancelarModal.onclick = null;
+                    inputPassModal.onkeydown = null;
+                    resolve(valor);
+                };
+
+                btnAceptarModal.onclick = () => cerrar(inputPassModal.value);
+                btnCancelarModal.onclick = () => cerrar(null);
+                inputPassModal.onkeydown = (e) => {
+                    if (e.key === 'Enter') cerrar(inputPassModal.value);
+                    if (e.key === 'Escape') cerrar(null);
+                };
+            });
+        }
+
+        document.getElementById('btnExportar').addEventListener('click', async function() {
+            if (emlFiltrados.length === 0) {
+                mostrarToast('⚠️ No hay datos para exportar', 'error');
+                return;
+            }
+            const password = await pedirPasswordModal();
+            if (!password) return;
+
+            try {
+                const response = await fetch('pass_eml.txt');
+                if (!response.ok) {
+                    mostrarToast('❌ No se encontró pass_eml.txt', 'error');
+                    return;
+                }
+                const passwordCorrecta = (await response.text()).trim();
+                if (password.trim() !== passwordCorrecta) {
+                    mostrarToast('❌ Contraseña incorrecta', 'error');
+                    return;
+                }
+
+                const keys = Object.keys(emlFiltrados[0].properties || {});
+                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
+                let csv = headers.join(",") + "\n";
+
+                emlFiltrados.forEach(f => {
+                    const props = f.properties || {};
+                    const tempLayer = L.geoJSON(f);
+                    const centroide = tempLayer.getBounds().getCenter();
+                    const provEml = (props.PROV_NOMB || '').trim().toUpperCase();
+                    const provEjecucion = obtenerProvinciaEjecucion(props);
+
+                    let oficinasBuscar = oficinaData.filter(o => (o.properties?.PROV_NOMB || '').trim().toUpperCase() === provEml);
+                    if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
+
+                    let distanciaMinima = Infinity;
+                    let oficinaCercana = null;
+
+                    oficinasBuscar.forEach(oficina => {
+                        const coords = obtenerCoordenadasOficina(oficina);
+                        if (coords) {
+                            const latLngOficina = L.latLng(coords.lat, coords.lon);
+                            const dist = centroide.distanceTo(latLngOficina);
+                            if (dist < distanciaMinima) {
+                                distanciaMinima = dist;
+                                oficinaCercana = oficina;
+                            }
+                        }
+                    });
+
+                    const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
+                    let row = keys.map(k => `"${props[k] ?? ''}"`);
+                    row.push(`"${distanciaKm}"`);
+                    row.push(`"${provEjecucion}"`);
+                    const budgetOficina = oficinaCercana ? oficinaCercana.properties.BUDGET : 'N/D';
+                    row.push(`"${budgetOficina}"`);
+                    csv += row.join(",") + "\n";
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
+                link.click();
+                mostrarToast('✅ CSV descargado', 'success');
+
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarToast('❌ Error al exportar', 'error');
+            }
+        });
+
+        // =============================================================
+        // 20. CARGAR DATOS
+        // =============================================================
+        async function cargarGeoJSONs() {
+            try {
+                const [resEml, resOficina, resProvincia] = await Promise.all([
+                    fetch('eml.geojson').catch(() => null),
+                    fetch('oficina.geojson').catch(() => null),
+                    fetch('provincia.geojson').catch(() => null)
+                ]);
+
+                if (resEml && resEml.ok) {
+                    const json = await resEml.json();
+                    emlData = json.features || [];
+                    console.log(`✅ emlData: ${emlData.length} features`);
+                }
+                if (resOficina && resOficina.ok) {
+                    const json = await resOficina.json();
+                    oficinaData = json.features || [];
+                    console.log(`✅ oficinaData: ${oficinaData.length} features`);
+                }
+                if (resProvincia && resProvincia.ok) {
+                    const json = await resProvincia.json();
+                    provinciaData = json.features || [];
+                    console.log(`✅ provinciaData: ${provinciaData.length} features`);
+                }
+
+                inicializarFiltrosCascada();
+                filtrarYRenderizar();
+                mostrarToast('✅ Datos cargados correctamente', 'success');
+
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarToast('❌ Error al cargar datos', 'error');
+            }
+        }
+
+        // =============================================================
+        // INICIO
+        // =============================================================
+        cargarGeoJSONs();
+
+        console.log('📱 UPM Móvil v1.0 - Iniciado');
+    </script>
+
+</body>
+</html>
