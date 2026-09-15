@@ -417,16 +417,39 @@
                 .custom-popup-white .leaflet-popup-content-wrapper::before {
                     display: none !important;
                 }
-
+                .link-cartografos {
+                    display: inline-block;
+                    margin-left: 10px;
+                    color: #60a5fa;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 11px;
+                    padding: 3px 10px;
+                    border-radius: 5px;
+                    background: rgba(96, 165, 250, 0.15);
+                    transition: all 0.25s ease;
+                    border: 1px solid rgba(96, 165, 250, 0.35);
+                    white-space: nowrap;
+                    vertical-align: middle;
+                }
+                
+                .link-cartografos:hover {
+                    background: #3b82f6;
+                    color: white;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+                    border-color: #3b82f6;
+                }
         
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🏢 Mapa de Actualización Precensal 2026 a nivel Nacional-Incluye UPM-EML</h1>
-        <a href="https://www.inec.gob.pa/ProgramaDeEncuestas" target="_blank" rel="noopener noreferrer" style="color: #2c6b9e; text-decoration: underline; font-weight: 600; margin-left: 8px;">(Ver fotos de cartógrafos)</a>
-        <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
+    <h1>🏢 Mapa de Actualización Precensal 2026 a nivel Nacional-Incluye UPM-EML
+        <a href="https://www.inec.gob.pa/ProgramaDeEncuestas" target="_blank" rel="noopener noreferrer" class="link-cartografos">📸 Ver fotos de cartógrafos</a>
+    </h1>
+    <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
     </div>
     
     <div class="controls">
