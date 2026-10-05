@@ -757,8 +757,8 @@
         }
 
         function isNoVerificado(feature) {
-            // Solo contar SI NO está explícitamente SI
-            return getVerificadoValue(feature) !== 'SI';
+            // El GeoJSON usa exclusivamente los textos SI y NO.
+            return getVerificadoValue(feature) === 'NO';
         }
 
         function actualizarDashboardVerificacion(listaUPM) {
@@ -927,8 +927,11 @@
                 const costo = String(props.COSTO ?? '').trim().toUpperCase();
                 if (costo === 'SI') stats[ejec].conCosto++;
                 if (costo === 'NO') stats[ejec].sinCosto++;
-                if (isVerificado(f)) stats[ejec].verificadas++;
-                else stats[ejec].pendientes++;
+                if (isVerificado(f)) {
+                    stats[ejec].verificadas++;
+                } else if (isNoVerificado(f)) {
+                    stats[ejec].pendientes++;
+                }
             });
             return stats;
         }
