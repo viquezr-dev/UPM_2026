@@ -1004,9 +1004,9 @@
                 let color = '#64748b';
                 if (isVerificado(f)) color = '#facc15';
                 else if (String(props.DA ?? '').trim() === '1') color = '#f87171';
-                else if (String(props.INDIG ?? '').trim() === '1') color = '#c084fc';
-                else if (String(props.SEGM_TIPO ?? '').trim() === '01') color = '#60a5fa';
-                else if (String(props.SEGM_TIPO ?? '').trim() === '02') color = '#4ade80';
+                else if (String(props.INDIG ?? '').trim() === '1') color = '#7c3aed';
+                else if (String(props.SEGM_TIPO ?? '').trim() === '01') color = '#2563eb';
+                else if (String(props.SEGM_TIPO ?? '').trim() === '02') color = '#16a34a';
 
                 const layer = L.geoJSON(f, {
                     style: {
