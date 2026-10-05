@@ -1,1095 +1,698 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <title>Visualizador Geográfico de Panamá</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral - Completo</title>
-    
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <!-- PapaParse para procesar los archivos CSV de forma eficiente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        * {
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4e8 0%, #ffe6e6 100%);
+            color: #4a4a4a;
+            font-size: 14px;
+            min-height: 100vh;
         }
-        
-        body, html {
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f4f6f8;
-            color: #334155;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #6b5b95;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .credits {
+            text-align: right;
+            font-size: 12px;
+            color: #7a7a7a;
             display: flex;
             flex-direction: column;
-        }
-        
-        /* 1. HEADER COMPACTO */
-        .header {
-            background: #1e293b;
-            color: #f8fafc;
-            padding: 6px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            z-index: 1001;
-        }
-        
-        .header h1 {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .stats-badge {
-            background: #334155;
-            color: #f8fafc;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        
-        /* 2. FILA DE CONTROLES Y FILTROS */
-        .controls {
-            background: white;
-            padding: 6px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             gap: 8px;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            z-index: 1000;
-            flex-wrap: nowrap;
-            overflow-x: auto;
+            align-items: flex-end;
         }
-        
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .credits a {
+            color: #6b5b95;
+            text-decoration: none;
+            font-weight: bold;
         }
-
-        .controls label {
-            font-weight: 600;
-            color: #475569;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-        
-        .controls select, .controls input {
-            padding: 3px 6px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 11px;
-            background: #f8fafc;
-            color: #334155;
-            outline: none;
-        }
-        
-        .controls select {
-            min-width: 110px;
-            cursor: pointer;
-        }
-
-        .controls select:focus, .controls input:focus {
-            border-color: #3b82f6;
-            background: white;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 6px;
-        }
-        
-        .controls button {
-            padding: 4px 10px;
-            border: none;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
+        .visitor-badge {
             display: inline-flex;
             align-items: center;
-            gap: 3px;
-        }
-        
-        .btn-reset { background: #fee2e2; color: #991b1b; }
-        .btn-reset:hover { background: #fca5a5; }
-
-        .btn-export { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .btn-export:hover { background: #bbf7d0; }
-
-        /* 3. BARRA INTEGRADORA DE 5 PORCENTAJES */
-        .pct-dashboard {
-            background: #0f172a;
-            color: white;
-            padding: 4px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
             gap: 8px;
-            border-bottom: 1px solid #334155;
-            z-index: 999;
-            overflow-x: auto;
+            padding: 6px 12px;
+            background: #f0f2f5;
+            border-radius: 20px;
+            border: 1px solid #e0e2e6;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b5b95;
         }
-
-        .pct-card {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #1e293b;
-            padding: 3px 8px;
-            border-radius: 5px;
-            border: 1px solid #334155;
-            flex: 1;
-            min-width: 140px;
-            max-width: 220px;
-        }
-
-        .pct-val {
-            font-size: 13px;
+        .visitor-count {
+            color: #6b5b95;
             font-weight: 700;
-            min-width: 40px;
-            text-align: right;
         }
-
-        .pct-info {
-            flex: 1;
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
         }
-
-        .pct-label {
-            font-size: 10px;
-            color: #94a3b8;
-            line-height: 1;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .pct-label small {
-            color: #cbd5e1;
-            font-size: 9px;
-        }
-
-        .pct-progress-bg {
-            width: 100%;
-            height: 4px;
-            background: #334155;
-            border-radius: 2px;
-            margin-top: 3px;
-            overflow: hidden;
-        }
-
-        .pct-progress-fill {
-            height: 100%;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-        
-        /* 4. MAPA BASE */
-        #map {
-            flex: 1;
-            width: 100%;
-            background: #e2e8f0;
-        }
-        
-        /* 5. FOOTER */
-        .footer {
-            background: #1e293b;
-            color: #cbd5e1;
+        h1 {
+            color: #6b5b95;
             text-align: center;
-            padding: 3px;
-            font-size: 10px;
-            width: 100%;
-            border-top: 1px solid #334155;
-            z-index: 1001;
+            border-bottom: 3px solid #f7c1c1;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
         }
-        
-        .info-popup {
-            font-size: 10px;
-            line-height: 1.1;
-            color: #334155;
-            min-width: 180px;
-            max-width: 280px;
-            max-height: 320px;
-            overflow-y: auto;
-            padding-top: 4px;
+        .descripcion-box {
+            background: #fff7e6;
+            border: 1px solid #ffe0b5;
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #b46f3a;
         }
-        
-        .info-popup h3 {
-            color: #0f172a;
-            font-size: 12px;
-            margin-top: 0;
-            margin-bottom: 4px;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 2px;
-            padding-top: 2px;
+        .toolbar {
+            background: #fef9f4;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #ffe5cc;
         }
-        .info-popup p {
-            margin: 0 0 2px 0; 
-            padding: 0;
+        .nivel-section {
+            margin-bottom: 20px;
         }
-        .leaflet-popup-content { margin: 8px 10px !important; }
-
-        .legend {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px 10px;
-            line-height: 13px;
-            color: #334155;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            font-size: 10px;
-            width: auto;
-            max-width: 220px;   
+        .selector-nivel {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        
-        .legend h4 {
-            margin: 0 0 4px 0;
-            color: #475569;
-            font-size: 11px;
-            font-weight: 700;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 3px;
+        .btn-nivel {
+            padding: 10px 20px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 2px solid #bae6fd;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
         }
-        
-        .legend p {
+        .btn-nivel.active {
+            background: #6b5b95;
+            color: white;
+            border-color: #6b5b95;
+        }
+        .filtros-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .filtro-item {
             display: flex;
             align-items: center;
-            margin-bottom: 2px;
-            white-space: nowrap; 
+            gap: 8px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 40px;
+            border: 1px solid #f0cfb0;
         }
+        .filtro-item label {
+            font-weight: 600;
+            color: #9b7b5c;
+            font-size: 12px;
+        }
+        .filtro-select {
+            padding: 6px 10px;
+            border: 1px solid #f0cfb0;
+            border-radius: 20px;
+            font-size: 12px;
+            background: white;
+            min-width: 150px;
+            outline: none;
+        }
+        .controles-globales {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-global {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-limpiar {
+            background: #ffd3b6;
+            color: #a5673f;
+        }
+        .btn-limpiar:hover { background: #ffc4a0; }
+        .btn-exportar {
+            background: #b5e3ff;
+            color: #2c6b8f;
+        }
+        .btn-exportar:hover { background: #9ad6ff; }
         
-        .legend i {
-            width: 10px;
-            height: 10px;
-            margin-right: 6px;
-            border-radius: 2px;
-            border: 1px solid #334155;
-            display: inline-block;
-            flex-shrink: 0;
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            border: 1px solid #f0cfb0;
+            border-radius: 30px;
+            font-size: 14px;
+            transition: all 0.2s ease;
         }
-
-        /* ESTILOS PARA LA ETIQUETA DE DISTANCIA SOBRE LA LÍNEA */
-        .distance-label-callejero {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            color: #000000;
-            font-weight: 800;
-            font-size: 11px;
-            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-            white-space: nowrap;
+        .search-box:focus {
+            outline: none;
+            border-color: #6b5b95;
+            box-shadow: 0 0 0 3px rgba(107, 91, 149, 0.2);
         }
-
-        .distance-label-satelite {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            color: #ffffff;
-            font-weight: 800;
-            font-size: 11px;
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            white-space: nowrap;
+        .table-wrapper {
+            max-height: 600px;
+            overflow-y: auto;
+            border-radius: 16px;
+            border: 1px solid #f0e5dd;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0e5dd;
+        }
+        th {
+            background-color: #c7e9fb;
+            color: #4a5b6e;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            font-weight: 600;
+            user-select: none;
+        }
+        th:hover {
+            background-color: #b8dff5;
+        }
+        tr:nth-child(even) { background-color: #fefaf7; }
+        tr:hover { background-color: #fff3e8; }
+        
+        .resultados-info {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: 600;
+            color: #8b6b4d;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+            color: #6b5b95;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🏢 UPM para Encuesta de Mercado Laboral</h1>
-        <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
-    </div>
-    
-    <div class="controls">
-        <!-- BUSCADOR DE UPM INCREMENTAL -->
-        <div class="filter-group">
-            <label for="buscar_upm">🔎 UPM:</label>
-            <input type="text" id="buscar_upm" placeholder="Ej. 0101..." style="width: 110px;">
-        </div>
-
-        <div class="filter-group">
-            <label for="segm_tipo">Tipo/Estado:</label>
-            <select id="segm_tipo">
-                <option value="TODOS">Todos</option>
-                <option value="URBANO">Urbano (01)</option>
-                <option value="RURAL">Rural (02)</option>
-                <option value="INDIGENA">Indígena (03)</option>
-                <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso (DA = 1)</option>
-                <option value="VERIFICADO">✅ Actualizado / Verificado (SI)</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="provincia">Provincia:</label>
-            <select id="provincia"><option value="TODAS">Todas</option></select>
-        </div>
-        
-        <div class="filter-group">
-            <label for="distrito">Distrito:</label>
-            <select id="distrito" disabled><option value="TODOS">Todos</option></select>
-        </div>
-        
-        <div class="filter-group">
-            <label for="corregimiento">Corregimiento:</label>
-            <select id="corregimiento" disabled><option value="TODOS">Todos</option></select>
-        </div>
-
-        <div class="filter-group">
-            <label for="poblado">LUPO:</label>
-            <select id="poblado" disabled><option value="TODOS">Todos</option></select>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
-            <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
-        </div>
-    </div>
-
-    <!-- Panel de Porcentajes -->
-    <div class="pct-dashboard" id="pct-dashboard">
-        <div class="pct-card">
-            <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
-            <div class="pct-info">
-                <div class="pct-label"><span>Verificados</span><small id="cnt-verificado">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#facc15;" id="bar-verificado"></div></div>
+        <div class="logo-section">
+            <div class="logo-placeholder">PA</div>
+            <div>
+                <strong style="font-size: 16px; color: #6b5b95;">PANAMÁ</strong><br>
+                <span style="font-size: 12px; color: #7a7a7a;">Estructura Territorial</span>
             </div>
         </div>
-
-        <div class="pct-card">
-            <div class="pct-val" id="pct-urbano" style="color:#60a5fa;">0.0%</div>
-            <div class="pct-info">
-                <div class="pct-label"><span>Urbano</span><small id="cnt-urbano">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#60a5fa;" id="bar-urbano"></div></div>
-            </div>
-        </div>
-
-        <div class="pct-card">
-            <div class="pct-val" id="pct-rural" style="color:#4ade80;">0.0%</div>
-            <div class="pct-info">
-                <div class="pct-label"><span>Rural</span><small id="cnt-rural">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#4ade80;" id="bar-rural"></div></div>
-            </div>
-        </div>
-
-        <div class="pct-card">
-            <div class="pct-val" id="pct-indigena" style="color:#c084fc;">0.0%</div>
-            <div class="pct-info">
-                <div class="pct-label"><span>Indígena</span><small id="cnt-indigena">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#c084fc;" id="bar-indigena"></div></div>
-            </div>
-        </div>
-
-        <div class="pct-card">
-            <div class="pct-val" id="pct-da" style="color:#f87171;">0.0%</div>
-            <div class="pct-info">
-                <div class="pct-label"><span>D. Acceso</span><small id="cnt-da">(0/0)</small></div>
-                <div class="pct-progress-bg"><div class="pct-progress-fill" style="background:#f87171;" id="bar-da"></div></div>
+        <div class="credits">
+            <div>Desarrollado por: <a href="#">Raúl Víquez</a></div>
+            <div class="visitor-badge">
+                👁️ Visitas: <span class="visitor-count" id="visit-count">-</span>
             </div>
         </div>
     </div>
-    
-    <div id="map"></div>
-    
-    <div class="footer">
-        Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
-    </div>
 
-    <!-- Modal para ingresar la contraseña de forma oculta -->
-    <div id="modalPassword" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-      <div style="background: white; padding: 20px; border-radius: 8px; max-width: 300px; width: 90%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-        <h3 style="margin-top: 0; font-size: 14px; color: #1e293b;">🔒 Confirmación Requerida</h3>
-        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Ingresa la contraseña para descargar el CSV:</p>
+    <div class="container">
+        <h1>Explorador de Datos Territoriales de Panamá</h1>
         
-        <input type="password" id="inputPassModal" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 14px; text-align: center;">
-        
-        <div style="display: flex; gap: 8px; justify-content: center;">
-          <button id="btnCancelarModal" style="background: #e2e8f0; color: #475569; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Cancelar</button>
-          <button id="btnAceptarModal" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Descargar</button>
+        <div class="descripcion-box">
+            Secciona el nivel territorial requerido. Las opciones de filtrado se actualizarán en cascada de acuerdo a tu selección jerárquica.
         </div>
-      </div>
+
+        <div id="leyenda-poblados" class="descripcion-box" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1;">
+            <strong>📋 Descripción del Patrón para Poblados:</strong><br>
+            <span style="margin-right: 15px;"><strong>🔹 LUPO_CLASE:</strong> 1-CABECERA, 2-POBLADO COMPLETO, 3-POBLADO PARTE, 4-CABECERA PARTE (Mixto)</span><br>
+            <span style="margin-right: 15px;"><strong>🔍 LUPO_TIPO:</strong> 1-URBANO, 2-RURAL, 3-INDIGENA</span><br>
+            <span><strong>🔍 LUPO_CATE:</strong> 1-POBLADO, 2-SITIO</span>
+        </div>
+        
+        <div class="toolbar">
+            <div class="nivel-section">
+                <div class="selector-nivel">
+                    <button class="btn-nivel active" onclick="cambiarNivel('provincia')">Provincias</button>
+                    <button class="btn-nivel" onclick="cambiarNivel('distritos')">Distritos</button>
+                    <button class="btn-nivel" onclick="cambiarNivel('corregimientos')">Corregimientos</button>
+                    <button class="btn-nivel" onclick="cambiarNivel('poblados')">Poblados</button>
+                    <button class="btn-nivel" onclick="cambiarNivel('barrios')">Barrios</button>
+                </div>
+            </div>
+
+            <div class="filtros-container">
+                <div class="filtro-item" id="div-filtro-prov" style="display:none;">
+                    <label>Provincia:</label>
+                    <select id="filtro-provincia" class="filtro-select" onchange="filtrarCascada('provincia')">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="filtro-item" id="div-filtro-dist" style="display:none;">
+                    <label>Distrito:</label>
+                    <select id="filtro-distrito" class="filtro-select" onchange="filtrarCascada('distrito')">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filtro-item" id="div-filtro-corr" style="display:none;">
+                    <label>Corregimiento:</label>
+                    <select id="filtro-corregimiento" class="filtro-select" onchange="filtrarCascada('corregimiento')">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filtro-item" id="div-filtro-lupo" style="display:none;">
+                    <label>Poblado (LUPO):</label>
+                    <select id="filtro-poblado" class="filtro-select" onchange="filtrarCascada('poblado')">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="controles-globales">
+                <button class="btn-global btn-limpiar" onclick="limpiarFiltros()">Limpiar Filtros</button>
+                <button class="btn-global btn-exportar" onclick="exportarCSV()">Exportar Vista Actual</button>
+            </div>
+        </div>
+
+        <input type="text" id="search-input" class="search-box" placeholder="Buscar por nombre o código en la tabla activa..." oninput="filtrarTabla()">
+
+        <div class="resultados-info" id="contador-registros">
+            Cargando datos...
+        </div>
+
+        <div class="table-wrapper">
+            <table id="tabla-datos">
+                <thead id="tabla-head"></thead>
+                <tbody id="tabla-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        const map = L.map('map', {
-            center: [8.5, -80.0],
-            zoom: 8
-        });
+       // Configuración de rutas de archivos CSV relativos (Para GitHub Pages)
+const csvPaths = {
+    provincia: './data/provincias.csv',
+    distritos: './data/distritos.csv',
+    corregimientos: './data/corregimientos.csv',
+    poblados: './data/poblados.csv',
+    barrios: './data/barrios.csv'
+};
 
-        const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
-
-        const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri',
-            maxZoom: 19
-        });
-
-        L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
-
-        let mapaActual = 'callejero';
-        let ultimoPoligonoSeleccionado = null;
-
-        map.on('baselayerchange', function(e) {
-            mapaActual = e.name.includes('Satelital') ? 'satelite' : 'callejero';
-            if (ultimoPoligonoSeleccionado) {
-                trazarDistanciaYPopup(ultimoPoligonoSeleccionado.layer, ultimoPoligonoSeleccionado.feature);
-            }
-        });
-
-        const provinciaContornoLayer = L.layerGroup().addTo(map);
-        const poligonosEmlLayer = L.layerGroup().addTo(map);
-        const oficinasLayer = L.layerGroup().addTo(map);
-        const lineasDistanciaLayer = L.layerGroup().addTo(map);
-
-        let emlData = [];
-        let oficinaData = [];
-        let provinciaData = [];
-        let emlFiltrados = [];
-        let oficinasFiltradasGlobal = [];
-
-        const provinciaColores = {};
-        const paletaColores = [
-            '#e6194b', // Rojo Vivo
-            '#3cb44b', // Verde Brillante
-            '#ffe119', // Amarillo
-            '#4363d8', // Azul Fuerte
-            '#f58231', // Naranja
-            '#911eb4', // Púrpura
-            '#46f0f0', // Cian / Turquesa
-            '#f032e6', // Magenta / Rosado
-            '#bcfd4c', // Lima
-            '#fabebe', // Rosado Claro
-            '#008080', // Verde Azulado (Teal)
-            '#e6beff', // Lavanda
-            '#9a6324', // Marrón
-            '#fffac8', // Beige / Crema
-            '#800000'  // Granate / Vino
-        ];
-
-        function obtenerColorProvincia(provNombre) {
-            if (!provNombre) return '#64748b';
-            const norm = provNombre.trim().toUpperCase();
-            if (!provinciaColores[norm]) {
-                const index = Object.keys(provinciaColores).length % paletaColores.length;
-                provinciaColores[norm] = paletaColores[index];
-            }
-            return provinciaColores[norm];
-        }
-
-        function esVerificado(props) {
-            if (!props) return false;
-            const llave = Object.keys(props).find(k => {
-                const kUpper = k.trim().toUpperCase();
-                return kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-            });
-
-            if (!llave) return false;
-            const valRaw = props[llave];
-            if (valRaw === null || valRaw === undefined) return false;
-
-            const val = String(valRaw).trim().toUpperCase().replace(/['"]/g, '');
-            return (
-                val === 'SI' || 
-                val === 'SÍ' || 
-                val === 'S' || 
-                val === '1' || 
-                val === 'TRUE' || 
-                val === 'VERIFICADO' ||
-                val === 'ACTUALIZADO'
-            );
-        }
-
-        const inputUpm = document.getElementById('buscar_upm');
-        const selectSegm = document.getElementById('segm_tipo');
-        const selectProv = document.getElementById('provincia');
-        const selectDist = document.getElementById('distrito');
-        const selectCorr = document.getElementById('corregimiento');
-        const selectPob = document.getElementById('poblado');
-
-        const legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function () {
-            const div = L.DomUtil.create('div', 'legend');
-            div.id = 'leyenda-provincias';
-            div.innerHTML = '<h4>Leyenda</h4><p>Cargando datos...</p>';
-            return div;
-        };
-        legend.addTo(map);
-
-        function actualizarLeyenda() {
-            const div = document.getElementById('leyenda-provincias');
-            if (!div) return;
-            let html = '<h4>Simbología / Provincias</h4>';
-            html += '<p><i style="background: #facc15; border: 1px solid #ca8a04;"></i> <strong>Verificado (SI)</strong></p>';
-            
-            const provs = Object.keys(provinciaColores).sort();
-            if (provs.length === 0) {
-                html += '<p>Sin provincias disponibles</p>';
-            } else {
-                provs.forEach(p => {
-                    html += `<p><i style="background: ${provinciaColores[p]}"></i> ${p}</p>`;
-                });
-            }
-            html += '<p style="margin-top:4px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
-            div.innerHTML = html;
-        }
-
-        async function cargarGeoJSONs() {
-            try {
-                const [resEml, resOficina, resProvincia] = await Promise.all([
-                    fetch('eml.geojson').catch(() => null),
-                    fetch('oficina.geojson').catch(() => null),
-                    fetch('provincia.geojson').catch(() => null)
-                ]);
-
-                if (resEml && resEml.ok) {
-                    const emlJson = await resEml.json();
-                    emlData = emlJson.features || [];
-                }
-
-                if (resOficina && resOficina.ok) {
-                    const oficinaJson = await resOficina.json();
-                    oficinaData = oficinaJson.features || [];
-                }
-
-                if (resProvincia && resProvincia.ok) {
-                    const provinciaJson = await resProvincia.json();
-                    provinciaData = provinciaJson.features || [];
-                }
-
-                inicializarFiltrosCascada();
-                filtrarYRenderizar();
-            } catch (error) {
-                console.error("Error cargando los GeoJSON:", error);
-            }
-        }
-
-        function normalizarSegmTipo(val) {
-            const segmStr = String(val ?? '').trim();
-            if (segmStr === '01' || segmStr === '1' || segmStr.toUpperCase() === 'URBANO') return 'URBANO';
-            if (segmStr === '02' || segmStr === '2' || segmStr.toUpperCase() === 'RURAL') return 'RURAL';
-            if (segmStr === '03' || segmStr === '3' || segmStr.toUpperCase() === 'INDIGENA') return 'INDIGENA';
-            return segmStr;
-        }
-
-        function inicializarFiltrosCascada() {
-            const provinciasSet = new Set();
-
-            [emlData, oficinaData, provinciaData].forEach(dataSet => {
-                dataSet.forEach(f => {
-                    if (f.properties && f.properties.PROV_NOMB) {
-                        provinciasSet.add(f.properties.PROV_NOMB.trim().toUpperCase());
-                    }
-                });
-            });
-
-            Array.from(provinciasSet).sort().forEach(p => {
-                obtenerColorProvincia(p);
-                selectProv.add(new Option(p, p));
-            });
-
-            actualizarLeyenda();
-
-            // Evento para Búsqueda Incremental por CODE_UPM
-            inputUpm.addEventListener('input', filtrarYRenderizar);
-            selectSegm.addEventListener('change', filtrarYRenderizar);
-
-            selectProv.addEventListener('change', () => {
-                const pSel = selectProv.value;
-                selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
-                selectDist.disabled = (pSel === 'TODAS');
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-
-                if (pSel !== 'TODAS') {
-                    const distritos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel)
-                           .forEach(f => { if (f.properties.DIST_NOMB) distritos.add(f.properties.DIST_NOMB.trim().toUpperCase()); });
-                    Array.from(distritos).sort().forEach(d => selectDist.add(new Option(d, d)));
-                }
-                filtrarYRenderizar();
-            });
-
-            selectDist.addEventListener('change', () => {
-                const pSel = selectProv.value;
-                const dSel = selectDist.value;
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
-                selectCorr.disabled = (dSel === 'TODOS');
-                selectPob.disabled = true;
-
-                if (dSel !== 'TODOS') {
-                    const corregimientos = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel)
-                           .forEach(f => { if (f.properties.CORR_NOMB) corregimientos.add(f.properties.CORR_NOMB.trim().toUpperCase()); });
-                    Array.from(corregimientos).sort().forEach(c => selectCorr.add(new Option(c, c)));
-                }
-                filtrarYRenderizar();
-            });
-
-            selectCorr.addEventListener('change', () => {
-                const pSel = selectProv.value;
-                const dSel = selectDist.value;
-                const cSel = selectCorr.value;
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-
-                selectPob.disabled = (cSel === 'TODOS');
-
-                if (cSel !== 'TODOS') {
-                    const poblados = new Set();
-                    emlData.filter(f => f.properties?.PROV_NOMB?.trim().toUpperCase() === pSel && 
-                                        f.properties?.DIST_NOMB?.trim().toUpperCase() === dSel &&
-                                        f.properties?.CORR_NOMB?.trim().toUpperCase() === cSel)
-                           .forEach(f => { if (f.properties.LUPO_NOMB) poblados.add(f.properties.LUPO_NOMB.trim().toUpperCase()); });
-                    Array.from(poblados).sort().forEach(p => selectPob.add(new Option(p, p)));
-                }
-                filtrarYRenderizar();
-            });
-
-            selectPob.addEventListener('change', filtrarYRenderizar);
-        }
-
-        function obtenerCoordenadasOficina(feature) {
-            const props = feature.properties || {};
-            let lat = parseFloat(props.OFICE_LAT);
-            let lon = parseFloat(props.OFICE_LONG);
-
-            if (isNaN(lat) || isNaN(lon)) {
-                if (feature.geometry && feature.geometry.type === 'Point') {
-                    lon = feature.geometry.coordinates[0];
-                    lat = feature.geometry.coordinates[1];
-                }
-            }
-            if (isNaN(lat) || isNaN(lon)) return null;
-            return { lat, lon };
-        }
-
-        function renderizarContornoProvincia(pSel) {
-            provinciaContornoLayer.clearLayers();
-            if (pSel === 'TODAS' || provinciaData.length === 0) return;
-
-            const provFeature = provinciaData.find(
-                f => f.properties && f.properties.PROV_NOMB && f.properties.PROV_NOMB.trim().toUpperCase() === pSel
-            );
-
-            if (provFeature) {
-                L.geoJSON(provFeature, {
-                    style: {
-                        color: '#000000',
-                        weight: 3.5,
-                        fillOpacity: 0,
-                        interactive: false
-                    }
-                }).addTo(provinciaContornoLayer);
-            }
-        }
-
-        function actualizarManejadorPorcentajes(listaBaseUbicacion) {
-            const total = listaBaseUbicacion.length;
-
-            if (total === 0) {
-                ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
-                    document.getElementById(`pct-${id}`).textContent = '0.0%';
-                    document.getElementById(`cnt-${id}`).textContent = '(0/0)';
-                    document.getElementById(`bar-${id}`).style.width = '0%';
-                });
-                return;
-            }
-
-            let verifCount = 0;
-            let urbanoCount = 0;
-            let ruralCount = 0;
-            let indigenaCount = 0;
-            let daCount = 0;
-
-            listaBaseUbicacion.forEach(f => {
-                const props = f.properties || {};
-                
-                if (esVerificado(props)) verifCount++;
-                
-                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
-                if (tipo === 'URBANO') urbanoCount++;
-                if (tipo === 'RURAL') ruralCount++;
-                if (tipo === 'INDIGENA') indigenaCount++;
-                
-                if (String(props.DA).trim() === '1') daCount++;
-            });
-
-            const actualizarTarjeta = (id, count) => {
-                const pct = ((count / total) * 100).toFixed(1);
-                document.getElementById(`pct-${id}`).textContent = `${pct}%`;
-                document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
-                document.getElementById(`bar-${id}`).style.width = `${pct}%`;
-            };
-
-            actualizarTarjeta('verificado', verifCount);
-            actualizarTarjeta('urbano', urbanoCount);
-            actualizarTarjeta('rural', ruralCount);
-            actualizarTarjeta('indigena', indigenaCount);
-            actualizarTarjeta('da', daCount);
-        }
-
-        /* LÓGICA DE DISTANCIA A LA OFICINA MÁS CERCANA */
-        function trazarDistanciaYPopup(layer, feature) {
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = { layer, feature };
-
-            const props = feature.properties || {};
-            const centroide = layer.getBounds().getCenter();
-
-            if (oficinaData.length === 0) return;
-
-            const provEml = props.PROV_NOMB?.trim().toUpperCase();
-            
-            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
-            if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-
-            let oficinaCercana = null;
-            let distanciaMinima = Infinity;
-
-            oficinasBuscar.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (coords) {
-                    const latLngOficina = L.latLng(coords.lat, coords.lon);
-                    const dist = centroide.distanceTo(latLngOficina);
-                    if (dist < distanciaMinima) {
-                        distanciaMinima = dist;
-                        oficinaCercana = { coords: latLngOficina, props: oficina.properties };
-                    }
-                }
-            });
-
-            if (!oficinaCercana) return;
-
-            const distanciaKm = (distanciaMinima / 1000).toFixed(2);
-
-            const polyline = L.polyline([centroide, oficinaCercana.coords], {
-                color: '#ef4444',
-                weight: 2.5,
-                dashArray: '6, 6',
-                interactive: false
-            }).addTo(lineasDistanciaLayer);
-
-            const puntoMedio = L.latLng(
-                (centroide.lat + oficinaCercana.coords.lat) / 2,
-                (centroide.lng + oficinaCercana.coords.lng) / 2
-            );
-
-            const estiloClase = (mapaActual === 'satelite') ? 'distance-label-satelite' : 'distance-label-callejero';
-
-            L.marker(puntoMedio, {
-                icon: L.divIcon({
-                    className: estiloClase,
-                    html: `📏 ${distanciaKm} km`,
-                    iconSize: [80, 20],
-                    iconAnchor: [40, 10]
-                }),
-                interactive: false
-            }).addTo(lineasDistanciaLayer);
-
-            let popupContent = `<div class="info-popup">
-                <h3>📍 UPM ${props.CODE_UPM || props.UPM || ''}</h3>
-                <p style="background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; border: 1px solid #bae6fd;">
-                    📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
-                </p>`;
-
-            for (let k in props) {
-                const kUpper = k.trim().toUpperCase();
-                const valRaw = String(props[k] ?? 'N/D').trim();
-                const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-
-                if (esCampoVerificacion) {
-                    const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
-
-                    if (esValorSi) {
-                        popupContent += `
-                            <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
-                            </p>`;
-                    } else {
-                        popupContent += `
-                            <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
-                            </p>`;
-                    }
+    // Estructura de campos por nivel territorial (Corregido sin espacios)
+    const estructurasDeCampos = {
+        provincia: ['PROV_ID', 'PROV_NOMB'],
+        distritos: ['PROV_ID', 'DIST_ID', 'DIST_NOMB', 'DIST_CODE'],
+        corregimientos: ['PROV_ID', 'DIST_ID', 'CORR_ID', 'CODIGO', 'CORR_NOMB', 'CORR_LEY', 'CORR_CATE', 'DESCRIP_ON'],
+        poblados: ['PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'CODIGO', 'LUPO_NOMB', 'LUPO_CLASE', 'DESCRIP_ON', 'LUPO_CATE', 'LUPO_TIPO'],
+        barrios: ['PROV_ID', 'DIST_ID', 'CORR_ID', 'LUPO_ID', 'BARR_ID', 'CODIGO', 'BARR_NOMB', 'BARR_CLASE', 'DESCRIP_ON']
+    };
+    
+    // Estado global de la aplicación
+    let cacheDatos = {};
+    let nivelActivo = 'provincia';
+    let datosFiltrados = [];
+    let ordenAscendente = true;
+    
+    // Al iniciar, cargar el primer nivel
+    window.addEventListener('DOMContentLoaded', () => {
+        inicializarContadorVisitas();
+        cargarNivelTerritorial(nivelActivo);
+    });
+    
+    // Función para inicializar el contador de visitas usando StaticCounter
+    function inicializarContadorVisitas() {
+        // Usar StaticCounter: servicio confiable y gratuito
+        const el = document.getElementById('visit-count');
+        if (!el) return;
+        
+        // StaticCounter genera un badge que actualiza visitas automáticamente
+        fetch(`https://api.staticcounter.com/v3/staticcounter?user=d1c14f6f37f6402b&key=panama_visor&format=json`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.counter && data.counter.count) {
+                    el.innerText = Number(data.counter.count).toLocaleString('es-PA');
                 } else {
-                    popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
+                    throw new Error("Respuesta inválida");
                 }
-            }
-            popupContent += `</div>`;
-
-            layer.bindPopup(popupContent).openPopup();
-        }
-
-        function filtrarYRenderizar() {
-            poligonosEmlLayer.clearLayers();
-            oficinasLayer.clearLayers();
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = null;
-
-            const busquedaUpm = inputUpm.value.trim().toUpperCase();
-            const segmSel = selectSegm.value;
-            const pSel = selectProv.value;
-            const dSel = selectDist.value;
-            const cSel = selectCorr.value;
-            const pobSel = selectPob.value;
-
-            renderizarContornoProvincia(pSel);
-
-            // 1. BASE GEOGRÁFICA Y BÚSQUEDA DE UPM
-            const emlBaseGeografica = emlData.filter(f => {
-                const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
-                if (dSel !== 'TODOS' && props.DIST_NOMB?.trim().toUpperCase() !== dSel) return false;
-                if (cSel !== 'TODOS' && props.CORR_NOMB?.trim().toUpperCase() !== cSel) return false;
-                if (pobSel !== 'TODOS' && props.LUPO_NOMB?.trim().toUpperCase() !== pobSel) return false;
-
-                // Búsqueda incremental por prefijo de UPM / CODE_UPM
-                if (busquedaUpm !== '') {
-                    const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
-                    if (!codigoUPM.startsWith(busquedaUpm)) return false;
-                }
-
-                return true;
+            })
+            .catch(err => {
+                console.warn("StaticCounter falló, intentando con localStorage:", err);
+                // Respaldo: localStorage
+                let visits = localStorage.getItem('panama_visits') || 1;
+                visits = parseInt(visits) + 1;
+                localStorage.setItem('panama_visits', visits);
+                el.innerText = visits.toLocaleString('es-PA');
             });
-
-            // 2. Porcentajes Territoriales
-            actualizarManejadorPorcentajes(emlBaseGeografica);
-
-            // 3. Filtrar lo que SE DIBUJA en el mapa
-            emlFiltrados = emlBaseGeografica.filter(f => {
-                const props = f.properties || {};
+    }
+    
+    function cargarNivelTerritorial(nivel) {
+        document.getElementById('contador-registros').innerText = "Cargando datos desde el servidor...";
+        
+        if (cacheDatos[nivel]) {
+            procesarYMostrar(nivel);
+            return;
+        }
+    
+        Papa.parse(csvPaths[nivel], {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                cacheDatos[nivel] = results.data;
+                procesarYMostrar(nivel);
+                actualizarSelectoresFiltros();
+            },
+            error: function(err) {
+                document.getElementById('contador-registros').innerText = "Error al cargar el archivo CSV de: " + nivel;
+                console.error(err);
+            }
+        });
+    }
+    
+    function procesarYMostrar(nivel) {
+        // Almacenar copia de los datos cargados
+        datosFiltrados = [...cacheDatos[nivel]];
+        
+        // Si entramos a provincias, forzar el orden ascendente numérico de una vez
+        if (nivel === 'provincia') {
+            datosFiltrados.sort((a, b) => {
+                let idA = String(a.PROV_ID || '').trim();
+                let idB = String(b.PROV_ID || '').trim();
+                return idA.localeCompare(idB, undefined, { numeric: true });
+            });
+        }
+    
+        generarCabecera(nivel);
+        aplicarFiltrosYRenderizar();
+    }
+    
+    function generarCabecera(nivel) {
+        const head = document.getElementById('tabla-head');
+        const campos = estructurasDeCampos[nivel];
+        let html = '<tr>';
+        campos.forEach((campo) => {
+            html += `<th onclick="ordenarTabla('${campo}')">${campo} <span id="sort-${campo}"></span></th>`;
+        });
+        html += '</tr>';
+        head.innerHTML = html;
+    }
+    
+    function cambiarNivel(nuevoNivel) {
+        nivelActivo = nuevoNivel;
+        
+        const botones = document.querySelectorAll('.btn-nivel');
+        const mapeoIndices = { provincia: 0, distritos: 1, corregimientos: 2, poblados: 3, barrios: 4 };
+        
+        botones.forEach(b => b.classList.remove('active'));
+        if (mapeoIndices[nuevoNivel] !== undefined) {
+            botones[mapeoIndices[nuevoNivel]].classList.add('active');
+        }
+    
+        // Mostrar/Ocultar selectores condicionales según nivel jerárquico elegido
+        document.getElementById('div-filtro-prov').style.display = nuevoNivel !== 'provincia' ? 'block' : 'none';
+        document.getElementById('div-filtro-dist').style.display = ['corregimientos', 'poblados', 'barrios'].includes(nuevoNivel) ? 'block' : 'none';
+        document.getElementById('div-filtro-corr').style.display = ['poblados', 'barrios'].includes(nuevoNivel) ? 'block' : 'none';
+        document.getElementById('div-filtro-lupo').style.display = nuevoNivel === 'barrios' ? 'block' : 'none';
+        document.getElementById('leyenda-poblados').style.display = nuevoNivel === 'poblados' ? 'block' : 'none';
+        cargarNivelTerritorial(nuevoNivel);
+    }
+    
+    function aplicarFiltrosYRenderizar() {
+        let baseDatos = cacheDatos[nivelActivo] ? [...cacheDatos[nivelActivo]] : [];
+    
+        const pVal = document.getElementById('filtro-provincia').value;
+        const dVal = document.getElementById('filtro-distrito').value;
+        const cVal = document.getElementById('filtro-corregimiento').value;
+        const lVal = document.getElementById('filtro-poblado').value;
+    
+        // 1. Filtrado Jerárquico en Cascada
+        if (pVal && nivelActivo !== 'provincia') {
+            baseDatos = baseDatos.filter(r => r.PROV_ID === pVal);
+        }
+        if (dVal && ['distritos', 'corregimientos', 'poblados', 'barrios'].includes(nivelActivo)) {
+            baseDatos = baseDatos.filter(r => r.DIST_ID === dVal);
+        }
+        if (cVal && ['corregimientos', 'poblados', 'barrios'].includes(nivelActivo)) {
+            baseDatos = baseDatos.filter(r => r.CORR_ID === cVal);
+        }
+        if (lVal && ['poblados', 'barrios'].includes(nivelActivo)) {
+            baseDatos = baseDatos.filter(r => r.LUPO_ID === lVal);
+        }
+    
+        // 2. Filtrado por barra de búsqueda global
+        const busqueda = document.getElementById('search-input').value.toLowerCase().trim();
+        if (busqueda !== "") {
+            const campos = estructurasDeCampos[nivelActivo];
+            baseDatos = baseDatos.filter(fila => {
+                return campos.some(campo => String(fila[campo] || '').toLowerCase().includes(busqueda));
+            });
+        }
+    
+        // 3. ¡NUEVO Y DEFINITIVO!: Ordenar la tabla resultante ascendentemente para CUALQUIER nivel
+        baseDatos.sort((a, b) => {
+            let idA = '', idB = '';
+            
+            // Mapeamos el ID correspondiente según el nivel que el usuario está viendo en pantalla
+            if (nivelActivo === 'provincia') { idA = a.PROV_ID; idB = b.PROV_ID; }
+            else if (nivelActivo === 'distritos') { idA = a.DIST_ID; idB = b.DIST_ID; }
+            else if (nivelActivo === 'corregimientos') { idA = a.CORR_ID; idB = b.CORR_ID; }
+            else if (nivelActivo === 'poblados') { idA = a.LUPO_ID; idB = b.LUPO_ID; }
+            else if (nivelActivo === 'barrios') { idA = a.BARR_ID; idB = b.BARR_ID; }
+    
+            idA = String(idA || '').trim();
+            idB = String(idB || '').trim();
+            
+            return idA.localeCompare(idB, undefined, { numeric: true });
+        });
+    
+        datosFiltrados = baseDatos;
+        renderizarTabla();
+    }
+    
+    function renderizarTabla() {
+        const tbody = document.getElementById('tabla-body');
+        const campos = estructurasDeCampos[nivelActivo];
+        
+        if (datosFiltrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${campos.length}" style="text-align:center; padding:30px; color:#999;">No se encontraron registros.</td></tr>`;
+            document.getElementById('contador-registros').innerText = "Mostrando 0 registros";
+            return;
+        }
+    
+        let html = '';
+    datosFiltrados.forEach(fila => {
+        
+        html += '<tr>'; 
+        campos.forEach(campo => {
+            html += `<td>${fila[campo] || ''}</td>`;
+        });
+        html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+    document.getElementById('contador-registros').innerText = `Mostrando ${datosFiltrados.length} registros`;
+}
+    
+    function filtrarTabla() {
+        aplicarFiltrosYRenderizar();
+    }
+    
+    function actualizarSelectoresFiltros() {
+        const provSelect = document.getElementById('filtro-provincia');
+        if (!provSelect) return;
+        
+        // Si ya tiene cargadas las provincias (más de la opción "Todos"), salimos para no duplicar
+        if (provSelect.options.length > 1) return;
+    
+        if (cacheDatos['provincia']) {
+            // Mapeamos asegurando limpiar cualquier espacio en blanco invisible de los datos (.trim())
+            const provs = [...new Set(cacheDatos['provincia']
+                .filter(r => r.PROV_ID && r.PROV_NOMB)
+                .map(r => JSON.stringify({
+                    id: String(r.PROV_ID).trim(), 
+                    nomb: String(r.PROV_NOMB).trim()
+                })))
+            ].map(s => JSON.parse(s));
+            
+            // ORDENAR ASCENDENTE ESTRICTO POR ID (01, 02, 03... al abrir la página)
+            provs.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+            
+            // Llenar el selector mostrando solo el nombre
+            provs.forEach(p => {
+                provSelect.options.add(new Option(p.nomb, p.id));
+            });
+        }
+    }
+    
+    function filtrarCascada(tipoFiltro) {
+        const pVal = document.getElementById('filtro-provincia').value;
+        
+        if (tipoFiltro === 'provincia') {
+            rebuildSelect('filtro-distrito');
+            rebuildSelect('filtro-corregimiento');
+            rebuildSelect('filtro-poblado');
+            
+            if (pVal && cacheDatos['distritos']) {
+                const distSelect = document.getElementById('filtro-distrito');
+                const filtrados = cacheDatos['distritos'].filter(r => r.PROV_ID === pVal);
                 
-                if (segmSel === 'DIFICIL_ACCESO') {
-                    if (String(props.DA).trim() !== '1') return false;
-                } else if (segmSel === 'VERIFICADO') {
-                    if (!esVerificado(props)) return false;
-                } else if (segmSel !== 'TODOS') {
-                    const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
-                    if (tipoNormalizado !== segmSel) return false;
-                }
-                return true;
-            });
-
-            oficinasFiltradasGlobal = oficinaData.filter(f => {
-                const props = f.properties || {};
-                if (pSel !== 'TODAS' && props.PROV_NOMB?.trim().toUpperCase() !== pSel) return false;
-                return true;
-            });
-
-            // Badge Header
-            document.getElementById('contador').textContent = `${emlFiltrados.length} Polígonos Visibles | ${oficinasFiltradasGlobal.length} Oficinas`;
-
-            // Renderizar Oficinas
-            oficinasFiltradasGlobal.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (!coords) return;
-
-                const props = oficina.properties || {};
-                const iconOficina = L.divIcon({
-                    className: 'custom-office-icon',
-                    html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
-                    iconSize: [22, 22],
-                    iconAnchor: [11, 11]
-                });
-
-                const camposOficina = ['PROV_ID', 'PROV_NOMB', 'PLUS_CODE'];
-                let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
-                camposOficina.forEach(campo => {
-                    if (props.hasOwnProperty(campo)) {
-                        popupContent += `<p><strong>${campo}:</strong> ${props[campo] ?? 'N/D'}</p>`;
-                    }
-                });
-                popupContent += `</div>`;
-
-                L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
-            });
-
-            // Renderizar Polígonos EML
-            emlFiltrados.forEach(feature => {
-                const props = feature.properties || {};
-                const provNombre = props.PROV_NOMB || 'Desconocido';
-                const estaVerificado = esVerificado(props);
-            
-                const estiloPoligono = estaVerificado ? {
-                    fillColor: '#facc15',
-                    fillOpacity: 0.85,
-                    color: '#dc2626',
-                    weight: 2.5
-                } : {
-                    fillColor: obtenerColorProvincia(provNombre),
-                    fillOpacity: 0.60,
-                    color: '#1e293b',
-                    weight: 1.2
-                };
-            
-                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
+                // Convertimos a objetos para poder ordenarlos
+                let unicos = [...new Set(filtrados.map(r => JSON.stringify({id: r.DIST_ID, nomb: r.DIST_NOMB})))].map(s => JSON.parse(s));
                 
-                polyLayer.on('click', function() {
-                    trazarDistanciaYPopup(polyLayer, feature);
+                // ORDENAR ASCENDENTE POR ID
+                unicos.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+                
+                // LLENAR CON FORMATO "ID - NOMBRE"
+                unicos.forEach(d => {
+                    distSelect.options.add(new Option(`${d.id} - ${d.nomb}`, d.id));
                 });
-            });
-
-            // =========================================================
-            // LÓGICA DE ZOOM AUTOMÁTICO (PROVINCIA, BÚSQUEDA O TODAS)
-            // =========================================================
-
-            // 1. Zoom por Búsqueda de UPM (Prioridad si hay texto ingresado)
-            if (busquedaUpm !== '' && emlFiltrados.length > 0) {
-                const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-                if (tempGroup.getBounds().isValid()) {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                }
-            } 
-            // 2. Zoom por Selección de Provincia en el Combo Box
-            else if (pSel !== 'TODAS' && provinciaContornoLayer.getLayers().length > 0) {
-                const provinciaLayer = provinciaContornoLayer.getLayers()[0];
-                if (provinciaLayer && provinciaLayer.getBounds().isValid()) {
-                    map.fitBounds(provinciaLayer.getBounds(), { padding: [20, 20] });
-                }
             }
-            // 3. Si se elige "TODAS" las provincias, re-centrar el mapa al encuadre general
-            else if (pSel === 'TODAS' && busquedaUpm === '') {
-                map.setView([8.5, -80.0], 8);
-            }
-        }
-
-        function resetMap() {
-            inputUpm.value = '';
-            selectSegm.value = 'TODOS';
-            selectProv.value = 'TODAS';
-            selectDist.value = 'TODOS';
-            selectCorr.value = 'TODOS';
-            selectPob.value = 'TODOS';
+        } 
+        else if (tipoFiltro === 'distrito') {
+            rebuildSelect('filtro-corregimiento');
+            rebuildSelect('filtro-poblado');
+            const dVal = document.getElementById('filtro-distrito').value;
             
-            selectDist.disabled = true;
-            selectCorr.disabled = true;
-            selectPob.disabled = true;
-
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = null;
-            
-            filtrarYRenderizar();
-            map.setView([8.5, -80.0], 8);
-        }
-
-        // Función auxiliar para pedir la contraseña usando el modal oculto
-        function pedirPasswordModal() {
-          return new Promise((resolve) => {
-            const modal = document.getElementById('modalPassword');
-            const input = document.getElementById('inputPassModal');
-            const btnAceptar = document.getElementById('btnAceptarModal');
-            const btnCancelar = document.getElementById('btnCancelarModal');
-
-            input.value = ''; // Limpiar el campo
-            modal.style.display = 'flex'; // Mostrar modal
-            input.focus();
-
-            const cerrarModal = (valor) => {
-              modal.style.display = 'none';
-              btnAceptar.onclick = null;
-              btnCancelar.onclick = null;
-              input.onkeydown = null;
-              resolve(valor);
-            };
-
-            btnAceptar.onclick = () => cerrarModal(input.value);
-            btnCancelar.onclick = () => cerrarModal(null);
-            
-            // Permitir presionar Enter para confirmar
-            input.onkeydown = (e) => {
-              if (e.key === 'Enter') cerrarModal(input.value);
-              if (e.key === 'Escape') cerrarModal(null);
-            };
-          });
-        }
-
-        async function exportarCSV() {
-            if (emlFiltrados.length === 0) {
-                alert("No hay datos para exportar.");
-                return;
-            }
-        
-            // 1. Pedir la contraseña mediante el modal con input de tipo password
-            const password = await pedirPasswordModal();
-            if (!password) return; // Cancela si presiona cancelar o lo deja vacío
-        
-            try {
-                // 2. Leer el archivo pass_eml.txt directamente desde la carpeta raíz
-                const response = await fetch('pass_eml.txt');
-        
-                if (!response.ok) {
-                    alert("No se encontró el archivo 'pass_eml.txt' en el servidor.");
-                    return;
-                }
-
-                // Leer la clave del archivo y limpiar saltos de línea (\n, \r) o espacios
-                const passwordCorrecta = (await response.text()).trim();
-
-                // 3. Comparar la contraseña ingresada con la del archivo .txt
-                if (password.trim() !== passwordCorrecta) {
-                    alert("Contraseña incorrecta. Acceso denegado.");
-                    return;
-                }
-
-                // 4. Si la clave es correcta, genera la descarga del CSV filtrado
-                const keys = Object.keys(emlFiltrados[0].properties || {});
-                const headers = [...keys, "DISTANCIA_OFICINA_KM"];
-                let csv = headers.join(",") + "\n";
-            
-                emlFiltrados.forEach(f => {
-                    const props = f.properties || {};
-                    const tempLayer = L.geoJSON(f);
-                    const centroide = tempLayer.getBounds().getCenter();
-                    const provEml = props.PROV_NOMB?.trim().toUpperCase();
-            
-                    let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
-                    if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-            
-                    let distanciaMinima = Infinity;
-            
-                    oficinasBuscar.forEach(oficina => {
-                        const coords = obtenerCoordenadasOficina(oficina);
-                        if (coords) {
-                            const latLngOficina = L.latLng(coords.lat, coords.lon);
-                            const dist = centroide.distanceTo(latLngOficina);
-                            if (dist < distanciaMinima) {
-                                distanciaMinima = dist;
-                            }
-                        }
-                    });
-            
-                    const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
-            
-                    let row = keys.map(k => `"${props[k] ?? ''}"`);
-                    row.push(`"${distanciaKm}"`);
-                    
-                    csv += row.join(",") + "\n";
+            if (pVal && dVal && cacheDatos['corregimientos']) {
+                const corrSelect = document.getElementById('filtro-corregimiento');
+                const filtrados = cacheDatos['corregimientos'].filter(r => r.PROV_ID === pVal && r.DIST_ID === dVal);
+                
+                let unicos = [...new Set(filtrados.map(r => JSON.stringify({id: r.CORR_ID, nomb: r.CORR_NOMB})))].map(s => JSON.parse(s));
+                
+                // ORDENAR ASCENDENTE POR ID
+                unicos.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+                
+                // LLENAR CON FORMATO "ID - NOMBRE"
+                unicos.forEach(c => {
+                    corrSelect.options.add(new Option(`${c.id} - ${c.nomb}`, c.id));
                 });
-            
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
-                link.click();
-
-            } catch (error) {
-                console.error("Error al verificar la contraseña:", error);
-                alert("Ocurrió un error al intentar verificar la contraseña.");
             }
         }
-
-        cargarGeoJSONs();
+        else if (tipoFiltro === 'corregimiento') {
+            rebuildSelect('filtro-poblado');
+            const dVal = document.getElementById('filtro-distrito').value;
+            const cVal = document.getElementById('filtro-corregimiento').value;
+    
+            if (pVal && dVal && cVal && cacheDatos['poblados']) {
+                const lupoSelect = document.getElementById('filtro-poblado');
+                const filtrados = cacheDatos['poblados'].filter(r => r.PROV_ID === pVal && r.DIST_ID === dVal && r.CORR_ID === cVal);
+                
+                let unicos = [...new Set(filtrados.map(r => JSON.stringify({id: r.LUPO_ID, nomb: r.LUPO_NOMB})))].map(s => JSON.parse(s));
+                
+                // ORDENAR ASCENDENTE POR ID
+                unicos.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+                
+                // LLENAR CON FORMATO "ID - NOMBRE"
+                unicos.forEach(l => {
+                    lupoSelect.options.add(new Option(`${l.id} - ${l.nomb}`, l.id));
+                });
+            }
+        }
+    
+        const nivelesAsegurar = ['distritos', 'corregimientos', 'poblados'];
+        nivelesAsegurar.forEach(n => {
+            if(!cacheDatos[n]) {
+                Papa.parse(csvPaths[n], {
+                    download: true, header: true, skipEmptyLines: true,
+                    complete: (res) => { cacheDatos[n] = res.data; actualizarSelectoresFiltros(); }
+                });
+            }
+        });
+    
+        aplicarFiltrosYRenderizar();
+    }
+    
+    function rebuildSelect(id) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '<option value="">Todos</option>';
+    }
+    
+    function ordenarTabla(campo) {
+        ordenAscendente = !ordenAscendente;
+        datosFiltrados.sort((a, b) => {
+            let valA = String(a[campo] || '').toLowerCase();
+            let valB = String(b[campo] || '').toLowerCase();
+            
+            if (!isNaN(valA) && !isNaN(valB) && valA !== '' && valB !== '') {
+                return ordenAscendente ? valA - valB : valB - valA;
+            }
+            
+            return ordenAscendente ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+        renderizarTabla();
+    }
+    
+    function limpiarFiltros() {
+        document.getElementById('filtro-provincia').value = "";
+        rebuildSelect('filtro-distrito');
+        rebuildSelect('filtro-corregimiento');
+        rebuildSelect('filtro-poblado');
+        rebuildSelect('filtro-barrio'); // Agregado para limpiar completamente
+        document.getElementById('search-input').value = "";
+        aplicarFiltrosYRenderizar();
+    }
+    
+    function exportarCSV() {
+        if(datosFiltrados.length === 0) return;
+        const campos = estructurasDeCampos[nivelActivo];
+        const csvContent = Papa.unparse({
+            fields: campos,
+            data: datosFiltrados
+        });
+        
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `exportacion_${nivelActivo}_panama.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
     </script>
 </body>
 </html>
