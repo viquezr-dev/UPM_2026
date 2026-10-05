@@ -747,6 +747,7 @@
             'EMBERÁ': 'EMBERA'
         };
 
+        // ✅ CORRECCIÓN CRÍTICA: Solo contar SI como verificado, NO como no verificado
         function getVerificadoValue(feature) {
             return String(feature?.properties?.VERIFICADO ?? '').trim().toUpperCase();
         }
@@ -756,8 +757,8 @@
         }
 
         function isNoVerificado(feature) {
-            const v = getVerificadoValue(feature);
-            return v === 'NO' || v === '';
+            // Solo contar SI NO está explícitamente SI
+            return getVerificadoValue(feature) !== 'SI';
         }
 
         function actualizarDashboardVerificacion(listaUPM) {
@@ -926,8 +927,7 @@
                 const costo = String(props.COSTO ?? '').trim().toUpperCase();
                 if (costo === 'SI') stats[ejec].conCosto++;
                 if (costo === 'NO') stats[ejec].sinCosto++;
-                const ver = getVerificadoValue(f).trim().toUpperCase();
-                if (ver === 'SI') stats[ejec].verificadas++;
+                if (isVerificado(f)) stats[ejec].verificadas++;
                 else stats[ejec].pendientes++;
             });
             return stats;
@@ -998,71 +998,136 @@
 
             lista.forEach(f => {
                 const props = f.properties || {};
-                const color = isVerificado(f) ? '#facc15' : '#64748b';
-                const geo = f.geometry;
-                if (!geo) return;
-                const layer = L.geoJSON(geo, { 
+                let color = '#64748b';
+                if (isVerificado(f)) color = '#facc15';
+                else if (String(props.DA ?? '').trim() === '1') color = '#f87171';
+                else if (String(props.INDIG ?? '').trim() === '1') color = '#c084fc';
+                else if (String(props.SEGM_TIPO ?? '').trim() === '01') color = '#60a5fa';
+                else if (String(props.SEGM_TIPO ?? '').trim() === '02') color = '#4ade80';
+
+                const layer = L.geoJSON(f, {
                     style: {
                         color: color,
-                        weight: 1,
+                        weight: 2,
+                        opacity: 0.8,
                         fillColor: color,
-                        fillOpacity: 0.55,
-                        opacity: 0.9
+                        fillOpacity: 0.4
+                    },
+                    onEachFeature: (feature, layer) => {
+                        layer.on('click', () => {
+                            ultimoPoligonoSeleccionado = { layer, feature };
+                            trazarDistanciaYPopup(layer, feature);
+                        });
                     }
                 });
-
-                layer.bindPopup(`<div class="info-popup"><h3>${props.LUPO_NOMB || 'UPM'}</h3><p><strong>UPM:</strong> ${props.CODE_UPM || ''}</p><p><strong>Provincia:</strong> ${props.PROV_NOMB || ''}</p><p><strong>Distrito:</strong> ${props.DIST_NOMB || ''}</p><p><strong>Corregimiento:</strong> ${props.CORR_NOMB || ''}</p><p><strong>Verificado:</strong> ${getVerificadoValue(f) || 'NO'}</p><p><strong>Costo:</strong> ${props.COSTO || 'NO'}</p></div>`);
-                layer.addTo(poligonosEmlLayer);
+                poligonosEmlLayer.addLayer(layer);
             });
         }
 
-        function initFilters() {
-            document.getElementById('buscar_upm').addEventListener('input', aplicarFiltros);
-            document.getElementById('segm_tipo').addEventListener('change', aplicarFiltros);
-            document.getElementById('filtro_costo').addEventListener('change', aplicarFiltros);
-            document.getElementById('provincia').addEventListener('change', aplicarFiltros);
-            document.getElementById('distrito').addEventListener('change', aplicarFiltros);
-            document.getElementById('corregimiento').addEventListener('change', aplicarFiltros);
-            document.getElementById('poblado').addEventListener('change', aplicarFiltros);
-            document.getElementById('lupo').addEventListener('change', aplicarFiltros);
+        function trazarDistanciaYPopup(layer, feature) {
+            lineasDistanciaLayer.clearLayers();
+            const props = feature.properties || {};
+            const popupHTML = `
+                <div class="info-popup">
+                    <h3>${props.CODE_UPM || 'N/A'}</h3>
+                    <p><strong>Provincia:</strong> ${props.PROV_NOMB || 'N/A'}</p>
+                    <p><strong>Distrito:</strong> ${props.DIST_NOMB || 'N/A'}</p>
+                    <p><strong>Lugar Poblado:</strong> ${props.LUPO_NOMB || 'N/A'}</p>
+                    <p><strong>Tipo:</strong> ${String(props.SEGM_TIPO ?? '').trim() === '01' ? 'Urbano' : 'Rural'}</p>
+                    <p><strong>Verificado:</strong> ${isVerificado(feature) ? '✅ SI' : '❌ NO'}</p>
+                    <p><strong>Viático:</strong> ${String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? '✅ CON' : '❌ SIN'}</p>
+                </div>
+            `;
+            if (layer.setPopupContent) {
+                layer.setPopupContent(popupHTML);
+                layer.openPopup();
+            } else {
+                L.popup({ className: 'custom-popup-white' })
+                    .setLatLng(L.latLngBounds(layer.toGeoJSON().geometry.coordinates[0].map(coord => [coord[1], coord[0]])).getCenter())
+                    .setContent(popupHTML)
+                    .openOn(map);
+            }
         }
 
-        function cargarDatos() {
-            fetch('eml.geojson')
-                .then(r => r.json())
-                .then(data => {
-                    emlData = data.features || [];
-                    emlFiltrados = emlData;
-                    renderizarDashboard();
-                    actualizarDashboardVerificacion(emlData);
-                    dibujarPoligonos(emlData);
+        function resetMap() {
+            document.getElementById('buscar_upm').value = '';
+            document.getElementById('segm_tipo').value = 'TODOS';
+            document.getElementById('filtro_costo').value = 'TODOS';
+            document.getElementById('provincia').value = 'TODAS';
+            document.getElementById('distrito').value = 'TODOS';
+            document.getElementById('corregimiento').value = 'TODOS';
+            document.getElementById('poblado').value = 'TODOS';
+            document.getElementById('lupo').value = 'TODOS';
+            aplicarFiltros();
+        }
 
-                    const provincias = obtenerProvinciasEjecucion();
-                    const selProvincia = document.getElementById('provincia');
-                    provincias.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p;
-                        opt.textContent = p;
-                        selProvincia.appendChild(opt);
-                    });
+        function volverAtras() {
+            resetMap();
+        }
 
-                    initFilters();
-                })
-                .catch(err => {
-                    console.error('Error cargando GeoJSON:', err);
-                    alert('No se pudo cargar eml.geojson');
+        function exportarCSV() {
+            if (emlFiltrados.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            let csv = 'CODE_UPM,PROVINCIA,DISTRITO,CORREGIMIENTO,LUPO,TIPO,VERIFICADO,VIÁTICO\n';
+            emlFiltrados.forEach(f => {
+                const props = f.properties || {};
+                const tipo = String(props.SEGM_TIPO ?? '').trim() === '01' ? 'URBANO' : 'RURAL';
+                const verificado = isVerificado(f) ? 'SI' : 'NO';
+                const viático = String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? 'CON' : 'SIN';
+                csv += `"${props.CODE_UPM}","${props.PROV_NOMB}","${props.DIST_NOMB}","${props.CORR_NOMB}","${props.LUPO_NOMB}","${tipo}","${verificado}","${viático}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `UPM_Filtrados_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Inicializar datos
+        fetch('eml.geojson')
+            .then(r => r.json())
+            .then(data => {
+                emlData = data.features || [];
+                aplicarFiltros();
+                document.getElementById('provincia').innerHTML = '<option value="TODAS">Todas</option>' + 
+                    obtenerProvinciasEjecucion().map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('segm_tipo').addEventListener('change', aplicarFiltros);
+                document.getElementById('filtro_costo').addEventListener('change', aplicarFiltros);
+                document.getElementById('provincia').addEventListener('change', () => {
+                    const prov = document.getElementById('provincia').value;
+                    document.getElementById('distrito').innerHTML = '<option value="TODOS">Todos</option>' + 
+                        obtenerProvinciasPorEjecucion(prov).map(d => `<option value="${d}">${d}</option>`).join('');
+                    document.getElementById('distrito').disabled = prov === 'TODAS';
+                    aplicarFiltros();
                 });
-        }
+                document.getElementById('distrito').addEventListener('change', () => {
+                    const prov = document.getElementById('provincia').value;
+                    const dist = document.getElementById('distrito').value;
+                    document.getElementById('corregimiento').innerHTML = '<option value="TODOS">Todos</option>' + 
+                        obtenerDistritosPorProvincia(dist, prov).map(c => `<option value="${c}">${c}</option>`).join('');
+                    document.getElementById('corregimiento').disabled = dist === 'TODOS';
+                    aplicarFiltros();
+                });
+                document.getElementById('corregimiento').addEventListener('change', () => {
+                    const prov = document.getElementById('provincia').value;
+                    const corr = document.getElementById('corregimiento').value;
+                    document.getElementById('poblado').innerHTML = '<option value="TODOS">Todos</option>' + 
+                        obtenerCorregimientosPorDistrito(corr, prov).map(p => `<option value="${p}">${p}</option>`).join('');
+                    document.getElementById('poblado').disabled = corr === 'TODOS';
+                    aplicarFiltros();
+                });
+                document.getElementById('buscar_upm').addEventListener('input', aplicarFiltros);
+            })
+            .catch(e => console.error('Error cargando GeoJSON:', e));
 
-        document.getElementById('btnAbrirGrafico').addEventListener('click', function() {
+        document.getElementById('btnAbrirGrafico').addEventListener('click', () => {
             document.getElementById('modalGrafico').style.display = 'flex';
         });
-
-        document.getElementById('btnCerrarGrafico').addEventListener('click', function() {
+        document.getElementById('btnCerrarGrafico').addEventListener('click', () => {
             document.getElementById('modalGrafico').style.display = 'none';
         });
-
-        cargarDatos();
     </script>
 </body>
 </html>
