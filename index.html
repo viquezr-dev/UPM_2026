@@ -322,6 +322,7 @@
                 <option value="INDIGENA">Indígena (03)</option>
                 <option value="DIFICIL_ACCESO">⚠️ Difícil Acceso (DA = 1)</option>
                 <option value="VERIFICADO">✅ Actualizado / Verificado (SI)</option>
+                <option value="NO_VERIFICADO">❌ No Verificado (NO)</option>
             </select>
         </div>
 
@@ -483,27 +484,18 @@
             return provinciaColores[norm];
         }
 
+        // VERIFICADO en eml.geojson es texto: "SI" o "NO".
+        function obtenerEstadoVerificado(props) {
+            if (!props) return '';
+            return String(props.VERIFICADO ?? '').trim().toUpperCase();
+        }
+
         function esVerificado(props) {
-            if (!props) return false;
-            const llave = Object.keys(props).find(k => {
-                const kUpper = k.trim().toUpperCase();
-                return kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
-            });
+            return obtenerEstadoVerificado(props) === 'SI';
+        }
 
-            if (!llave) return false;
-            const valRaw = props[llave];
-            if (valRaw === null || valRaw === undefined) return false;
-
-            const val = String(valRaw).trim().toUpperCase().replace(/['"]/g, '');
-            return (
-                val === 'SI' || 
-                val === 'SÍ' || 
-                val === 'S' || 
-                val === '1' || 
-                val === 'TRUE' || 
-                val === 'VERIFICADO' ||
-                val === 'ACTUALIZADO'
-            );
+        function esNoVerificado(props) {
+            return obtenerEstadoVerificado(props) === 'NO';
         }
 
         const inputUpm = document.getElementById('buscar_upm');
@@ -806,7 +798,7 @@
             for (let k in props) {
                 const kUpper = k.trim().toUpperCase();
                 const valRaw = String(props[k] ?? 'N/D').trim();
-                const esCampoVerificacion = kUpper.includes('VERIF') || kUpper.includes('ACTUALIZ');
+                const esCampoVerificacion = kUpper === 'VERIFICADO';
 
                 if (esCampoVerificacion) {
                     const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
@@ -874,6 +866,8 @@
                     if (String(props.DA).trim() !== '1') return false;
                 } else if (segmSel === 'VERIFICADO') {
                     if (!esVerificado(props)) return false;
+                } else if (segmSel === 'NO_VERIFICADO') {
+                    if (!esNoVerificado(props)) return false;
                 } else if (segmSel !== 'TODOS') {
                     const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
                     if (tipoNormalizado !== segmSel) return false;
