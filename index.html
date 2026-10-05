@@ -29,7 +29,6 @@
             flex-direction: column;
         }
         
-        /* 1. HEADER COMPACTO - SIN SCROLL */
         .header {
             background: #1e293b;
             color: #f8fafc;
@@ -42,7 +41,7 @@
             gap: 8px;
             flex-shrink: 0;
             min-height: 36px;
-            overflow: visible; /* ← Importante: no ocultar el scroll */
+            overflow: visible;
         }
         
         .header h1 {
@@ -90,7 +89,6 @@
             background: #64748b;
         }
         
-        /* 2. CONTROLES - UNICO SCROLL HORIZONTAL */
         .controls {
             background: white;
             padding: 6px 12px;
@@ -265,9 +263,6 @@
             transition: width 0.4s ease;
         }
         
-      
-        
-        /* 5. MAPA */
         #map {
             flex: 1;
             width: 100%;
@@ -275,7 +270,6 @@
             min-height: 0;
         }
         
-        /* 6. FOOTER */
         .footer {
             background: #1e293b;
             color: #cbd5e1;
@@ -313,7 +307,6 @@
             padding: 0;
         }
         
-
         .legend {
             background: rgba(255, 255, 255, 0.92);
             padding: 8px 10px;
@@ -360,7 +353,6 @@
             color: #64748b;
         }
 
-        /* ESTILOS PARA LA ETIQUETA DE DISTANCIA SOBRE LA LÍNEA */
         .distance-label-callejero {
             background: transparent;
             border: none;
@@ -382,65 +374,56 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
             white-space: nowrap;
         }
-                /* =============================================================
-                   POPUP BLANCO TRANSPARENTE - VERSIÓN COMPACTA
-                   ============================================================= */
-                
-                .custom-popup-white .leaflet-popup-content-wrapper {
-                    background: transparent !important;
-                    box-shadow: none !important;
-                    border-radius: 0 !important;
-                    padding: 0 !important;
-                }
-                
-                .custom-popup-white .leaflet-popup-tip {
-                    background: rgba(255, 255, 255, 0.94) !important;
-                    backdrop-filter: blur(12px);
-                    -webkit-backdrop-filter: blur(12px);
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                    border: none !important;
-                }
-                
-                .custom-popup-white .leaflet-popup-content {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    min-width: 160px !important;
-                    max-width: 220px !important;
-                }
-                
-                /* Eliminar cualquier borde extra */
-                .custom-popup-white .leaflet-popup-content-wrapper::before {
-                    display: none !important;
-                }
-                
-                /* Efecto de borde brillante (opcional) */
-                .custom-popup-white .leaflet-popup-content-wrapper::before {
-                    display: none !important;
-                }
-                .link-cartografos {
-                    display: inline-block;
-                    margin-left: 10px;
-                    color: #60a5fa;
-                    text-decoration: none;
-                    font-weight: 600;
-                    font-size: 11px;
-                    padding: 3px 10px;
-                    border-radius: 5px;
-                    background: rgba(96, 165, 250, 0.15);
-                    transition: all 0.25s ease;
-                    border: 1px solid rgba(96, 165, 250, 0.35);
-                    white-space: nowrap;
-                    vertical-align: middle;
-                }
-                
-                .link-cartografos:hover {
-                    background: #3b82f6;
-                    color: white;
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
-                    border-color: #3b82f6;
-                }
+
+        .custom-popup-white .leaflet-popup-content-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+        }
         
+        .custom-popup-white .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.94) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: none !important;
+        }
+        
+        .custom-popup-white .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-width: 160px !important;
+            max-width: 220px !important;
+        }
+        
+        .custom-popup-white .leaflet-popup-content-wrapper::before {
+            display: none !important;
+        }
+        
+        .link-cartografos {
+            display: inline-block;
+            margin-left: 10px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 5px;
+            background: rgba(96, 165, 250, 0.15);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(96, 165, 250, 0.35);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        
+        .link-cartografos:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -453,7 +436,6 @@
     </div>
     
     <div class="controls">
-        <!-- BUSCADOR DE UPM -->
         <div class="filter-group">
             <label for="buscar_upm">🔎 UPM:</label>
             <input type="text" id="buscar_upm" placeholder="Ej. 0101..." style="width: 90px;">
@@ -467,8 +449,8 @@
                 <option value="RURAL">Rural</option>
                 <option value="INDIGENA">Indígena</option>
                 <option value="DIFICIL_ACCESO">⚠️ DA</option>
-                <option value="VERIFICADO">✅ Verificado</option>
-                <option value="NO_VERIFICADO">❌ No verificado</option>  <!-- NUEVO -->
+                <option value="SI">✅ Verificado</option>
+                <option value="NO">❌ No verificado</option>
             </select>
         </div>
     
@@ -513,7 +495,6 @@
         </div>
     </div>
 
-    <!-- Panel de Porcentajes -->
     <div class="pct-dashboard" id="pct-dashboard">
         <div class="pct-card">
             <div class="pct-val" id="pct-verificado" style="color: #facc15;">0.0%</div>
@@ -556,252 +537,163 @@
         </div>
     </div>
 
-         
-    
     <div id="map"></div>
-    <!-- BOTÓN FLOTANTE PARA ABRIR GRÁFICO -->
-        <button id="btnAbrirGrafico" style="
-            position: fixed;
-            bottom: 60px;
-            right: 20px;
-            z-index: 1002;
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse-button 2s ease-in-out infinite;
-        ">
-            <span style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">📊</span>
-        </button>
+
+    <button id="btnAbrirGrafico" style="
+        position: fixed;
+        bottom: 60px;
+        right: 20px;
+        z-index: 1002;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse-button 2s ease-in-out infinite;
+    "><span style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">📊</span></button>
+    
+    <style>
+        @keyframes pulse-button {
+            0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.8), 0 0 60px rgba(245, 158, 11, 0.2); }
+        }
         
-        <style>
-            @keyframes pulse-button {
-                0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); }
-                50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.8), 0 0 60px rgba(245, 158, 11, 0.2); }
-            }
-            
-            #btnAbrirGrafico:hover {
-                transform: scale(1.15) rotate(8deg);
-                background: linear-gradient(135deg, #fbbf24, #dc2626);
-                box-shadow: 0 8px 32px rgba(245, 158, 11, 0.7);
-            }
-        </style>
-        
-        <!-- MODAL CON DOS GRÁFICAS -->
-        <div id="modalGrafico" style="
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
+        #btnAbrirGrafico:hover {
+            transform: scale(1.15) rotate(8deg);
+            background: linear-gradient(135deg, #fbbf24, #dc2626);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.7);
+        }
+    </style>
+    
+    <div id="modalGrafico" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    ">
+        <div style="
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border-radius: 24px;
+            padding: 24px 28px 20px;
+            max-width: 1100px;
+            width: 94%;
+            max-height: 90vh;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
+            position: relative;
+            border: 2px solid rgba(245, 158, 11, 0.2);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         ">
             <div style="
-                background: linear-gradient(145deg, #ffffff, #f8fafc);
-                border-radius: 24px;
-                padding: 24px 28px 20px;
-                max-width: 1100px;
-                width: 94%;
-                max-height: 90vh;
-                box-shadow: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
-                position: relative;
-                border: 2px solid rgba(245, 158, 11, 0.2);
-                animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+                color: #1e293b;
             ">
-                <!-- Cabecera -->
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 12px;
-                    color: #1e293b;
-                ">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="
-                            background: linear-gradient(135deg, #f59e0b, #ef4444);
-                            width: 44px;
-                            height: 44px;
-                            border-radius: 14px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 22px;
-                            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-                        ">📊</div>
-                        <div>
-                            <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">
-                                📊 Dashboard de UPM
-                            </h3>
-                            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">
-                                Distribución de viáticos y verificación por provincia
-                            </p>
-                        </div>
-                    </div>
-                    <button id="btnCerrarGrafico" style="
-                        background: #fee2e2;
-                        border: none;
-                        color: #dc2626;
-                        width: 38px;
-                        height: 38px;
-                        border-radius: 50%;
-                        font-size: 16px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="
+                        background: linear-gradient(135deg, #f59e0b, #ef4444);
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 14px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-weight: 700;
-                    ">✕</button>
-                </div>
-                
-                <!-- Contenedor de dos gráficas -->
-                <div style="
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 16px;
-                    max-height: 65vh;
-                ">
-                    <!-- Gráfica 1: Distribución de Costos -->
-                    <div style="
-                        background: linear-gradient(135deg, #f8fafc, #ffffff);
-                        border-radius: 16px;
-                        padding: 12px 14px 10px;
-                        border: 2px solid #e2e8f0;
-                        box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
-                        display: flex;
-                        flex-direction: column;
-                    ">
-                        <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 6px;
-                        ">
-                            <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 UPM con Viático</span>
-                            <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
-                        </div>
-                        <div style="flex: 1; min-height: 200px; position: relative;">
-                            <canvas id="graficoCostosModal"></canvas>
-                        </div>
-                        <div style="
-                            display: flex;
-                            justify-content: center;
-                            gap: 16px;
-                            margin-top: 6px;
-                            font-size: 10px;
-                            color: #94a3b8;
-                            flex-wrap: wrap;
-                        ">
-                            <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Con Viático</span>
-                            <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Sin Viático</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Gráfica 2: Progreso de Verificación -->
-                    <div style="
-                        background: linear-gradient(135deg, #f8fafc, #ffffff);
-                        border-radius: 16px;
-                        padding: 12px 14px 10px;
-                        border: 2px solid #e2e8f0;
-                        box-shadow: inset 0 2px 20px rgba(0,0,0,0.03);
-                        display: flex;
-                        flex-direction: column;
-                    ">
-                        <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 6px;
-                        ">
-                            <span style="font-size: 13px; font-weight: 700; color: #0f172a;">✅ Progreso de Verificación</span>
-                            <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
-                        </div>
-                        <div style="flex: 1; min-height: 200px; position: relative;">
-                            <canvas id="graficoVerificacionModal"></canvas>
-                        </div>
-                        <div style="
-                            display: flex;
-                            justify-content: center;
-                            gap: 16px;
-                            margin-top: 6px;
-                            font-size: 10px;
-                            color: #94a3b8;
-                            flex-wrap: wrap;
-                        ">
-                            <span><span style="display:inline-block; width:12px; height:12px; background:#facc15; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Verificadas</span>
-                            <span><span style="display:inline-block; width:12px; height:12px; background:#64748b; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Pendientes</span>
-                        </div>
+                        font-size: 22px;
+                        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+                    ">📊</div>
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">📊 Dashboard de UPM</h3>
+                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">Distribución de viáticos y verificación por provincia</p>
                     </div>
                 </div>
-                
-                <!-- Footer con estadísticas -->
-                <div style="
-                    margin-top: 12px;
-                    padding-top: 10px;
-                    border-top: 2px solid #e2e8f0;
+                <button id="btnCerrarGrafico" style="
+                    background: #fee2e2;
+                    border: none;
+                    color: #dc2626;
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 50%;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
                     display: flex;
-                    justify-content: space-between;
                     align-items: center;
-                    font-size: 11px;
-                    color: #64748b;
-                    font-weight: 500;
-                    flex-wrap: wrap;
-                    gap: 8px;
-                ">
-                    <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">
-                        📊 Total UPM: <span style="color: #3b82f6;">0</span> | 
-                        💰 Con Viático: <span style="color: #22c55e;">0</span> | 
-                        ❌ Sin Viático: <span style="color: #ef4444;">0</span> |
-                        ✅ Verificadas: <span style="color: #facc15;">0</span> |
-                        ⏳ Pendientes: <span style="color: #64748b;">0</span>
-                    </span>
-                    <span style="color: #94a3b8; font-size: 10px;">🔄 Actualizado en tiempo real</span>
+                    justify-content: center;
+                    font-weight: 700;
+                ">✕</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-height: 65vh;">
+                <div style="background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 16px; padding: 12px 14px 10px; border: 2px solid #e2e8f0; box-shadow: inset 0 2px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 UPM con Viático</span>
+                        <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
+                    </div>
+                    <div style="flex: 1; min-height: 200px; position: relative;"><canvas id="graficoCostosModal"></canvas></div>
+                    <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
+                        <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Con Viático</span>
+                        <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Sin Viático</span>
+                    </div>
+                </div>
+                <div style="background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 16px; padding: 12px 14px 10px; border: 2px solid #e2e8f0; box-shadow: inset 0 2px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">✅ Progreso de Verificación</span>
+                        <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
+                    </div>
+                    <div style="flex: 1; min-height: 200px; position: relative;"><canvas id="graficoVerificacionModal"></canvas></div>
+                    <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
+                        <span><span style="display:inline-block; width:12px; height:12px; background:#facc15; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Verificadas</span>
+                        <span><span style="display:inline-block; width:12px; height:12px; background:#64748b; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Pendientes</span>
+                    </div>
                 </div>
             </div>
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; font-weight: 500; flex-wrap: wrap; gap: 8px;">
+                <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">📊 Total UPM: <span style="color: #3b82f6;">0</span> | 💰 Con Viático: <span style="color: #22c55e;">0</span> | ❌ Sin Viático: <span style="color: #ef4444;">0</span> | ✅ Verificadas: <span style="color: #facc15;">0</span> | ⏳ Pendientes: <span style="color: #64748b;">0</span></span>
+                <span style="color: #94a3b8; font-size: 10px;">🔄 Actualizado en tiempo real</span>
+            </div>
         </div>
-        
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(40px) scale(0.95);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-            }
-            
-            #btnCerrarGrafico:hover {
-                background: #fecaca;
-                transform: rotate(90deg) scale(1.1);
-            }
-        </style>
-    
-  
-    <div class="footer">
-        Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026
     </div>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        #btnCerrarGrafico:hover {
+            background: #fecaca;
+            transform: rotate(90deg) scale(1.1);
+        }
+    </style>
+
+    <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026</div>
 
     <script>
         const map = L.map('map', {
@@ -844,24 +736,9 @@
 
         const provinciaColores = {};
         const paletaColores = [
-            '#e6194b', // Rojo Vivo
-            '#3cb44b', // Verde Brillante
-            '#ffe119', // Amarillo
-            '#4363d8', // Azul Fuerte
-            '#f58231', // Naranja
-            '#911eb4', // Púrpura
-            '#46f0f0', // Cian / Turquesa
-            '#f032e6', // Magenta / Rosado
-            '#bcfd4c', // Lima
-            '#fabebe', // Rosado Claro
-            '#008080', // Verde Azulado (Teal)
-            '#e6beff', // Lavanda
-            '#9a6324', // Marrón
-            '#fffac8', // Beige / Crema
-            '#800000'  // Granate / Vino
+            '#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcfd4c','#fabebe','#008080','#e6beff','#9a6324','#fffac8','#800000'
         ];
 
-        // Mapeo de comarcas para colores consistentes
         const comarcasMap = {
             'NGÄBE-BUGLÉ': 'NGABE-BUGLE',
             'GULA YALA': 'GULA-YALA',
@@ -870,12 +747,37 @@
             'EMBERÁ': 'EMBERA'
         };
 
+        function getVerificadoValue(feature) {
+            return String(feature?.properties?.VERIFICADO ?? '').trim().toUpperCase();
+        }
+
+        function isVerificado(feature) {
+            return getVerificadoValue(feature) === 'SI';
+        }
+
+        function isNoVerificado(feature) {
+            const v = getVerificadoValue(feature);
+            return v === 'NO' || v === '';
+        }
+
+        function actualizarDashboardVerificacion(listaUPM) {
+            const total = listaUPM.length;
+            const verificados = listaUPM.filter(f => isVerificado(f)).length;
+            const pct = total > 0 ? ((verificados / total) * 100).toFixed(1) : '0.0';
+
+            const elPct = document.getElementById('pct-verificado');
+            const elCnt = document.getElementById('cnt-verificado');
+            const elBar = document.getElementById('bar-verificado');
+
+            if (elPct) elPct.textContent = pct + '%';
+            if (elCnt) elCnt.textContent = `(${verificados}/${total})`;
+            if (elBar) elBar.style.width = pct + '%';
+        }
+
         function obtenerColorProvincia(provNombre) {
             if (!provNombre) return '#64748b';
             const norm = provNombre.trim().toUpperCase();
-            
             const normKey = comarcasMap[norm] || norm;
-            
             if (!provinciaColores[normKey]) {
                 const index = Object.keys(provinciaColores).length % paletaColores.length;
                 provinciaColores[normKey] = paletaColores[index];
@@ -883,7 +785,6 @@
             return provinciaColores[normKey];
         }
 
-        // Obtener provincias únicas del campo EJECUCION
         function obtenerProvinciasEjecucion() {
             const provincias = new Set();
             emlData.forEach(f => {
@@ -894,8 +795,7 @@
             });
             return Array.from(provincias).sort();
         }
-        
-        // Obtener PROV_NOMB únicos que tienen una EJECUCION específica
+
         function obtenerProvinciasPorEjecucion(ejecucion) {
             const provincias = new Set();
             emlData.forEach(f => {
@@ -908,1717 +808,261 @@
             return Array.from(provincias).sort();
         }
 
-        // Obtener DIST_NOMB únicos que tienen una PROV_NOMB específica
         function obtenerDistritosPorProvincia(provNombre, ejecucion) {
             const distritos = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const prov = (props.PROV_NOMB || '').trim().toUpperCase();
                 const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
-                
-                // Si hay ejecución, filtrar por ella
                 if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
-                
                 if (prov === provNombre && props.DIST_NOMB) {
                     distritos.add(props.DIST_NOMB.trim().toUpperCase());
                 }
             });
             return Array.from(distritos).sort();
         }
-        
-        // Obtener CORR_NOMB únicos que tienen una DIST_NOMB específica y opcionalmente una EJECUCION
+
         function obtenerCorregimientosPorDistrito(distrito, ejecucion) {
             const corregimientos = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const dist = (props.DIST_NOMB || '').trim().toUpperCase();
                 const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
-                
-                // Si hay ejecución, filtrar por ella
                 if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
-                
                 if (dist === distrito && props.CORR_NOMB) {
                     corregimientos.add(props.CORR_NOMB.trim().toUpperCase());
                 }
             });
             return Array.from(corregimientos).sort();
         }
-        
-        // Obtener LUPO_NOMB únicos que tienen una CORR_NOMB específica y opcionalmente una EJECUCION
+
         function obtenerLugaresPobladosPorCorregimiento(corregimiento, ejecucion) {
             const lugares = new Set();
             emlData.forEach(f => {
                 const props = f.properties || {};
                 const corr = (props.CORR_NOMB || '').trim().toUpperCase();
                 const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
-                
-                // Si hay ejecución, filtrar por ella
                 if (ejecucion && ejecucion !== 'TODAS' && provEjecucion !== ejecucion) return;
-                
                 if (corr === corregimiento && props.LUPO_NOMB) {
                     lugares.add(props.LUPO_NOMB.trim().toUpperCase());
                 }
             });
             return Array.from(lugares).sort();
         }
-        
-        // Función para obtener la provincia de ejecución (prioriza EJECUCION)
+
         function obtenerProvinciaEjecucion(props) {
             if (!props) return '';
-            
-            // ✅ Si existe EJECUCION y no está vacío, usarlo
             if (props.EJECUCION && props.EJECUCION.trim() !== '') {
                 return props.EJECUCION.trim().toUpperCase();
             }
-            
-            // ✅ Si no, usar PROV_NOMB (para que siempre haya algo)
             if (props.PROV_NOMB) {
                 return props.PROV_NOMB.trim().toUpperCase();
             }
-            
             return '';
         }
 
-        // Variable global para el gráfico
+        function filtrarPorTipo(features, tipo) {
+            if (!tipo || tipo === 'TODOS') return features;
+            switch (tipo) {
+                case 'URBANO':
+                    return features.filter(f => String(f.properties?.SEGM_TIPO ?? '').trim() === '01');
+                case 'RURAL':
+                    return features.filter(f => String(f.properties?.SEGM_TIPO ?? '').trim() === '02');
+                case 'INDIGENA':
+                    return features.filter(f => String(f.properties?.INDIG ?? '').trim() === '1');
+                case 'DIFICIL_ACCESO':
+                    return features.filter(f => String(f.properties?.DA ?? '').trim() === '1');
+                case 'SI':
+                    return features.filter(f => isVerificado(f));
+                case 'NO':
+                    return features.filter(f => isNoVerificado(f));
+                default:
+                    return features;
+            }
+        }
+
         let chartCostos = null;
         
         function actualizarGraficoCostos(listaUPM) {
             const canvas = document.getElementById('graficoCostos');
             if (!canvas) return;
-        
-            // Obtener estadísticas por provincia de ejecución
             const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            
-            // Filtrar provincias con datos
-            const provs = Object.keys(stats)
-                .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));
-        
+            const provs = Object.keys(stats).filter(p => p !== '').sort((a, b) => a.localeCompare(b));
             if (provs.length === 0) {
-                // Si no hay datos, mostrar mensaje
                 if (chartCostos) {
                     chartCostos.destroy();
                     chartCostos = null;
                 }
-                // Mostrar mensaje en el canvas
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#64748b';
-                ctx.font = '14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Sin datos para mostrar', canvas.width/2, canvas.height/2);
                 return;
             }
-        
-            // Preparar datos
             const labels = provs;
-            const datosConCosto = provs.map(p => stats[p].conCosto || 0);
-            const datosSinCosto = provs.map(p => stats[p].sinCosto || 0);
-        
-            // Colores para las barras
-            const coloresConCosto = provs.map(() => '#22c55e');  // Verde
-            const coloresSinCosto = provs.map(() => '#ef4444');  // Rojo
-        
-            // Si ya existe el gráfico, destruirlo
-            if (chartCostos) {
-                chartCostos.destroy();
-                chartCostos = null;
-            }
-        
-            const ctx = canvas.getContext('2d');
-        
-            // Crear nuevo gráfico
-            chartCostos = new Chart(ctx, {
+            const conCosto = provs.map(p => stats[p].conCosto || 0);
+            const sinCosto = provs.map(p => stats[p].sinCosto || 0);
+            if (chartCostos) chartCostos.destroy();
+            chartCostos = new Chart(canvas, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [
-                        {
-                            label: '💰 Con Costo (SI)',
-                            data: datosConCosto,
-                            backgroundColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 0.7)'),
-                            borderColor: coloresConCosto.map(() => 'rgba(34, 197, 94, 1)'),
-                            borderWidth: 1,
-                            borderRadius: 3,
-                        },
-                        {
-                            label: '❌ Sin Costo (NO)',
-                            data: datosSinCosto,
-                            backgroundColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 0.7)'),
-                            borderColor: coloresSinCosto.map(() => 'rgba(239, 68, 68, 1)'),
-                            borderWidth: 1,
-                            borderRadius: 3,
-                        }
+                        { label: 'Con viático', data: conCosto, backgroundColor: '#22c55e' },
+                        { label: 'Sin viático', data: sinCosto, backgroundColor: '#ef4444' }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,  // Ocultamos la leyenda porque ya está en el panel
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    return `${label}: ${value} UPM`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(51, 65, 85, 0.3)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 9,
-                                },
-                                maxRotation: 45,
-                                minRotation: 30,
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(51, 65, 85, 0.3)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 9,
-                                },
-                                stepSize: 1,
-                            },
-                            beginAtZero: true,
-                        }
-                    },
-                    // Animación
-                    animation: {
-                        duration: 800,
-                        easing: 'easeInOutQuart'
-                    }
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
-        
-        // Variable global para el gráfico del modal
-        let chartCostosModal = null;
-        
-        // Función para actualizar el gráfico en el modal
-       
-        function actualizarGraficoModal(listaUPM) {
-            const canvas = document.getElementById('graficoCostosModal');
-            if (!canvas) return;
-        
-            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            
-            const provs = Object.keys(stats)
-                .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));
-        
-                // ✅ Actualizar estadísticas en el footer (incluyendo verificación)
-                let totalUPM = 0;
-                let totalConCosto = 0;
-                let totalSinCosto = 0;
-                let totalVerificado = 0;
-                let totalPendiente = 0;
-                
-                Object.values(stats).forEach(s => {
-                    totalUPM += s.total;
-                    totalConCosto += s.conCosto;
-                    totalSinCosto += s.sinCosto;
-                    totalVerificado += s.verificado;
-                    totalPendiente += (s.total - s.verificado);
-                });
-                
-                document.getElementById('statsGrafico').innerHTML = 
-                    `📊 Total UPM: <span style="color: #3b82f6; font-weight: 700;">${totalUPM}</span> | ` +
-                    `💰 Con Viático: <span style="color: #22c55e; font-weight: 700;">${totalConCosto}</span> | ` +
-                    `❌ Sin Viático: <span style="color: #ef4444; font-weight: 700;">${totalSinCosto}</span> | ` +
-                    `✅ Verificadas: <span style="color: #facc15; font-weight: 700;">${totalVerificado}</span> | ` +
-                    `⏳ Pendientes: <span style="color: #64748b; font-weight: 700;">${totalPendiente}</span>`;
-        
-            if (provs.length === 0) {
-                if (chartCostosModal) {
-                    chartCostosModal.destroy();
-                    chartCostosModal = null;
-                }
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = 'bold 18px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('📊 Sin datos para mostrar', canvas.width/2, canvas.height/2);
-                return;
-            }
-        
-            const labels = provs;
-            const datosConCosto = provs.map(p => stats[p].conCosto || 0);
-            const datosSinCosto = provs.map(p => stats[p].sinCosto || 0);
-        
-            if (chartCostosModal) {
-                chartCostosModal.destroy();
-                chartCostosModal = null;
-            }
-        
-            const ctx = canvas.getContext('2d');
-        
-            // Gradientes vibrantes para las barras
-            const gradientVerde = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientVerde.addColorStop(0, '#86efac');
-            gradientVerde.addColorStop(1, '#22c55e');
-        
-            const gradientRojo = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientRojo.addColorStop(0, '#fca5a5');
-            gradientRojo.addColorStop(1, '#ef4444');
-        
-            chartCostosModal = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '💰 Con Costo (SI)',
-                            data: datosConCosto,
-                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                            borderColor: '#22c55e',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            hoverBackgroundColor: 'rgba(74, 222, 128, 0.95)',
-                            hoverBorderColor: '#16a34a',
-                            hoverBorderWidth: 3,
-                        },
-                        {
-                            label: '❌ Sin Costo (NO)',
-                            data: datosSinCosto,
-                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                            borderColor: '#ef4444',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            hoverBackgroundColor: 'rgba(248, 113, 113, 0.95)',
-                            hoverBorderColor: '#dc2626',
-                            hoverBorderWidth: 3,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: '#0f172a',
-                            bodyColor: '#334155',
-                            borderColor: 'rgba(245, 158, 11, 0.3)',
-                            borderWidth: 2,
-                            padding: 14,
-                            cornerRadius: 12,
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                    return `${label}: ${value} UPM (${porcentaje}%)`;
-                                },
-                                title: function(context) {
-                                    return `📍 ${context[0].label}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(226, 232, 240, 0.6)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#475569',
-                                font: {
-                                    size: 11,
-                                    weight: '600',
-                                },
-                                maxRotation: 45,
-                                minRotation: 30,
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(226, 232, 240, 0.6)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#475569',
-                                font: {
-                                    size: 11,
-                                    weight: '600',
-                                },
-                                stepSize: 1,
-                            },
-                            beginAtZero: true,
-                        }
-                    },
-                    animation: {
-                        duration: 1200,
-                        easing: 'easeInOutQuart'
-                    }
-                }
-            });
-        }
-        
-        // Variable global para el gráfico de verificación
-        let chartVerificacionModal = null;
-        
-        // Función para actualizar el gráfico de verificación en el modal
-        function actualizarGraficoVerificacionModal(listaUPM) {
-            const canvas = document.getElementById('graficoVerificacionModal');
-            if (!canvas) return;
-        
-            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            
-            const provs = Object.keys(stats)
-                .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));
-        
-            if (provs.length === 0) {
-                if (chartVerificacionModal) {
-                    chartVerificacionModal.destroy();
-                    chartVerificacionModal = null;
-                }
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('📊 Sin datos para mostrar', canvas.width/2, canvas.height/2);
-                return;
-            }
-        
-            const labels = provs;
-            const datosVerificadas = provs.map(p => stats[p].verificado || 0);
-            const datosPendientes = provs.map(p => (stats[p].total || 0) - (stats[p].verificado || 0));
-        
-            if (chartVerificacionModal) {
-                chartVerificacionModal.destroy();
-                chartVerificacionModal = null;
-            }
-        
-            const ctx = canvas.getContext('2d');
-        
-            // Gradientes para las barras
-            const gradientVerde = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientVerde.addColorStop(0, '#fde047');
-            gradientVerde.addColorStop(1, '#facc15');
-        
-            const gradientGris = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientGris.addColorStop(0, '#94a3b8');
-            gradientGris.addColorStop(1, '#64748b');
-        
-            chartVerificacionModal = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '✅ Verificadas',
-                            data: datosVerificadas,
-                            backgroundColor: 'rgba(250, 204, 21, 0.8)',
-                            borderColor: '#facc15',
-                            borderWidth: 2,
-                            borderRadius: 6,
-                            hoverBackgroundColor: 'rgba(234, 179, 8, 0.9)',
-                            hoverBorderColor: '#ca8a04',
-                            hoverBorderWidth: 3,
-                        },
-                        {
-                            label: '⏳ Pendientes',
-                            data: datosPendientes,
-                            backgroundColor: 'rgba(148, 163, 184, 0.7)',
-                            borderColor: '#94a3b8',
-                            borderWidth: 2,
-                            borderRadius: 6,
-                            hoverBackgroundColor: 'rgba(100, 116, 139, 0.85)',
-                            hoverBorderColor: '#64748b',
-                            hoverBorderWidth: 3,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: '#0f172a',
-                            bodyColor: '#334155',
-                            borderColor: 'rgba(250, 204, 21, 0.3)',
-                            borderWidth: 2,
-                            padding: 12,
-                            cornerRadius: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                    return `${label}: ${value} UPM (${porcentaje}%)`;
-                                },
-                                title: function(context) {
-                                    return `📍 ${context[0].label}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(226, 232, 240, 0.6)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#475569',
-                                font: {
-                                    size: 10,
-                                    weight: '600',
-                                },
-                                maxRotation: 45,
-                                minRotation: 30,
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(226, 232, 240, 0.6)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#475569',
-                                font: {
-                                    size: 10,
-                                },
-                                stepSize: 1,
-                            },
-                            beginAtZero: true,
-                        }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeInOutQuart'
-                    }
-                }
-            });
-        }
-        
-        
-        // Función para obtener estadísticas agrupadas por provincia de ejecución
+
         function obtenerEstadisticasPorEjecucion(listaUPM) {
             const stats = {};
-            
             listaUPM.forEach(f => {
                 const props = f.properties || {};
-                const provEjecucion = obtenerProvinciaEjecucion(props);
-                
-                if (!stats[provEjecucion]) {
-                    stats[provEjecucion] = {
-                        total: 0,
-                        conCosto: 0,
-                        sinCosto: 0,
-                        verificado: 0,
-                        urbano: 0,
-                        rural: 0,
-                        indigena: 0,
-                        da: 0
-                    };
-                }
-                
-                stats[provEjecucion].total++;
-                
-                const costoVal = String(props.COSTO || '').trim().toUpperCase();
-                if (costoVal === 'SI') stats[provEjecucion].conCosto++;
-                if (costoVal === 'NO') stats[provEjecucion].sinCosto++;
-                
-                if (esVerificado(props)) stats[provEjecucion].verificado++;
-                
-                const tipo = normalizarSegmTipo(props.SEGM_TIPO);
-                if (tipo === 'URBANO') stats[provEjecucion].urbano++;
-                if (tipo === 'RURAL') stats[provEjecucion].rural++;
-                if (tipo === 'INDIGENA') stats[provEjecucion].indigena++;
-                
-                if (String(props.DA).trim() === '1') stats[provEjecucion].da++;
+                const ejec = obtenerProvinciaEjecucion(props);
+                if (!stats[ejec]) stats[ejec] = { conCosto: 0, sinCosto: 0, verificadas: 0, pendientes: 0 };
+                const costo = String(props.COSTO ?? '').trim().toUpperCase();
+                if (costo === 'SI') stats[ejec].conCosto++;
+                if (costo === 'NO') stats[ejec].sinCosto++;
+                const ver = getVerificadoValue(f).trim().toUpperCase();
+                if (ver === 'SI') stats[ejec].verificadas++;
+                else stats[ejec].pendientes++;
             });
-            
             return stats;
         }
 
-        function esVerificado(props) {
-            if (!props) return false;
-            return String(props.VERIFICADO || '').trim().toUpperCase() === 'SI';
-        }
+        function renderizarDashboard() {
+            const total = emlFiltrados.length;
+            const urbanos = emlFiltrados.filter(f => String(f.properties?.SEGM_TIPO ?? '').trim() === '01').length;
+            const rurales = emlFiltrados.filter(f => String(f.properties?.SEGM_TIPO ?? '').trim() === '02').length;
+            const indigenas = emlFiltrados.filter(f => String(f.properties?.INDIG ?? '').trim() === '1').length;
+            const da = emlFiltrados.filter(f => String(f.properties?.DA ?? '').trim() === '1').length;
+            const verificados = emlFiltrados.filter(f => isVerificado(f)).length;
 
-        const inputUpm = document.getElementById('buscar_upm');
-        const selectSegm = document.getElementById('segm_tipo');
-        const selectProv = document.getElementById('provincia');
-        const selectDist = document.getElementById('distrito');
-        const selectCorr = document.getElementById('corregimiento');
-        const selectPob = document.getElementById('poblado');
-        const selectCosto = document.getElementById('filtro_costo');
-        const selectLupo = document.getElementById('lupo'); 
-
-        const legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function () {
-            const div = L.DomUtil.create('div', 'legend');
-            div.id = 'leyenda-provincias';
-            div.innerHTML = '<h4>Leyenda</h4><p>Cargando datos...</p>';
-            return div;
-        };
-        legend.addTo(map);
-
-        function actualizarLeyenda() {
-            const div = document.getElementById('leyenda-provincias');
-            if (!div) return;
-            let html = '<h4>Simbología / Provincias</h4>';
-            html += '<p><i style="background: #facc15; border: 1px solid #ca8a04;"></i> <strong>Verificado (SI)</strong></p>';
-            html += '<p><i style="background: #22c55e; border: 1px solid #15803d;"></i> <strong>💰 Con Costo (SI)</strong></p>';
-            html += '<p><i style="background: #ef4444; border: 1px solid #b91c1c;"></i> <strong>💰 Sin Costo (NO)</strong></p>';
-            
-            html += '<div class="legend-note">🏷️ Las UPM en comarcas se colorean según la provincia que las ejecuta (EJECUCION)</div>';
-            
-            const provs = Object.keys(provinciaColores).sort();
-            if (provs.length === 0) {
-                html += '<p>Sin provincias disponibles</p>';
-            } else {
-                provs.forEach(p => {
-                    html += `<p><i style="background: ${provinciaColores[p]}"></i> ${p}</p>`;
-                });
-            }
-            html += '<p style="margin-top:4px;"><span style="color:#000; font-weight:bold;">🏢</span> Oficina Georreferenciada</p>';
-            div.innerHTML = html;
-        }
-
-        
-        async function cargarGeoJSONs() {
-            try {
-                const [resEml, resOficina, resProvincia] = await Promise.all([
-                    fetch('eml.geojson').catch(() => null),
-                    fetch('oficina.geojson').catch(() => null),
-                    fetch('provincia.geojson').catch(() => null)
-                ]);
-        
-                if (resEml && resEml.ok) {
-                    const emlJson = await resEml.json();
-                    emlData = emlJson.features || [];
-                    
-                    // ✅ DIAGNÓSTICO: Verificar que existe el campo EJECUCION
-                    console.log('🔍 Verificando campo EJECUCION:');
-                    let conEjecucion = 0;
-                    let sinEjecucion = 0;
-                    const provinciasSet = new Set();
-                    
-                    emlData.forEach(f => {
-                        const props = f.properties || {};
-                        if (props.EJECUCION && props.EJECUCION.trim() !== '') {
-                            conEjecucion++;
-                            provinciasSet.add(props.EJECUCION.trim().toUpperCase());
-                        } else {
-                            sinEjecucion++;
-                        }
-                    });
-                    
-                    console.log(`   ✅ Con EJECUCION: ${conEjecucion}`);
-                    console.log(`   ⚠️ Sin EJECUCION: ${sinEjecucion}`);
-                    console.log(`   📊 Provincias en EJECUCION:`, Array.from(provinciasSet).sort());
-                }
-        
-                if (resOficina && resOficina.ok) {
-                    const oficinaJson = await resOficina.json();
-                    oficinaData = oficinaJson.features || [];
-                }
-        
-                if (resProvincia && resProvincia.ok) {
-                    const provinciaJson = await resProvincia.json();
-                    provinciaData = provinciaJson.features || [];
-                }
-        
-                console.log('✅ Datos cargados correctamente');
-                console.log(`   emlData: ${emlData.length} features`);
-                console.log(`   oficinaData: ${oficinaData.length} features`);
-                console.log(`   provinciaData: ${provinciaData.length} features`);
-                
-                inicializarFiltrosCascada();
-                filtrarYRenderizar();
-            } catch (error) {
-                console.error("Error cargando los GeoJSON:", error);
-            }
-        }
-
-        function normalizarSegmTipo(val) {
-            const segmStr = String(val ?? '').trim();
-            if (segmStr === '01' || segmStr === '1' || segmStr.toUpperCase() === 'URBANO') return 'URBANO';
-            if (segmStr === '02' || segmStr === '2' || segmStr.toUpperCase() === 'RURAL') return 'RURAL';
-            if (segmStr === '03' || segmStr === '3' || segmStr.toUpperCase() === 'INDIGENA') return 'INDIGENA';
-            return segmStr;
-        }
-
-        function inicializarFiltrosCascada() {
-            // 1. Llenar selector de EJECUCION
-            const provinciasEjecucion = obtenerProvinciasEjecucion();
-            selectProv.innerHTML = '<option value="TODAS">Todas</option>';
-            provinciasEjecucion.forEach(p => {
-                obtenerColorProvincia(p);
-                selectProv.add(new Option(p, p));
-            });
-        
-            // 2. Selectores secundarios vacíos
-            selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-            selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-            selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-            selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-            
-            selectDist.disabled = true;
-            selectCorr.disabled = true;
-            selectPob.disabled = true;
-            selectLupo.disabled = true;
-        
-            actualizarLeyenda();
-        
-            // 3. Eventos
-            inputUpm.addEventListener('input', filtrarYRenderizar);
-            selectSegm.addEventListener('change', filtrarYRenderizar);
-            selectCosto.addEventListener('change', filtrarYRenderizar);
-        
-            // 4. Evento de EJECUCION → actualiza PROV_NOMB
-            selectProv.addEventListener('change', () => {
-                const ejecucionSel = selectProv.value;
-                
-                // Resetear selectores secundarios
-                selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                selectDist.disabled = true;
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-        
-                if (ejecucionSel !== 'TODAS') {
-                    const provincias = obtenerProvinciasPorEjecucion(ejecucionSel);
-                    selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-                    provincias.forEach(p => {
-                        selectDist.add(new Option(p, p));
-                    });
-                    selectDist.disabled = false;
-                }
-                
-                filtrarYRenderizar();
-            });
-        
-            // 5. Evento de PROV_NOMB → actualiza DIST_NOMB (con filtro de EJECUCION)
-            selectDist.addEventListener('change', () => {
-                const provSel = selectDist.value;
-                const ejecucionSel = selectProv.value;
-                
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-        
-                if (provSel !== 'TODOS') {
-                    // ✅ PASAR LA EJECUCION
-                    const distritos = obtenerDistritosPorProvincia(provSel, ejecucionSel);
-                    selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                    distritos.forEach(d => {
-                        selectCorr.add(new Option(d, d));
-                    });
-                    selectCorr.disabled = false;
-                }
-                
-                filtrarYRenderizar();
-            });
-        
-            // 6. Evento de DIST_NOMB → actualiza CORR_NOMB (con filtro de EJECUCION)
-            selectCorr.addEventListener('change', () => {
-                const distSel = selectCorr.value;
-                const ejecucionSel = selectProv.value;
-                
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-        
-                if (distSel !== 'TODOS') {
-                    // ✅ PASAR LA EJECUCION
-                    const corregimientos = obtenerCorregimientosPorDistrito(distSel, ejecucionSel);
-                    selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                    corregimientos.forEach(c => {
-                        selectPob.add(new Option(c, c));
-                    });
-                    selectPob.disabled = false;
-                }
-                
-                filtrarYRenderizar();
-            });
-        
-            // 7. Evento de CORR_NOMB → actualiza LUPO_NOMB (con filtro de EJECUCION)
-            selectPob.addEventListener('change', () => {
-                const corrSel = selectPob.value;
-                const ejecucionSel = selectProv.value;
-                
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.disabled = true;
-        
-                if (corrSel !== 'TODOS') {
-                    // ✅ PASAR LA EJECUCION
-                    const lugares = obtenerLugaresPobladosPorCorregimiento(corrSel, ejecucionSel);
-                    selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                    lugares.forEach(l => {
-                        selectLupo.add(new Option(l, l));
-                    });
-                    selectLupo.disabled = false;
-                }
-                
-                filtrarYRenderizar();
-            });
-        
-            // 8. Evento de LUPO_NOMB
-            selectLupo.addEventListener('change', filtrarYRenderizar);
-        }
-
-        function obtenerCoordenadasOficina(feature) {
-            const props = feature.properties || {};
-            let lat = parseFloat(props.OFICE_LAT);
-            let lon = parseFloat(props.OFICE_LONG);
-
-            if (isNaN(lat) || isNaN(lon)) {
-                if (feature.geometry && feature.geometry.type === 'Point') {
-                    lon = feature.geometry.coordinates[0];
-                    lat = feature.geometry.coordinates[1];
-                }
-            }
-            if (isNaN(lat) || isNaN(lon)) return null;
-            return { lat, lon };
-        }
-
-        function renderizarContornoProvincia(ejecucionSel, provSel) {
-            provinciaContornoLayer.clearLayers();
-            
-            // Determinar qué provincias buscar para el contorno
-            let provinciasABuscar = [];
-            
-            // Caso 1: Hay una ubicación específica seleccionada (PROV_NOMB)
-            if (provSel && provSel !== 'TODOS') {
-                provinciasABuscar = [provSel];
-            } 
-            // Caso 2: Hay una ejecución seleccionada (EJECUCION) → buscar TODAS las ubicaciones
-            else if (ejecucionSel && ejecucionSel !== 'TODAS') {
-                // Obtener todas las PROV_NOMB que tienen esta EJECUCION
-                const provincias = new Set();
-                emlData.forEach(f => {
-                    const props = f.properties || {};
-                    const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
-                    if (provEjecucion === ejecucionSel && props.PROV_NOMB) {
-                        provincias.add(props.PROV_NOMB.trim().toUpperCase());
-                    }
-                });
-                provinciasABuscar = Array.from(provincias).sort();
-            } else {
-                return; // No hay nada que dibujar
-            }
-            
-            if (provinciaData.length === 0 || provinciasABuscar.length === 0) return;
-        
-            // Buscar cada provincia en provinciaData
-            provinciasABuscar.forEach(nombreBuscar => {
-                // Buscar la provincia en provinciaData por PROV_NOMB
-                let provFeature = provinciaData.find(
-                    f => f.properties && f.properties.PROV_NOMB && 
-                         f.properties.PROV_NOMB.trim().toUpperCase() === nombreBuscar
-                );
-        
-                // Si no se encuentra, intentar buscar por coincidencia parcial
-                if (!provFeature) {
-                    provFeature = provinciaData.find(
-                        f => f.properties && f.properties.PROV_NOMB && 
-                             f.properties.PROV_NOMB.trim().toUpperCase().includes(nombreBuscar)
-                    );
-                }
-        
-                if (provFeature) {
-                    L.geoJSON(provFeature, {
-                        style: {
-                            color: '#000000',
-                            weight: 2,
-                            fillOpacity: 0,
-                            interactive: false,
-                            opacity: 0.9
-                        }
-                    }).addTo(provinciaContornoLayer);
-                }
-            });
-        }
-
-        function actualizarManejadorPorcentajes(listaUPM) {
-            const total = listaUPM.length;
-        
-            if (total === 0) {
-                ['verificado', 'urbano', 'rural', 'indigena', 'da'].forEach(id => {
-                    document.getElementById(`pct-${id}`).textContent = '0.0%';
-                    document.getElementById(`cnt-${id}`).textContent = '(0/0)';
-                    document.getElementById(`bar-${id}`).style.width = '0%';
-                });
-                return;
-            }
-        
-            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            
-            let verifCount = 0;
-            let urbanoCount = 0;
-            let ruralCount = 0;
-            let indigenaCount = 0;
-            let daCount = 0;
-        
-            Object.values(stats).forEach(stat => {
-                verifCount += stat.verificado;
-                urbanoCount += stat.urbano;
-                ruralCount += stat.rural;
-                indigenaCount += stat.indigena;
-                daCount += stat.da;
-            });
-        
-            const actualizarTarjeta = (id, count) => {
-                const pct = ((count / total) * 100).toFixed(1);
-                document.getElementById(`pct-${id}`).textContent = `${pct}%`;
-                document.getElementById(`cnt-${id}`).textContent = `(${count}/${total})`;
-                document.getElementById(`bar-${id}`).style.width = `${pct}%`;
+            const setPct = (id, val, totalVal, bg) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val + '%';
+                const count = document.getElementById(id.replace('pct-', 'cnt-'));
+                if (count) count.textContent = `(${totalVal}/${total})`;
+                const bar = document.getElementById(id.replace('pct-', 'bar-'));
+                if (bar) bar.style.width = val + '%';
+                if (bar) bar.style.background = bg;
             };
-        
-            actualizarTarjeta('verificado', verifCount);
-            actualizarTarjeta('urbano', urbanoCount);
-            actualizarTarjeta('rural', ruralCount);
-            actualizarTarjeta('indigena', indigenaCount);
-            actualizarTarjeta('da', daCount);
-        
-            const dashboard = document.getElementById('pct-dashboard');
-            const provsEjecucion = Object.keys(stats).filter(p => p !== '').sort();
-            if (provsEjecucion.length > 0) {
-                let titulo = '📊 Distribución de UPM que paga viáticos por provincia: ';
-                const detalles = provsEjecucion.map(p => {  // ✅ CORREGIDO
-                    return `${p} (${stats[p].total})`;
-                });
-                dashboard.title = titulo + detalles.join(' | ');
-            }
+
+            setPct('pct-verificado', total ? ((verificados / total) * 100).toFixed(1) : '0.0', verificados, '#facc15');
+            setPct('pct-urbano', total ? ((urbanos / total) * 100).toFixed(1) : '0.0', urbanos, '#60a5fa');
+            setPct('pct-rural', total ? ((rurales / total) * 100).toFixed(1) : '0.0', rurales, '#4ade80');
+            setPct('pct-indigena', total ? ((indigenas / total) * 100).toFixed(1) : '0.0', indigenas, '#c084fc');
+            setPct('pct-da', total ? ((da / total) * 100).toFixed(1) : '0.0', da, '#f87171');
+
+            document.getElementById('contador').textContent = `${total} Polígonos | 0 Oficinas`;
         }
 
-        /* LÓGICA DE DISTANCIA A LA OFICINA MÁS CERCANA */
-        function trazarDistanciaYPopup(layer, feature) {
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = { layer, feature };
-        
-            const props = feature.properties || {};
-            const centroide = layer.getBounds().getCenter();
-        
-            if (oficinaData.length === 0) return;
-        
-            const provEml = props.PROV_NOMB?.trim().toUpperCase();
-            
-            let oficinasBuscar = oficinaData.filter(o => o.properties?.PROV_NOMB?.trim().toUpperCase() === provEml);
-            if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-        
-            let distanciaMinima = Infinity;
-            let oficinaCercana = null; 
-            
-            oficinasBuscar.forEach(oficina => {
-                const coords = obtenerCoordenadasOficina(oficina);
-                if (coords) {
-                    const latLngOficina = L.latLng(coords.lat, coords.lon);
-                    const dist = centroide.distanceTo(latLngOficina);
-                    if (dist < distanciaMinima) {
-                        distanciaMinima = dist;
-                        oficinaCercana = { coords: latLngOficina, props: oficina.properties };
-                    }
+        function aplicarFiltros() {
+            const buscar = document.getElementById('buscar_upm').value.trim().toUpperCase();
+            const tipo = document.getElementById('segm_tipo').value;
+            const costo = document.getElementById('filtro_costo').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            const corregimiento = document.getElementById('corregimiento').value;
+            const poblado = document.getElementById('poblado').value;
+            const lupo = document.getElementById('lupo').value;
+
+            let lista = emlData.filter(f => {
+                const props = f.properties || {};
+                if (buscar && !(String(props.CODE_UPM ?? '').includes(buscar))) return false;
+                if (provincia && provincia !== 'TODAS' && obtenerProvinciaEjecucion(props) !== provincia) return false;
+                if (distrito && distrito !== 'TODOS' && String(props.DIST_NOMB ?? '').trim().toUpperCase() !== distrito) return false;
+                if (corregimiento && corregimiento !== 'TODOS' && String(props.CORR_NOMB ?? '').trim().toUpperCase() !== corregimiento) return false;
+                if (poblado && poblado !== 'TODOS' && String(props.LUPO_NOMB ?? '').trim().toUpperCase() !== poblado) return false;
+                if (lupo && lupo !== 'TODOS' && String(props.LUPO_NOMB ?? '').trim().toUpperCase() !== lupo) return false;
+                if (costo && costo !== 'TODOS') {
+                    const val = String(props.COSTO ?? '').trim().toUpperCase();
+                    if (val !== costo) return false;
                 }
+                return true;
             });
-        
-            if (!oficinaCercana) return;
-        
-            const distanciaKm = (distanciaMinima / 1000).toFixed(2);
-        
-            const polyline = L.polyline([centroide, oficinaCercana.coords], {
-                color: '#ef4444',
-                weight: 2.5,
-                dashArray: '6, 6',
-                interactive: false
-            }).addTo(lineasDistanciaLayer);
-        
-            const puntoMedio = L.latLng(
-                (centroide.lat + oficinaCercana.coords.lat) / 2,
-                (centroide.lng + oficinaCercana.coords.lng) / 2
-            );
-        
-            const estiloClase = (mapaActual === 'satelite') ? 'distance-label-satelite' : 'distance-label-callejero';
-        
-            L.marker(puntoMedio, {
-                icon: L.divIcon({
-                    className: estiloClase,
-                    html: `📏 ${distanciaKm} km`,
-                    iconSize: [80, 20],
-                    iconAnchor: [40, 10]
-                }),
-                interactive: false
-            }).addTo(lineasDistanciaLayer);
-        
-            // =============================================================
-            // POPUP MÁS PEQUEÑO Y COMPACTO
-            // =============================================================
-            
-            // Obtener valores
-            const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
-            const costoVal = String(props.COSTO || '').trim().toUpperCase();
-            const costoMostrar = props.COSTO || 'N/D';
-            const costoIcono = costoVal === 'SI' ? '✅' : costoVal === 'NO' ? '❌' : '❓';
-            
-            const ejecucion = props.EJECUCION || 'N/D';
-            const provNombre = props.PROV_NOMB || 'N/D';
-            const distNombre = props.DIST_NOMB || 'N/D';
-            const corrNombre = props.CORR_NOMB || 'N/D';
-            const lupoNombre = props.LUPO_NOMB || 'N/D';
-            const segmTipo = props.SEGM_TIPO || 'N/D';
-            const verificado = props.VERIFICADO || 'N/D';
-            const segmTipoDesc = obtenerDescripcionTipo(segmTipo); 
-            const colorTipo = obtenerColorTipo(segmTipo);
-            const verificadoIcono = verificado.trim().toUpperCase() === 'SI' ? '✅' : '❌';
-            
-            // Popup compacto
-            let popupContent = `
-                <div style="
-                    background: rgba(255, 255, 255, 0.94);
-                    backdrop-filter: blur(12px);
-                    -webkit-backdrop-filter: blur(12px);
-                    border-radius: 10px;
-                    padding: 8px 12px;
-                    color: #0f172a;
-                    font-size: 10px;
-                    line-height: 1.4;
-                    min-width: 160px;
-                    max-width: 200px;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                ">
-                    <!-- Encabezado compacto -->
-                    <div style="
-                        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
-                        padding-bottom: 3px;
-                        margin-bottom: 4px;
-                        display: flex;
-                        align-items: center;
-                        gap: 5px;
-                    ">
-                        <span style="
-                            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                            padding: 1px 6px;
-                            border-radius: 4px;
-                            font-size: 8px;
-                            font-weight: 700;
-                            color: white;
-                        ">📍</span>
-                        <span style="
-                            font-size: 11px;
-                            font-weight: 700;
-                            color: #0f172a;
-                        ">UPM ${codigoUPM}</span>
-                    </div>
-                    
-                    <!-- Distancia y Costo en una línea -->
-                    <div style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        gap: 8px;
-                        background: rgba(99, 102, 241, 0.06);
-                        border-radius: 6px;
-                        padding: 2px 8px;
-                        margin-bottom: 3px;
-                        border: 1px solid rgba(99, 102, 241, 0.08);
-                    ">
-                        <span style="color: #1e40af; font-weight: 600; font-size: 9px;">📏 Distancia:</span>
-                        <span style="color: #0f172a; font-weight: 700; font-size: 10px;">${distanciaKm} km</span>
-                    </div>
-                    
-                    <div style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        background: ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.1)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(100, 116, 139, 0.05)'};
-                        border-radius: 6px;
-                        padding: 2px 8px;
-                        margin-bottom: 4px;
-                        border: 1px solid ${costoVal === 'SI' ? 'rgba(34, 197, 94, 0.15)' : costoVal === 'NO' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(100, 116, 139, 0.1)'};
-                    ">
-                        <span style="color: #334155; font-weight: 600; font-size: 9px;">💰 Viático:</span>
-                        <span style="color: ${costoVal === 'SI' ? '#15803d' : costoVal === 'NO' ? '#b91c1c' : '#475569'}; font-weight: 700; font-size: 10px;">
-                            ${costoIcono} ${costoMostrar}
-                        </span>
-                    </div>
-                    
-                    <!-- Información compacta en 2 columnas -->
-                    <div style="
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 1px 8px;
-                        font-size: 9px;
-                        border-top: 1px dashed rgba(148, 163, 184, 0.3);
-                        padding-top: 4px;
-                    ">
-                        <div style="color: #64748b; font-weight: 500;">Ejecuta:</div>
-                        <div style="color: #0f172a; font-weight: 600; text-align: right; font-size: 9px;">${ejecucion}</div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">Provincia:</div>
-                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${provNombre}</div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">Distrito:</div>
-                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${distNombre}</div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">Corregimiento:</div>
-                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${corrNombre}</div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">Poblado:</div>
-                        <div style="color: #1e293b; font-weight: 500; text-align: right; font-size: 9px;">${lupoNombre}</div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">Tipo:</div>
-                        <div style="color: ${colorTipo}; font-weight: 600; text-align: right; font-size: 9px;">
-                            ${segmTipoDesc}
-                        </div>
-                        
-                        <div style="color: #64748b; font-weight: 500;">✅ Verificado:</div>
-                        <div style="color: ${verificado.trim().toUpperCase() === 'SI' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: right; font-size: 9px;">
-                            ${verificadoIcono} ${verificado}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Asignar popup más pequeño
-            layer.bindPopup(popupContent, {
-                className: 'custom-popup-white',
-                maxWidth: 220,
-                minWidth: 160,
-                offset: L.point(0, -25),
-                autoPan: false
-            });
-            
-            const popup = layer.getPopup();
-            popup.on('remove', function() {
-                lineasDistanciaLayer.clearLayers();
-                ultimoPoligonoSeleccionado = null;
-            });
-            
-            layer.openPopup();
-        
-            // ✅ También limpiar al hacer clic en el mapa (fuera del popup)
-            // Primero removemos el listener anterior para evitar duplicados
-            map.off('click', limpiarLineasDistancia);
-            map.on('click', limpiarLineasDistancia);
+
+            lista = filtrarPorTipo(lista, tipo);
+            emlFiltrados = lista;
+            renderizarDashboard();
+            actualizarDashboardVerificacion(lista);
+            dibujarPoligonos(lista);
         }
-            
-        // Función para obtener la descripción del tipo de segmento
-        function obtenerDescripcionTipo(segmTipo) {
-            const tipoMap = {
-                '01': 'URBANO',
-                '02': 'RURAL',
-                '03': 'INDÍGENA'
-            };
-            
-            const tipoStr = String(segmTipo || '').trim();
-            return tipoMap[tipoStr] || tipoStr || 'N/D';
-        }   
-        function obtenerColorTipo(segmTipo) {
-            const tipoStr = String(segmTipo || '').trim();
-            if (tipoStr === '01') return '#2563eb';
-            if (tipoStr === '02') return '#16a34a';
-            if (tipoStr === '03') return '#7c3aed';
-            return '#64748b';
-        }
-        function filtrarYRenderizar() {
+
+        function dibujarPoligonos(lista) {
             poligonosEmlLayer.clearLayers();
-            oficinasLayer.clearLayers();
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = null;
-        
-            const busquedaUpm = inputUpm.value.trim().toUpperCase();
-            const segmSel = selectSegm.value;
-            const ejecucionSel = selectProv.value;
-            const provSel = selectDist.value;
-            const distSel = selectCorr.value;
-            const corrSel = selectPob.value;
-            const lupoSel = selectLupo.value;
-            const costoSel = selectCosto.value;
-        
-            // =============================================================
-            // FILTRADO EN CASCADA
-            // =============================================================
-            const emlBaseGeografica = emlData.filter(f => {
-                const props = f.properties || {};
-                const provEjecucion = (props.EJECUCION || '').trim().toUpperCase();
-                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
-                const distNombre = (props.DIST_NOMB || '').trim().toUpperCase();
-                const corrNombre = (props.CORR_NOMB || '').trim().toUpperCase();
-                const lupoNombre = (props.LUPO_NOMB || '').trim().toUpperCase();
-        
-                if (ejecucionSel !== 'TODAS' && provEjecucion !== ejecucionSel) return false;
-                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
-                if (distSel !== 'TODOS' && distNombre !== distSel) return false;
-                if (corrSel !== 'TODOS' && corrNombre !== corrSel) return false;
-                if (lupoSel !== 'TODOS' && lupoNombre !== lupoSel) return false;
-        
-                if (busquedaUpm !== '') {
-                    const codigoUPM = String(props.CODE_UPM || props.UPM || '').trim().toUpperCase();
-                    if (!codigoUPM.startsWith(busquedaUpm)) return false;
-                }
-        
-                return true;
-            });
-        
-            // =============================================================
-            // FILTROS ADICIONALES
-            // =============================================================
-            emlFiltrados = emlBaseGeografica.filter(f => {
-                const props = f.properties || {};
-                
-                // Filtro por DIFICIL_ACCESO
-                if (segmSel === 'DIFICIL_ACCESO') {
-                    if (String(props.DA).trim() !== '1') return false;
-                } 
-                // Filtro por VERIFICADO
-                else if (segmSel === 'VERIFICADO') {
-                    if (!esVerificado(props)) return false;
-                } 
-                // ✅ NUEVO: Filtro por NO VERIFICADO
-                else if (segmSel === 'NO_VERIFICADO') {
-                    if (esVerificado(props)) return false;  // Solo NO verificadas
-                } 
-                // Filtro por tipo de segmento (Urbano, Rural, Indígena)
-                else if (segmSel !== 'TODOS') {
-                    const tipoNormalizado = normalizarSegmTipo(props.SEGM_TIPO);
-                    if (tipoNormalizado !== segmSel) return false;
-                }
-            
-                // Filtro de COSTO
-                if (costoSel !== 'TODOS') {
-                    const costoVal = String(props.COSTO || '').trim().toUpperCase();
-                    if (costoVal !== costoSel) return false;
-                }
-            
-                return true;
-            });
-        
-            // =============================================================
-            // OFICINAS FILTRADAS
-            // =============================================================
-            oficinasFiltradasGlobal = oficinaData.filter(f => {
-                const props = f.properties || {};
-                const provNombre = (props.PROV_NOMB || '').trim().toUpperCase();
-                
-                if (ejecucionSel !== 'TODAS') {
-                    const tieneUPM = emlBaseGeografica.some(upm => {
-                        const p = upm.properties || {};
-                        return (p.PROV_NOMB || '').trim().toUpperCase() === provNombre;
-                    });
-                    if (!tieneUPM) return false;
-                }
-                
-                if (provSel !== 'TODOS' && provNombre !== provSel) return false;
-                return true;
-            });
-        
-            // =============================================================
-            // BADGE HEADER
-            // =============================================================
-            const statsEjecucion = obtenerEstadisticasPorEjecucion(emlFiltrados);
-            const totalVisible = emlFiltrados.length;
-        
-            const provsEjecucion = Object.keys(statsEjecucion)
-                .filter(p => p !== '')
-                .sort((a, b) => a.localeCompare(b));
-        
-            let badgeText = `📊 ${totalVisible} UPM | 🏢 ${oficinasFiltradasGlobal.length} Oficinas`;
-            
-            if (provsEjecucion.length > 0) {
-                const detalles = provsEjecucion.map(p => {
-                    const stat = statsEjecucion[p];
-                    return `${p}: ${stat.total}`;
-                });
-                badgeText += ' | ' + detalles.join(' | ');
-            }
-            
-            document.getElementById('contador').textContent = badgeText;
-        
-            // =============================================================
-            // DASHBOARD Y GRÁFICO
-            // =============================================================
-            actualizarManejadorPorcentajes(emlFiltrados);
-            actualizarGraficoModal(emlFiltrados);
-            actualizarGraficoVerificacionModal(emlFiltrados);
-        
-            // =============================================================
-            // RENDERIZAR OFICINAS (CÓDIGO COMPLETO)
-            // =============================================================
-            oficinasFiltradasGlobal.forEach(oficina => {
-            const coords = obtenerCoordenadasOficina(oficina);
-            if (!coords) return;
-        
-            const props = oficina.properties || {};
-            const iconOficina = L.divIcon({
-                className: 'custom-office-icon',
-                html: `<div style="background:#0f172a; color:#fff; border:2px solid #38bdf8; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🏢</div>`,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11]
-            });
-        
-            let popupContent = `<div class="info-popup"><h3>🏢 Oficina Central</h3>`;
-            
-            // Campos básicos (con nombres más amigables)
-            const camposOficina = [
-                { key: 'PROV_ID', label: 'Código' },
-                { key: 'PROV_NOMB', label: 'Provincia' },
-                { key: 'PLUS_CODE', label: 'PLUS CODE' }
-            ];
-            
-            camposOficina.forEach(campo => {
-                if (props.hasOwnProperty(campo.key)) {
-                    popupContent += `<p><strong>${campo.label}:</strong> ${props[campo.key] ?? 'N/D'}</p>`;
-                }
-            });
-            
-            // ❌ ELIMINAR BUDGET - Ya no se muestra
-            
-            // ✅ OBSERVACION - Solo este campo adicional
-            const observacion = props.OBSERVACION;
-            if (observacion && observacion.trim() !== '') {
-                popupContent += `
-                    <p style="
-                        background: #fef3c7;
-                        color: #92400e;
-                        padding: 6px 8px;
-                        border-radius: 4px;
-                        margin: 4px 0;
-                        border-left: 3px solid #f59e0b;
-                        font-size: 10px;
-                        font-style: italic;
-                    ">
-                        📝 <strong>Observación:</strong> ${observacion}
-                    </p>`;
-            } else {
-                popupContent += `<p><strong>📝 Observación:</strong> N/D</p>`;
-            }
-            
-            popupContent += `</div>`;
-        
-            L.marker([coords.lat, coords.lon], { icon: iconOficina }).bindPopup(popupContent).addTo(oficinasLayer);
-        });
-       
-            // =============================================================
-            // RENDERIZAR POLÍGONOS EML (CÓDIGO COMPLETO)
-            // =============================================================
-            emlFiltrados.forEach(feature => {
-                const props = feature.properties || {};
-                const provNombre = props.PROV_NOMB || 'Desconocido';
-                const provEjecucion = obtenerProvinciaEjecucion(props);
-                const estaVerificado = esVerificado(props);
-                const costoVal = String(props.COSTO || '').trim().toUpperCase();
-        
-                const provColor = provEjecucion || provNombre;
-                
-                let estiloPoligono;
-        
-                if (estaVerificado) {
-                    estiloPoligono = {
-                        fillColor: '#facc15',
-                        fillOpacity: 0.85,
-                        color: '#dc2626',
-                        weight: 2.5
-                    };
-                } else if (costoSel === 'SI' && costoVal === 'SI') {
-                    estiloPoligono = {
-                        fillColor: '#22c55e',
-                        fillOpacity: 0.65,
-                        color: '#15803d',
-                        weight: 1.5
-                    };
-                } else if (costoSel === 'NO' && costoVal === 'NO') {
-                    estiloPoligono = {
-                        fillColor: '#ef4444',
-                        fillOpacity: 0.65,
-                        color: '#b91c1c',
-                        weight: 1.5
-                    };
-                } else {
-                    estiloPoligono = {
-                        fillColor: obtenerColorProvincia(provColor),
-                        fillOpacity: 0.60,
-                        color: '#1e293b',
-                        weight: 1.2
-                    };
-                }
-        
-                const polyLayer = L.geoJSON(feature, { style: estiloPoligono }).addTo(poligonosEmlLayer);
-                
-                polyLayer.on('click', function() {
-                    trazarDistanciaYPopup(polyLayer, feature);
-                });
-            });
-            // =============================================================
-            // CONTORNO DE PROVINCIA
-            // =============================================================
-            renderizarContornoProvincia(ejecucionSel, provSel);
-            
-            // =============================================================
-            // ZOOM AUTOMÁTICO
-            // =============================================================
-            if (emlFiltrados.length > 0) {
-            // Crear un grupo temporal con todos los polígonos visibles
-            const tempGroup = L.featureGroup(poligonosEmlLayer.getLayers());
-            if (tempGroup.getBounds().isValid()) {
-                // Si hay búsqueda de UPM, zoom más cercano
-                if (busquedaUpm !== '') {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                } 
-                // Si hay filtro de costo, zoom moderado
-                else if (costoSel !== 'TODOS') {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 14 });
-                }
-                // Si hay filtro de ejecución, provincia o distrito, zoom adecuado
-                else if (ejecucionSel !== 'TODAS' || provSel !== 'TODOS' || distSel !== 'TODOS' || corrSel !== 'TODOS' || lupoSel !== 'TODOS') {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [30, 30], maxZoom: 13 });
-                }
-                // Zoom normal para otros casos
-                else {
-                    map.fitBounds(tempGroup.getBounds(), { padding: [20, 20] });
-                }
-            }
-        } else {
-            // Si no hay polígonos visibles, volver a la vista general
-            map.setView([8.5, -80.0], 8);
-            }
-         }    
+            if (!lista || lista.length === 0) return;
 
-        // =============================================================
-        // FUNCIÓN: VOLVER ATRÁS (Deshacer filtros en cascada)
-        // =============================================================
-        function volverAtras() {
-            // Obtener valores actuales
-            const ejecucionSel = selectProv.value;
-            const provSel = selectDist.value;
-            const distSel = selectCorr.value;
-            const corrSel = selectPob.value;
-            const lupoSel = selectLupo.value;
-            
-            // =============================================================
-            // CASO 1: Hay Lugar Poblado seleccionado → limpiar LUPO
-            // =============================================================
-            if (lupoSel !== 'TODOS') {
-                selectLupo.value = 'TODOS';
-                console.log('⬅️ Regresando: Lugar Poblado → Corregimiento');
-                filtrarYRenderizar();
-                return;
-            }
-            
-            // =============================================================
-            // CASO 2: Hay Corregimiento seleccionado → limpiar CORR
-            // =============================================================
-            if (corrSel !== 'TODOS') {
-                selectPob.value = 'TODOS';
-                selectLupo.value = 'TODOS';
-                selectLupo.disabled = true;
-                
-                // Restaurar el selector de Lugar Poblado (vacío)
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                
-                console.log('⬅️ Regresando: Corregimiento → Distrito');
-                filtrarYRenderizar();
-                return;
-            }
-            
-            // =============================================================
-            // CASO 3: Hay Distrito seleccionado → limpiar DIST
-            // =============================================================
-            if (distSel !== 'TODOS') {
-                selectCorr.value = 'TODOS';
-                selectPob.value = 'TODOS';
-                selectLupo.value = 'TODOS';
-                
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-                
-                // Restaurar los selectores vacíos
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                
-                console.log('⬅️ Regresando: Distrito → Provincia');
-                filtrarYRenderizar();
-                return;
-            }
-            
-            // =============================================================
-            // CASO 4: Hay Provincia seleccionada → limpiar PROV
-            // =============================================================
-            if (provSel !== 'TODOS') {
-                selectDist.value = 'TODOS';
-                selectCorr.value = 'TODOS';
-                selectPob.value = 'TODOS';
-                selectLupo.value = 'TODOS';
-                
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-                
-                // Restaurar los selectores vacíos
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                
-                console.log('⬅️ Regresando: Provincia → Ejecución');
-                filtrarYRenderizar();
-                return;
-            }
-            
-            // =============================================================
-            // CASO 5: Hay Ejecución seleccionada → limpiar EJECUCION
-            // =============================================================
-            if (ejecucionSel !== 'TODAS') {
-                selectProv.value = 'TODAS';
-                selectDist.value = 'TODOS';
-                selectDist.disabled = true;
-                selectCorr.disabled = true;
-                selectPob.disabled = true;
-                selectLupo.disabled = true;
-                
-                // Restaurar los selectores vacíos
-                selectDist.innerHTML = '<option value="TODOS">Todos</option>';
-                selectCorr.innerHTML = '<option value="TODOS">Todos</option>';
-                selectPob.innerHTML = '<option value="TODOS">Todos</option>';
-                selectLupo.innerHTML = '<option value="TODOS">Todos</option>';
-                
-                console.log('⬅️ Regresando: Ejecución → Todos');
-                filtrarYRenderizar();
-                return;
-            }
-            
-            // =============================================================
-            // CASO 6: No hay filtros de cascada → mostrar mensaje
-            // =============================================================
-            console.log('ℹ️ No hay filtros en cascada para regresar');
-            // Opcional: mostrar mensaje visual
-            // alert('No hay filtros en cascada para regresar');
-        }
-        
-        function resetMap() {
-            inputUpm.value = '';
-            selectSegm.value = 'TODOS';
-            selectCosto.value = 'TODOS';
-            selectProv.value = 'TODAS';
-            selectDist.value = 'TODOS';
-            selectCorr.value = 'TODOS';
-            selectPob.value = 'TODOS';
-            selectLupo.value = 'TODOS';
-            
-            selectDist.disabled = true;
-            selectCorr.disabled = true;
-            selectPob.disabled = true;
-            selectLupo.disabled = true;
-        
-            lineasDistanciaLayer.clearLayers();
-            ultimoPoligonoSeleccionado = null;
-            map.off('click', limpiarLineasDistancia);
-            
-            filtrarYRenderizar();
-            map.setView([8.5, -80.0], 8);
-        }
-        // Función auxiliar para pedir la contraseña usando el modal oculto
-        function pedirPasswordModal() {
-          return new Promise((resolve) => {
-            const modal = document.getElementById('modalPassword');
-            const input = document.getElementById('inputPassModal');
-            const btnAceptar = document.getElementById('btnAceptarModal');
-            const btnCancelar = document.getElementById('btnCancelarModal');
-        
-            input.value = '';
-            modal.style.display = 'flex';
-            input.focus();
-        
-            const cerrarModal = (valor) => {
-              modal.style.display = 'none';
-              btnAceptar.onclick = null;
-              btnCancelar.onclick = null;
-              input.onkeydown = null;
-              resolve(valor);
-            };
-        
-            btnAceptar.onclick = () => cerrarModal(input.value);
-            btnCancelar.onclick = () => cerrarModal(null);
-            
-            input.onkeydown = (e) => {
-              if (e.key === 'Enter') cerrarModal(input.value);
-              if (e.key === 'Escape') cerrarModal(null);
-            };
-          });
-        }
-        
-          // Función principal de exportación
-        async function exportarCSV() {
-            if (emlFiltrados.length === 0) {
-                alert("No hay datos para exportar.");
-                return;
-            }
-        
-            const password = await pedirPasswordModal();
-            if (!password) return;
-        
-            try {
-                const response = await fetch('pass_eml.txt');
-        
-                if (!response.ok) {
-                    alert("No se encontró el archivo 'pass_eml.txt' en el servidor.");
-                    return;
-                }
-        
-                const passwordCorrecta = (await response.text()).trim();
-        
-                if (password.trim() !== passwordCorrecta) {
-                    alert("Contraseña incorrecta. Acceso denegado.");
-                    return;
-                }
-        
-                const keys = Object.keys(emlFiltrados[0].properties || {});
-                // ✅ Headers declarados UNA SOLA VEZ
-                const headers = [...keys, "DISTANCIA_OFICINA_KM", "PROVINCIA_EJECUCION", "BUDGET_OFICINA"];
-                let csv = headers.join(",") + "\n";
-        
-                emlFiltrados.forEach(f => {
-                    const props = f.properties || {};
-                    const tempLayer = L.geoJSON(f);
-                    const centroide = tempLayer.getBounds().getCenter();
-                    const provEml = (props.PROV_NOMB || '').trim().toUpperCase();
-                    const provEjecucion = obtenerProvinciaEjecucion(props);
-        
-                    let oficinasBuscar = oficinaData.filter(o => {
-                        const provOficina = (o.properties?.PROV_NOMB || '').trim().toUpperCase();
-                        return provOficina === provEml;
-                    });
-                    if (oficinasBuscar.length === 0) oficinasBuscar = oficinaData;
-        
-                    let distanciaMinima = Infinity;
-                    let oficinaCercana = null;  // ✅ Declarada aquí
-        
-                    oficinasBuscar.forEach(oficina => {
-                        const coords = obtenerCoordenadasOficina(oficina);
-                        if (coords) {
-                            const latLngOficina = L.latLng(coords.lat, coords.lon);
-                            const dist = centroide.distanceTo(latLngOficina);
-                            if (dist < distanciaMinima) {
-                                distanciaMinima = dist;
-                                oficinaCercana = oficina;
-                            }
-                        }
-                    });
-        
-                    const distanciaKm = distanciaMinima !== Infinity ? (distanciaMinima / 1000).toFixed(2) : "N/D";
-        
-                    let row = keys.map(k => `"${props[k] ?? ''}"`);
-                    row.push(`"${distanciaKm}"`);
-                    row.push(`"${provEjecucion}"`);
-                    const budgetOficina = oficinaCercana ? oficinaCercana.properties.BUDGET : 'N/D';
-                    row.push(`"${budgetOficina}"`);
-                    
-                    csv += row.join(",") + "\n";
+            lista.forEach(f => {
+                const props = f.properties || {};
+                const color = isVerificado(f) ? '#facc15' : '#64748b';
+                const geo = f.geometry;
+                if (!geo) return;
+                const layer = L.geoJSON(geo, { 
+                    style: {
+                        color: color,
+                        weight: 1,
+                        fillColor: color,
+                        fillOpacity: 0.55,
+                        opacity: 0.9
+                    }
                 });
-        
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = `eml_filtrados_${new Date().toISOString().slice(0,10)}.csv`;
-                link.click();
-        
-            } catch (error) {
-                console.error("Error al verificar la contraseña:", error);
-                alert("Ocurrió un error al intentar verificar la contraseña.");
-            }
+
+                layer.bindPopup(`<div class="info-popup"><h3>${props.LUPO_NOMB || 'UPM'}</h3><p><strong>UPM:</strong> ${props.CODE_UPM || ''}</p><p><strong>Provincia:</strong> ${props.PROV_NOMB || ''}</p><p><strong>Distrito:</strong> ${props.DIST_NOMB || ''}</p><p><strong>Corregimiento:</strong> ${props.CORR_NOMB || ''}</p><p><strong>Verificado:</strong> ${getVerificadoValue(f) || 'NO'}</p><p><strong>Costo:</strong> ${props.COSTO || 'NO'}</p></div>`);
+                layer.addTo(poligonosEmlLayer);
+            });
         }
 
-        // =============================================================
-        // CONTROL DEL MODAL DEL GRÁFICO
-        // =============================================================
-        const btnAbrirGrafico = document.getElementById('btnAbrirGrafico');
-        const btnCerrarGrafico = document.getElementById('btnCerrarGrafico');
-        const modalGrafico = document.getElementById('modalGrafico');
-        
-        // Abrir modal
-        btnAbrirGrafico.addEventListener('click', function() {
-            modalGrafico.style.display = 'flex';
-            // Actualizar gráfico al abrir (por si cambió)
-            actualizarGraficoModal(emlFiltrados);
-            actualizarGraficoVerificacionModal(emlFiltrados);
-        });
-        
-        // Cerrar modal con botón ✕
-        btnCerrarGrafico.addEventListener('click', function() {
-            modalGrafico.style.display = 'none';
-        });
-        
-        // Cerrar modal haciendo clic fuera
-        modalGrafico.addEventListener('click', function(e) {
-            if (e.target === modalGrafico) {
-                modalGrafico.style.display = 'none';
-            }
-        });
-        
-        // Cerrar modal con tecla ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modalGrafico.style.display === 'flex') {
-                modalGrafico.style.display = 'none';
-            }
-        });
-        // =============================================================
-        // LIMPIAR LÍNEAS DE DISTANCIA
-        // =============================================================
-        function limpiarLineasDistancia() {
-            if (lineasDistanciaLayer) {
-                lineasDistanciaLayer.clearLayers();
-            }
-            ultimoPoligonoSeleccionado = null;
+        function initFilters() {
+            document.getElementById('buscar_upm').addEventListener('input', aplicarFiltros);
+            document.getElementById('segm_tipo').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtro_costo').addEventListener('change', aplicarFiltros);
+            document.getElementById('provincia').addEventListener('change', aplicarFiltros);
+            document.getElementById('distrito').addEventListener('change', aplicarFiltros);
+            document.getElementById('corregimiento').addEventListener('change', aplicarFiltros);
+            document.getElementById('poblado').addEventListener('change', aplicarFiltros);
+            document.getElementById('lupo').addEventListener('change', aplicarFiltros);
         }
-        
-        cargarGeoJSONs();
+
+        function cargarDatos() {
+            fetch('eml.geojson')
+                .then(r => r.json())
+                .then(data => {
+                    emlData = data.features || [];
+                    emlFiltrados = emlData;
+                    renderizarDashboard();
+                    actualizarDashboardVerificacion(emlData);
+                    dibujarPoligonos(emlData);
+
+                    const provincias = obtenerProvinciasEjecucion();
+                    const selProvincia = document.getElementById('provincia');
+                    provincias.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p;
+                        opt.textContent = p;
+                        selProvincia.appendChild(opt);
+                    });
+
+                    initFilters();
+                })
+                .catch(err => {
+                    console.error('Error cargando GeoJSON:', err);
+                    alert('No se pudo cargar eml.geojson');
+                });
+        }
+
+        document.getElementById('btnAbrirGrafico').addEventListener('click', function() {
+            document.getElementById('modalGrafico').style.display = 'flex';
+        });
+
+        document.getElementById('btnCerrarGrafico').addEventListener('click', function() {
+            document.getElementById('modalGrafico').style.display = 'none';
+        });
+
+        cargarDatos();
     </script>
-
-    <!-- Modal para ingresar la contraseña -->
-    <div id="modalPassword" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-      <div style="background: white; padding: 20px; border-radius: 8px; max-width: 300px; width: 90%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-        <h3 style="margin-top: 0; font-size: 14px; color: #1e293b;">🔒 Confirmación Requerida</h3>
-        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Ingresa la contraseña para descargar el CSV:</p>
-        
-        <input type="password" id="inputPassModal" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 14px; text-align: center;">
-        
-        <div style="display: flex; gap: 8px; justify-content: center;">
-          <button id="btnCancelarModal" style="background: #e2e8f0; color: #475569; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Cancelar</button>
-          <button id="btnAceptarModal" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Descargar</button>
-        </div>
-      </div>
-    </div>
-
 </body>
 </html>
