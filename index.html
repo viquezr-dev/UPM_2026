@@ -789,36 +789,35 @@
                 interactive: false
             }).addTo(lineasDistanciaLayer);
 
+            const codigoUPM = props.CODE_UPM || props.UPM || 'N/D';
+            const provNombre = props.PROV_NOMB || 'N/D';
+            const distNombre = props.DIST_NOMB || 'N/D';
+            const corrNombre = props.CORR_NOMB || 'N/D';
+            const lupoNombre = props.LUPO_NOMB || 'N/D';
+            const tipo = normalizarSegmTipo(props.SEGM_TIPO);
+            const tipoMostrar = tipo === 'URBANO' ? 'URBANO' :
+                                tipo === 'RURAL' ? 'RURAL' :
+                                tipo === 'INDIGENA' ? 'INDÍGENA' :
+                                (props.SEGM_TIPO || 'N/D');
+            const verificado = obtenerEstadoVerificado(props) || 'N/D';
+            const verificadoSi = verificado === 'SI';
+
             let popupContent = `<div class="info-popup">
-                <h3>📍 UPM ${props.CODE_UPM || props.UPM || ''}</h3>
+                <h3>📍 UPM ${codigoUPM}</h3>
                 <p style="background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; border: 1px solid #bae6fd;">
                     📏 Distancia a Oficina Central: <strong>${distanciaKm} km</strong>
-                </p>`;
-
-            for (let k in props) {
-                const kUpper = k.trim().toUpperCase();
-                const valRaw = String(props[k] ?? 'N/D').trim();
-                const esCampoVerificacion = kUpper === 'VERIFICADO';
-
-                if (esCampoVerificacion) {
-                    const esValorSi = ['SI', 'SÍ', 'S', '1', 'TRUE', 'VERIFICADO', 'ACTUALIZADO'].includes(valRaw.toUpperCase().replace(/['"]/g, ''));
-
-                    if (esValorSi) {
-                        popupContent += `
-                            <p style="background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #facc15; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #16a34a; color: #fff; padding: 0 5px; border-radius: 2px;">${valRaw}</span> ✅
-                            </p>`;
-                    } else {
-                        popupContent += `
-                            <p style="background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 3px; margin: 3px 0;">
-                                <strong>${k}:</strong> <span style="background: #dc2626; color: #fff; padding: 0 5px; border-radius: 2px; font-weight: bold;">${valRaw}</span> ❌
-                            </p>`;
-                    }
-                } else {
-                    popupContent += `<p><strong>${k}:</strong> ${valRaw}</p>`;
-                }
-            }
-            popupContent += `</div>`;
+                </p>
+                <p><strong>Provincia:</strong> ${provNombre}</p>
+                <p><strong>Distrito:</strong> ${distNombre}</p>
+                <p><strong>Corregimiento:</strong> ${corrNombre}</p>
+                <p><strong>Lugar Poblado:</strong> ${lupoNombre}</p>
+                <p><strong>Tipo:</strong> ${tipoMostrar}</p>
+                <p style="${verificadoSi
+                    ? 'background:#fef08a; color:#854d0e; border:1px solid #facc15;'
+                    : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'} padding:2px 5px; border-radius:3px; font-weight:bold; margin:3px 0;">
+                    <strong>Verificado:</strong> ${verificadoSi ? '✅ SI' : '❌ NO'}
+                </p>
+            </div>`;
 
             layer.bindPopup(popupContent).openPopup();
         }
