@@ -1004,21 +1004,27 @@
 
             lista.forEach(f => {
                 const props = f.properties || {};
-                let color = '#64748b';
-                if (isVerificado(f)) color = '#facc15';
-                else if (String(props.DA ?? '').trim() === '1') color = '#f87171';
-                else if (String(props.INDIG ?? '').trim() === '1') color = '#c084fc';
-                else if (String(props.SEGM_TIPO ?? '').trim() === '01') color = '#60a5fa';
-                else if (String(props.SEGM_TIPO ?? '').trim() === '02') color = '#4ade80';
+                const provNombre = props.PROV_NOMB || 'Desconocido';
+                const estaVerificado = isVerificado(f);
+
+                // Restaurar la simbología fuerte del index original:
+                // UPM normales por provincia; verificadas en amarillo con borde rojo.
+                const estiloPoligono = estaVerificado ? {
+                    fillColor: '#facc15',
+                    fillOpacity: 0.85,
+                    color: '#dc2626',
+                    opacity: 1,
+                    weight: 2.5
+                } : {
+                    fillColor: obtenerColorProvincia(provNombre),
+                    fillOpacity: 0.60,
+                    color: '#1e293b',
+                    opacity: 1,
+                    weight: 1.2
+                };
 
                 const layer = L.geoJSON(f, {
-                    style: {
-                        color: color,
-                        weight: 2,
-                        opacity: 0.8,
-                        fillColor: color,
-                        fillOpacity: 0.4
-                    },
+                    style: estiloPoligono,
                     onEachFeature: (feature, layer) => {
                         layer.on('click', () => {
                             ultimoPoligonoSeleccionado = { layer, feature };
