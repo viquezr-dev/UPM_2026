@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPM para Encuesta de Mercado Laboral - Completo</title>
+    <title>Actualización Cartográfica Precensal 2026</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -746,7 +746,7 @@
         }
     </style>
 
-    <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026</div>
+    <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | Actualización Cartográfica Precensal 2026</div>
 
     <script>
         const vistaInicial = { center: [8.5, -80.0], zoom: 8 };
@@ -1260,7 +1260,50 @@
         }
 
         function volverAtras() {
-            resetMap();
+            map.stop();
+            map.closePopup();
+            ultimoPoligonoSeleccionado = null;
+            lineasDistanciaLayer.clearLayers();
+
+            // La búsqueda de una UPM es el detalle más específico.
+            const buscar = document.getElementById('buscar_upm');
+            if (buscar.value.trim() !== '') {
+                buscar.value = '';
+            } else {
+                // Los identificadores históricos no coinciden con los rótulos:
+                // Ejecuta > Provincia > Distrito > Corregimiento > Lugar poblado.
+                const niveles = [
+                    ['provincia', 'TODAS'],
+                    ['distrito', 'TODOS'],
+                    ['corregimiento', 'TODOS'],
+                    ['poblado', 'TODOS'],
+                    ['lupo', 'TODOS']
+                ];
+                for (let i = niveles.length - 1; i >= 0; i--) {
+                    const [id, valorTodos] = niveles[i];
+                    const selector = document.getElementById(id);
+                    if (selector.value && selector.value !== valorTodos) {
+                        // Conservar las opciones del nivel retirado para poder elegir otro.
+                        selector.value = valorTodos;
+                        for (let j = i + 1; j < niveles.length; j++) {
+                            const hijo = document.getElementById(niveles[j][0]);
+                            hijo.innerHTML = '<option value="TODOS">Todos</option>';
+                            hijo.value = 'TODOS';
+                            hijo.disabled = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Mantener Tipo/Estado y Viático durante la navegación jerárquica.
+            aplicarFiltros();
+            const hayFiltro = document.getElementById('provincia').value !== 'TODAS' ||
+                document.getElementById('segm_tipo').value !== 'TODOS' ||
+                document.getElementById('filtro_costo').value !== 'TODOS';
+            if (!hayFiltro) {
+                map.setView(vistaInicial.center, vistaInicial.zoom, { animate: false });
+            }
         }
 
         function exportarCSV() {
