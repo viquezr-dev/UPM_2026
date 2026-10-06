@@ -283,30 +283,67 @@
         }
         
         .info-popup {
+            font: 13px/1.45 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .info-popup .upm-header {
+            background: linear-gradient(120deg, #123b70, #1d4ed8);
+            color: #fff;
+            padding: 16px 42px 15px 18px;
+        }
+        .info-popup .upm-caption {
+            display: block;
             font-size: 10px;
-            line-height: 1.1;
-            color: #334155;
-            min-width: 180px;
-            max-width: 280px;
-            max-height: 320px;
-            overflow-y: auto;
-            padding-top: 4px;
-        }
-        
-        .info-popup h3 {
-            color: #0f172a;
-            font-size: 12px;
-            margin-top: 0;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #dbeafe;
             margin-bottom: 4px;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 2px;
-            padding-top: 2px;
         }
-        .info-popup p {
-            margin: 0 0 2px 0; 
-            padding: 0;
+        .info-popup h3 {
+            color: #fff;
+            font-size: 20px;
+            line-height: 1.2;
+            letter-spacing: .5px;
+            margin: 0;
+            overflow-wrap: anywhere;
         }
-        
+        .info-popup .upm-details { padding: 8px 18px; }
+        .info-popup .upm-row {
+            display: grid;
+            grid-template-columns: 106px minmax(0, 1fr);
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e8eef5;
+        }
+        .info-popup .upm-row:last-child { border-bottom: 0; }
+        .info-popup .upm-label { color: #64748b; font-weight: 500; }
+        .info-popup .upm-value { font-weight: 650; overflow-wrap: anywhere; }
+        .info-popup .upm-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 18px 15px;
+        }
+        .info-popup .upm-status .upm-label {
+            display: block;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        .info-popup .upm-badge {
+            display: inline-block;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 750;
+        }
+        .info-popup .upm-badge-yes { color: #166534; background: #dcfce7; }
+        .info-popup .upm-badge-no { color: #991b1b; background: #fee2e2; }
+
         .legend {
             background: rgba(255, 255, 255, 0.92);
             padding: 8px 10px;
@@ -376,31 +413,40 @@
         }
 
         .custom-popup-white .leaflet-popup-content-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
+            background: #ffffff !important;
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28) !important;
+            border: 1px solid #dbe3ee;
+            border-radius: 15px !important;
             padding: 0 !important;
+            overflow: hidden;
         }
-        
         .custom-popup-white .leaflet-popup-tip {
-            background: rgba(255, 255, 255, 0.94) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            border: none !important;
+            background: #f1f5f9 !important;
+            box-shadow: 3px 3px 8px rgba(15, 23, 42, 0.15);
         }
-        
         .custom-popup-white .leaflet-popup-content {
             margin: 0 !important;
             padding: 0 !important;
-            min-width: 160px !important;
-            max-width: 220px !important;
+            width: 310px !important;
+            max-width: calc(100vw - 56px) !important;
         }
-        
-        .custom-popup-white .leaflet-popup-content-wrapper::before {
-            display: none !important;
+        .custom-popup-white .leaflet-popup-content-wrapper::before { display: none !important; }
+        .leaflet-container .custom-popup-white a.leaflet-popup-close-button {
+            top: 9px;
+            right: 9px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            font: 22px/26px Arial, sans-serif;
         }
-        
+        .leaflet-container .custom-popup-white a.leaflet-popup-close-button:hover,
+        .leaflet-container .custom-popup-white a.leaflet-popup-close-button:focus {
+            background: rgba(255, 255, 255, 0.32);
+            color: #fff;
+        }
+
         .link-cartografos {
             display: inline-block;
             margin-left: 10px;
@@ -1075,17 +1121,33 @@
         function trazarDistanciaYPopup(layer, feature) {
             lineasDistanciaLayer.clearLayers();
             const props = feature.properties || {};
+            const escapePopup = value => String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+            const tipo = String(props.SEGM_TIPO ?? '').trim() === '01' ? 'Urbano' : String(props.SEGM_TIPO ?? '').trim() === '02' ? 'Rural' : 'Indígena';
+            const verificado = isVerificado(feature);
+            const conViatico = String(props.COSTO ?? '').trim().toUpperCase() === 'SI';
+            const campos = [
+                ['Ejecuta', props.EJECUCION || props.PROV_NOMB || 'N/A'],
+                ['Provincia', props.PROV_NOMB || 'N/A'],
+                ['Distrito', props.DIST_NOMB || 'N/A'],
+                ['Corregimiento', props.CORR_NOMB || 'N/A'],
+                ['Lugar poblado', props.LUPO_NOMB || 'N/A'],
+                ['Tipo', tipo]
+            ];
             const popupHTML = `
                 <div class="info-popup">
-                    <h3>${props.CODE_UPM || 'N/A'}</h3>
-                    <p><strong>Ejecuta:</strong> ${props.EJECUCION || props.PROV_NOMB || 'N/A'}</p>
-                    <p><strong>Provincia:</strong> ${props.PROV_NOMB || 'N/A'}</p>
-                    <p><strong>Distrito:</strong> ${props.DIST_NOMB || 'N/A'}</p>
-                    <p><strong>Corregimiento:</strong> ${props.CORR_NOMB || 'N/A'}</p>
-                    <p><strong>Lugar Poblado:</strong> ${props.LUPO_NOMB || 'N/A'}</p>
-                    <p><strong>Tipo:</strong> ${String(props.SEGM_TIPO ?? '').trim() === '01' ? 'Urbano' : String(props.SEGM_TIPO ?? '').trim() === '02' ? 'Rural' : 'Indígena'}</p>
-                    <p><strong>Verificado:</strong> ${isVerificado(feature) ? '✅ SI' : '❌ NO'}</p>
-                    <p><strong>Viático:</strong> ${String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? '✅ CON' : '❌ SIN'}</p>
+                    <div class="upm-header">
+                        <span class="upm-caption">UNIDAD PRIMARIA DE MUESTREO</span>
+                        <h3>${escapePopup(props.CODE_UPM || 'N/A')}</h3>
+                    </div>
+                    <div class="upm-details">
+                        ${campos.map(([label, value]) => `<div class="upm-row"><span class="upm-label">${label}</span><span class="upm-value">${escapePopup(value)}</span></div>`).join('')}
+                    </div>
+                    <div class="upm-status">
+                        <div><span class="upm-label">Verificado</span><span class="upm-badge upm-badge-${verificado ? 'yes' : 'no'}">${verificado ? '✓ SÍ' : '✕ NO'}</span></div>
+                        <div><span class="upm-label">Viático</span><span class="upm-badge upm-badge-${conViatico ? 'yes' : 'no'}">${conViatico ? '✓ CON' : '✕ SIN'}</span></div>
+                    </div>
                 </div>
             `;
             // Vincular el popup antes de abrirlo. Esto evita que el clic falle
