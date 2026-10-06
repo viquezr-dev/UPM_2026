@@ -283,39 +283,39 @@
         }
         
         .info-popup {
-            font: 13px/1.45 'Segoe UI', Arial, sans-serif;
+            font: 11px/1.35 'Segoe UI', Arial, sans-serif;
             color: #1e293b;
             background: #ffffff;
-            border-radius: 14px;
+            border-radius: 10px;
             overflow: hidden;
         }
         .info-popup .upm-header {
             background: linear-gradient(120deg, #123b70, #1d4ed8);
             color: #fff;
-            padding: 16px 42px 15px 18px;
+            padding: 10px 32px 10px 12px;
         }
         .info-popup .upm-caption {
             display: block;
-            font-size: 10px;
+            font-size: 8px;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: .8px;
             color: #dbeafe;
             margin-bottom: 4px;
         }
         .info-popup h3 {
             color: #fff;
-            font-size: 20px;
+            font-size: 16px;
             line-height: 1.2;
             letter-spacing: .5px;
             margin: 0;
             overflow-wrap: anywhere;
         }
-        .info-popup .upm-details { padding: 8px 18px; }
+        .info-popup .upm-details { padding: 5px 12px; }
         .info-popup .upm-row {
             display: grid;
-            grid-template-columns: 106px minmax(0, 1fr);
+            grid-template-columns: 88px minmax(0, 1fr);
             gap: 8px;
-            padding: 8px 0;
+            padding: 5px 0;
             border-bottom: 1px solid #e8eef5;
         }
         .info-popup .upm-row:last-child { border-bottom: 0; }
@@ -327,7 +327,7 @@
             gap: 12px;
             background: #f1f5f9;
             border-top: 1px solid #e2e8f0;
-            padding: 12px 18px 15px;
+            padding: 8px 12px;
         }
         .info-popup .upm-status .upm-label {
             display: block;
@@ -337,8 +337,8 @@
         .info-popup .upm-badge {
             display: inline-block;
             border-radius: 6px;
-            padding: 4px 10px;
-            font-size: 12px;
+            padding: 3px 8px;
+            font-size: 11px;
             font-weight: 750;
         }
         .info-popup .upm-badge-yes { color: #166534; background: #dcfce7; }
@@ -416,7 +416,7 @@
             background: #ffffff !important;
             box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28) !important;
             border: 1px solid #dbe3ee;
-            border-radius: 15px !important;
+            border-radius: 11px !important;
             padding: 0 !important;
             overflow: hidden;
         }
@@ -427,7 +427,7 @@
         .custom-popup-white .leaflet-popup-content {
             margin: 0 !important;
             padding: 0 !important;
-            width: 310px !important;
+            width: 260px !important;
             max-width: calc(100vw - 56px) !important;
         }
         .custom-popup-white .leaflet-popup-content-wrapper::before { display: none !important; }
@@ -685,13 +685,14 @@
                     font-weight: 700;
                 ">✕</button>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-height: 65vh;">
+            <p id="avisoGraficos" role="status" hidden style="padding: 10px; color: #92400e; background: #fef3c7; border-radius: 8px;"></p>
+            <div class="graficos-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div style="background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 16px; padding: 12px 14px 10px; border: 2px solid #e2e8f0; box-shadow: inset 0 2px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 UPM con Viático</span>
+                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 Distribución de viáticos</span>
                         <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
                     </div>
-                    <div style="flex: 1; min-height: 200px; position: relative;"><canvas id="graficoCostosModal"></canvas></div>
+                    <div style="flex: 1; min-height: 260px; height: 300px; position: relative; flex-shrink: 0;"><canvas id="graficoCostosModal"></canvas></div>
                     <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
                         <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Con Viático</span>
                         <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Sin Viático</span>
@@ -702,7 +703,7 @@
                         <span style="font-size: 13px; font-weight: 700; color: #0f172a;">✅ Progreso de Verificación</span>
                         <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
                     </div>
-                    <div style="flex: 1; min-height: 200px; position: relative;"><canvas id="graficoVerificacionModal"></canvas></div>
+                    <div style="flex: 1; min-height: 260px; height: 300px; position: relative; flex-shrink: 0;"><canvas id="graficoVerificacionModal"></canvas></div>
                     <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
                         <span><span style="display:inline-block; width:12px; height:12px; background:#facc15; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Verificadas</span>
                         <span><span style="display:inline-block; width:12px; height:12px; background:#64748b; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Pendientes</span>
@@ -733,6 +734,11 @@
             }
         }
         
+        #modalGrafico > div { overflow-y: auto; box-sizing: border-box; }
+        .graficos-grid > div { min-width: 0; }
+        @media (max-width: 760px) {
+            #modalGrafico .graficos-grid { grid-template-columns: 1fr !important; }
+        }
         #btnCerrarGrafico:hover {
             background: #fecaca;
             transform: rotate(90deg) scale(1.1);
@@ -928,39 +934,64 @@
         }
 
         let chartCostos = null;
-        
-        function actualizarGraficoCostos(listaUPM) {
-            const canvas = document.getElementById('graficoCostos');
-            if (!canvas) return;
+        let chartVerificacion = null;
+
+        function actualizarGraficosModal(listaUPM) {
+            const modal = document.getElementById('modalGrafico');
+            if (modal.style.display !== 'flex') return;
             const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            const provs = Object.keys(stats).filter(p => p !== '').sort((a, b) => a.localeCompare(b));
-            if (provs.length === 0) {
-                if (chartCostos) {
-                    chartCostos.destroy();
-                    chartCostos = null;
-                }
+            const provincias = Object.keys(stats).sort((a, b) => a.localeCompare(b, 'es'));
+            const sumar = campo => provincias.reduce((total, provincia) => total + stats[provincia][campo], 0);
+            const resumen = document.getElementById('statsGrafico');
+            resumen.textContent = `Total UPM: ${listaUPM.length} | Con viático: ${sumar('conCosto')} | Sin viático: ${sumar('sinCosto')} | Verificadas: ${sumar('verificadas')} | Pendientes: ${sumar('pendientes')}`;
+            const aviso = document.getElementById('avisoGraficos');
+            if (typeof Chart === 'undefined') {
+                aviso.textContent = 'No se pudo cargar la librería de gráficas. Revise su conexión y recargue la página.';
+                aviso.hidden = false;
                 return;
             }
-            const labels = provs;
-            const conCosto = provs.map(p => stats[p].conCosto || 0);
-            const sinCosto = provs.map(p => stats[p].sinCosto || 0);
-            if (chartCostos) chartCostos.destroy();
-            chartCostos = new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'Con viático', data: conCosto, backgroundColor: '#22c55e' },
-                        { label: 'Sin viático', data: sinCosto, backgroundColor: '#ef4444' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: true } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+            aviso.hidden = listaUPM.length > 0;
+            aviso.textContent = 'No hay UPM para los filtros seleccionados.';
+            const crearGrafico = (id, series) => {
+                const canvas = document.getElementById(id);
+                canvas.parentElement.style.height = Math.max(260, provincias.length * 38 + 45) + 'px';
+                return new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: provincias,
+                        datasets: series.map(([label, campo, color]) => ({
+                            label,
+                            data: provincias.map(provincia => stats[provincia][campo]),
+                            backgroundColor: color,
+                            borderRadius: 3,
+                            maxBarThickness: 20
+                        }))
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { beginAtZero: true, stacked: true, ticks: { precision: 0 }, title: { display: true, text: 'Cantidad de UPM' } },
+                            y: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, color: '#334155', font: { size: 11 } } }
+                        }
+                    }
+                });
+            };
+            if (chartCostos) { chartCostos.destroy(); chartCostos = null; }
+            if (chartVerificacion) { chartVerificacion.destroy(); chartVerificacion = null; }
+            chartCostos = crearGrafico('graficoCostosModal', [
+                ['Con viático', 'conCosto', '#22c55e'],
+                ['Sin viático', 'sinCosto', '#ef4444']
+            ]);
+            chartVerificacion = crearGrafico('graficoVerificacionModal', [
+                ['Verificadas', 'verificadas', '#facc15'],
+                ['Pendientes', 'pendientes', '#64748b']
+            ]);
         }
 
         function obtenerEstadisticasPorEjecucion(listaUPM) {
@@ -1041,6 +1072,7 @@
             emlFiltrados = lista;
             renderizarDashboard();
             actualizarDashboardVerificacion(lista);
+            actualizarGraficosModal(lista);
             dibujarPoligonos(lista);
 
             // Zoom automático solo cuando el usuario ha aplicado algún filtro/búsqueda.
@@ -1307,6 +1339,7 @@
 
         document.getElementById('btnAbrirGrafico').addEventListener('click', () => {
             document.getElementById('modalGrafico').style.display = 'flex';
+            requestAnimationFrame(() => actualizarGraficosModal(emlFiltrados));
         });
         document.getElementById('btnCerrarGrafico').addEventListener('click', () => {
             document.getElementById('modalGrafico').style.display = 'none';
