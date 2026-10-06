@@ -996,6 +996,31 @@
             renderizarDashboard();
             actualizarDashboardVerificacion(lista);
             dibujarPoligonos(lista);
+
+            // Zoom automático solo cuando el usuario ha aplicado algún filtro/búsqueda.
+            const haySeleccion =
+                buscar !== '' ||
+                tipo !== 'TODOS' ||
+                costo !== 'TODOS' ||
+                provincia !== 'TODAS' ||
+                distrito !== 'TODOS' ||
+                corregimiento !== 'TODOS' ||
+                poblado !== 'TODOS' ||
+                lupo !== 'TODOS';
+
+            if (haySeleccion && lista.length > 0) {
+                const capasVisibles = poligonosEmlLayer.getLayers();
+                if (capasVisibles.length > 0) {
+                    const grupoVisible = L.featureGroup(capasVisibles);
+                    const bounds = grupoVisible.getBounds();
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds, {
+                            padding: [30, 30],
+                            maxZoom: buscar !== '' ? 16 : 13
+                        });
+                    }
+                }
+            }
         }
 
         function dibujarPoligonos(lista) {
@@ -1026,8 +1051,19 @@
                 const layer = L.geoJSON(f, {
                     style: estiloPoligono,
                     onEachFeature: (feature, layer) => {
-                        layer.on('click', () => {
+                        layer.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
                             ultimoPoligonoSeleccionado = { layer, feature };
+
+                            // Acercar el mapa al polígono seleccionado.
+                            const bounds = layer.getBounds();
+                            if (bounds && bounds.isValid()) {
+                                map.fitBounds(bounds, {
+                                    padding: [45, 45],
+                                    maxZoom: 16
+                                });
+                            }
+
                             trazarDistanciaYPopup(layer, feature);
                         });
                     }
@@ -1052,15 +1088,14 @@
                     <p><strong>Viático:</strong> ${String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? '✅ CON' : '❌ SIN'}</p>
                 </div>
             `;
-            if (layer.setPopupContent) {
-                layer.setPopupContent(popupHTML);
-                layer.openPopup();
-            } else {
-                L.popup({ className: 'custom-popup-white' })
-                    .setLatLng(L.latLngBounds(layer.toGeoJSON().geometry.coordinates[0].map(coord => [coord[1], coord[0]])).getCenter())
-                    .setContent(popupHTML)
-                    .openOn(map);
-            }
+            // Vincular el popup antes de abrirlo. Esto evita que el clic falle
+            // cuando el polígono todavía no tenía un popup asociado.
+            layer.bindPopup(popupHTML, {
+                className: 'custom-popup-white',
+                maxWidth: 320,
+                autoPan: true
+            });
+            layer.openPopup();
         }
 
         function resetMap() {
