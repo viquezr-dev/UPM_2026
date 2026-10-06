@@ -479,6 +479,7 @@
         <a href="https://www.inec.gob.pa/ProgramaDeEncuestas" target="_blank" rel="noopener noreferrer" class="link-cartografos">📸 Ver fotos de cartógrafos</a>
     </h1>
     <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
+    <span id="avisoOficinas" role="status" hidden style="color:#fca5a5;font-size:11px;"></span>
     </div>
     
     <div class="controls">
@@ -1009,6 +1010,44 @@
             return stats;
         }
 
+        function obtenerCoordenadasOficina(feature) {
+            const props = feature.properties || {};
+            let lat = parseFloat(props.OFICE_LAT);
+            let lon = parseFloat(props.OFICE_LONG);
+            const validas = () => Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+            if (!validas() && feature.geometry?.type === 'Point') {
+                [lon, lat] = feature.geometry.coordinates || [];
+            }
+            return validas() ? { lat, lon } : null;
+        }
+
+        function renderizarOficinas() {
+            oficinasLayer.clearLayers();
+            const ejecuta = document.getElementById('provincia').value;
+            oficinasFiltradasGlobal = oficinaData.filter(feature => {
+                const provincia = obtenerProvinciaEjecucion(feature.properties || {});
+                return (ejecuta === 'TODAS' || provincia === ejecuta) && obtenerCoordenadasOficina(feature);
+            });
+            const escapar = value => String(value ?? 'N/D').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+            oficinasFiltradasGlobal.forEach(feature => {
+                const coords = obtenerCoordenadasOficina(feature);
+                const props = feature.properties || {};
+                const icon = L.divIcon({
+                    className: 'custom-office-icon',
+                    html: '<div style="background:#0f172a;color:#fff;border:2px solid #38bdf8;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);box-sizing:border-box;">🏢</div>',
+                    iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14]
+                });
+                const campos = [['Provincia', props.PROV_NOMB], ['Código provincial', props.PROV_ID], ['Plus Code', props.PLUS_CODE]];
+                const popup = `<div class="info-popup"><div class="upm-header"><span class="upm-caption">OFICINA GEORREFERENCIADA</span><h3>🏢 Oficina</h3></div><div class="upm-details">${campos.filter(([, value]) => value !== undefined && value !== null && value !== '').map(([label, value]) => `<div class="upm-row"><span class="upm-label">${label}</span><span class="upm-value">${escapar(value)}</span></div>`).join('')}</div></div>`;
+                L.marker([coords.lat, coords.lon], { icon })
+                    .bindTooltip(`Oficina · ${escapar(props.PROV_NOMB || 'Sin provincia')}`)
+                    .bindPopup(popup, { className: 'custom-popup-white', maxWidth: 280 })
+                    .addTo(oficinasLayer);
+            });
+        }
+
         function renderizarDashboard() {
             const total = emlFiltrados.length;
             const urbanos = emlFiltrados.filter(f => String(f.properties?.SEGM_TIPO ?? '').trim() === '01').length;
@@ -1033,7 +1072,7 @@
             setPct('pct-indigena', total ? ((indigenas / total) * 100).toFixed(1) : '0.0', indigenas, '#c084fc');
             setPct('pct-da', total ? ((da / total) * 100).toFixed(1) : '0.0', da, '#f87171');
 
-            document.getElementById('contador').textContent = `${total} Polígonos | 0 Oficinas`;
+            document.getElementById('contador').textContent = `${total} Polígonos | ${oficinasFiltradasGlobal.length} Oficinas`;
         }
 
         function aplicarFiltros() {
@@ -1070,6 +1109,7 @@
 
             lista = filtrarPorTipo(lista, tipo);
             emlFiltrados = lista;
+            renderizarOficinas();
             renderizarDashboard();
             actualizarDashboardVerificacion(lista);
             actualizarGraficosModal(lista);
@@ -1242,6 +1282,25 @@
             link.download = `UPM_Filtrados_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
+
+        // Cargar las oficinas de forma independiente de las UPM.
+        fetch('oficina.geojson')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data.features)) throw new Error('GeoJSON de oficinas sin lista de entidades');
+                oficinaData = data.features;
+                renderizarOficinas();
+                renderizarDashboard();
+            })
+            .catch(error => {
+                console.error('Error cargando oficina.geojson:', error);
+                const aviso = document.getElementById('avisoOficinas');
+                aviso.textContent = 'No se pudo cargar oficina.geojson';
+                aviso.hidden = false;
+            });
 
         // Inicializar datos
         fetch('eml.geojson')
