@@ -748,10 +748,8 @@
     <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026</div>
 
     <script>
-        const map = L.map('map', {
-            center: [8.5, -80.0],
-            zoom: 8
-        });
+        const vistaInicial = { center: [8.5, -80.0], zoom: 8 };
+        const map = L.map('map', vistaInicial);
 
         const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
@@ -969,11 +967,13 @@
                     },
                     options: {
                         indexAxis: 'y',
+                        // Seleccionar la provincia por su fila en ambas gráficas horizontales.
+                        interaction: { mode: 'index', axis: 'y', intersect: false },
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            tooltip: { mode: 'index', intersect: false }
+                            tooltip: { mode: 'index', axis: 'y', intersect: false }
                         },
                         scales: {
                             x: { beginAtZero: true, stacked: true, ticks: { precision: 0 }, title: { display: true, text: 'Cantidad de UPM' } },
@@ -1193,6 +1193,10 @@
         }
 
         function resetMap() {
+            map.stop();
+            map.closePopup();
+            ultimoPoligonoSeleccionado = null;
+            lineasDistanciaLayer.clearLayers();
             document.getElementById('buscar_upm').value = '';
             document.getElementById('segm_tipo').value = 'TODOS';
             document.getElementById('filtro_costo').value = 'TODOS';
@@ -1212,6 +1216,7 @@
             document.getElementById('lupo').disabled = true;
 
             aplicarFiltros();
+            map.setView(vistaInicial.center, vistaInicial.zoom, { animate: false });
         }
 
         function volverAtras() {
