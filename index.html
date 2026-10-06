@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualización Cartográfica Precensal 2026</title>
+    <title>UPM para Encuesta de Mercado Laboral - Completo</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -746,7 +746,20 @@
         }
     </style>
 
-    <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | Actualización Cartográfica Precensal 2026</div>
+    <dialog id="modalPassword" aria-labelledby="tituloPassword" style="border:0;border-radius:14px;padding:24px;width:320px;max-width:calc(100vw - 48px);box-sizing:border-box;color:#1e293b;box-shadow:0 20px 60px #0005;">
+        <form method="dialog" id="formPassword">
+            <h3 id="tituloPassword" style="margin:0 0 10px;color:#123b70;">Descargar CSV</h3>
+            <label for="inputPassModal" style="display:block;font-size:13px;margin-bottom:8px;">Ingrese la contraseña de descarga:</label>
+            <input id="inputPassModal" type="password" autocomplete="off" autofocus style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #94a3b8;border-radius:6px;">
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+                <button type="button" onclick="document.getElementById('modalPassword').close('cancelar')" style="padding:8px 12px;border:0;border-radius:6px;cursor:pointer;">Cancelar</button>
+                <button type="submit" value="aceptar" style="padding:8px 12px;border:0;border-radius:6px;background:#1d4ed8;color:white;cursor:pointer;">Descargar</button>
+            </div>
+        </form>
+    </dialog>
+    <style>#modalPassword::backdrop { background: rgba(15,23,42,.55); }</style>
+
+    <div class="footer">Desarrollado por: <strong>Raúl Víquez</strong> | UPM para Encuesta de Mercado Laboral © 2026</div>
 
     <script>
         const vistaInicial = { center: [8.5, -80.0], zoom: 8 };
@@ -1306,24 +1319,64 @@
             }
         }
 
-        function exportarCSV() {
+        function pedirPasswordModal() {
+            return new Promise(resolve => {
+                const modal = document.getElementById('modalPassword');
+                const input = document.getElementById('inputPassModal');
+                const previo = document.activeElement;
+                input.value = '';
+                modal.returnValue = 'cancelar';
+                modal.addEventListener('close', () => {
+                    const password = modal.returnValue === 'aceptar' ? input.value : null;
+                    input.value = '';
+                    if (previo && typeof previo.focus === 'function') previo.focus();
+                    resolve(password);
+                }, { once: true });
+                modal.showModal();
+                input.focus();
+            });
+        }
+
+        let exportacionEnCurso = false;
+        async function exportarCSV() {
             if (emlFiltrados.length === 0) {
                 alert('No hay datos para exportar');
                 return;
             }
-            let csv = 'CODE_UPM,PROVINCIA,DISTRITO,CORREGIMIENTO,LUPO,TIPO,VERIFICADO,VIÁTICO\n';
-            emlFiltrados.forEach(f => {
-                const props = f.properties || {};
-                const tipo = String(props.SEGM_TIPO ?? '').trim() === '01' ? 'URBANO' : 'RURAL';
-                const verificado = isVerificado(f) ? 'SI' : 'NO';
-                const viático = String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? 'CON' : 'SIN';
-                csv += `"${props.CODE_UPM}","${props.PROV_NOMB}","${props.DIST_NOMB}","${props.CORR_NOMB}","${props.LUPO_NOMB}","${tipo}","${verificado}","${viático}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `UPM_Filtrados_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
+            if (exportacionEnCurso) return;
+            exportacionEnCurso = true;
+            try {
+                const password = await pedirPasswordModal();
+                if (password === null || password.trim() === '') return;
+                const response = await fetch('pass_eml.txt', { cache: 'no-store' });
+                if (!response.ok) {
+                    alert("No se pudo leer 'pass_eml.txt'. La descarga fue cancelada.");
+                    return;
+                }
+                const passwordCorrecta = (await response.text()).trim();
+                if (!passwordCorrecta || password.trim() !== passwordCorrecta) {
+                    alert('Contraseña incorrecta. Acceso denegado.');
+                    return;
+                }
+                let csv = 'CODE_UPM,PROVINCIA,DISTRITO,CORREGIMIENTO,LUPO,TIPO,VERIFICADO,VIÁTICO\n';
+                emlFiltrados.forEach(f => {
+                    const props = f.properties || {};
+                    const tipo = String(props.SEGM_TIPO ?? '').trim() === '01' ? 'URBANO' : 'RURAL';
+                    const verificado = isVerificado(f) ? 'SI' : 'NO';
+                    const viático = String(props.COSTO ?? '').trim().toUpperCase() === 'SI' ? 'CON' : 'SIN';
+                    csv += `"${props.CODE_UPM}","${props.PROV_NOMB}","${props.DIST_NOMB}","${props.CORR_NOMB}","${props.LUPO_NOMB}","${tipo}","${verificado}","${viático}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `UPM_Filtrados_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+            } catch (error) {
+                console.error('Error en la descarga CSV:', error);
+                alert('No se pudo verificar la contraseña o completar la descarga. Intente nuevamente.');
+            } finally {
+                exportacionEnCurso = false;
+            }
         }
 
         // Cargar las oficinas de forma independiente de las UPM.
