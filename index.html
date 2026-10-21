@@ -639,7 +639,7 @@
             <section><h3>Tipo de vivienda</h3><div><canvas id="sismoChartVivienda"></canvas></div></section>
         </div>
         <h3 class="sismo-tabla-titulo">Detalle por corregimiento</h3>
-        <div class="sismo-tabla"><table><thead><tr><th>Provincia</th><th>Distrito</th><th>Corregimiento</th><th>Registros</th><th>Afectación total</th><th>Viviendas de referencia</th><th>% registrado / viviendas</th><th>Población de referencia</th><th>Área km²</th><th>Habitantes / km²</th></tr></thead><tbody id="sismoDetalle"></tbody></table></div>
+        <div class="sismo-tabla"><table><colgroup><col style="width:145px"><col style="width:145px"><col style="width:210px"><col style="width:90px"><col style="width:110px"><col style="width:135px"><col style="width:135px"><col style="width:135px"><col style="width:105px"><col style="width:130px"></colgroup><thead><tr><th>Provincia</th><th>Distrito</th><th>Corregimiento</th><th>Registros</th><th>Afectación total</th><th>Viviendas de referencia</th><th>% registrado / viviendas</th><th>Población de referencia</th><th>Área km²</th><th>Habitantes / km²</th></tr></thead><tbody id="sismoDetalle"></tbody></table></div>
     </dialog>
     <style>
         #btnDashboardSismo {position:fixed;bottom:130px;right:20px;z-index:1002;background:#991b1b;color:white;border:0;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0003;}
@@ -659,9 +659,13 @@
         .sismo-graficas section>div {height:300px;position:relative;margin-top:12px;}
         .sismo-tabla-titulo {margin:18px 0 10px;}
         .sismo-tabla {overflow:auto;max-height:420px;background:white;border:1px solid #e2e8f0;border-radius:8px;}
-        .sismo-tabla table {border-collapse:collapse;width:100%;font-size:12px;}
+        .sismo-tabla table {border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;min-width:1340px;font-size:12px;}
         .sismo-tabla th {position:sticky;top:0;background:#7f1d1d;color:white;text-align:left;z-index:1;}
-        .sismo-tabla th,.sismo-tabla td {padding:10px;border-bottom:1px solid #e2e8f0;}
+        .sismo-tabla th,.sismo-tabla td {padding:10px 12px;border-bottom:1px solid #e2e8f0;vertical-align:middle;box-sizing:border-box;}
+        .sismo-tabla th {white-space:normal;line-height:1.4;}
+        .sismo-tabla th:nth-child(-n+3),.sismo-tabla td:nth-child(-n+3) {text-align:left;overflow-wrap:break-word;}
+        .sismo-tabla th:nth-child(n+4) {text-align:right;}
+        .sismo-tabla th:not(:last-child),.sismo-tabla td:not(:last-child) {border-right:1px solid #e2e8f0;}
         .sismo-tabla td:nth-child(n+4) {text-align:right;white-space:nowrap;}
         .sismo-tabla tbody tr:nth-child(even) {background:#f1f5f9;}
         @media(max-width:800px){.sismo-graficas{grid-template-columns:1fr}.sismo-indicadores{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardSismo{padding:16px;}}
@@ -1628,6 +1632,7 @@
             const modalSismo = document.getElementById('dashboardSismo');
             let graficasSismo = [];
             let errorCargaSismo = false;
+            let camposTerritorialesAusentes = [];
             function calcularEstadisticasSismo(features) {
                 const grupos = new Map();
                 const contar = campo => {
@@ -1672,7 +1677,12 @@
                 const estado = document.getElementById('sismoEstado');
                 estado.textContent = errorCargaSismo ? 'No se pudo cargar sismo.geojson.' : !sismosCargados ? 'Cargando registros…' : !e.cantidad ? 'No hay registros para los filtros seleccionados.' :
                     'Estadísticas según los filtros geográficos. Ocultar los puntos no cambia las cifras.';
-                if (e.filas.some(g=>g.area===null || g.personas===null || g.viviendas===null)) estado.textContent += ' N/D indica datos territoriales ausentes o inconsistentes.';
+                if (camposTerritorialesAusentes.length) {
+                    estado.textContent = 'El sismo.geojson cargado no contiene valores para: ' + camposTerritorialesAusentes.join(', ') + '. Publique la versión que incluye esos campos con el nombre sismo.geojson, en la misma carpeta del HTML. Los N/D no representan ceros.';
+                } else if (e.filas.some(g=>g.area===null || g.personas===null || g.viviendas===null)) {
+                    estado.textContent += ' N/D indica datos territoriales ausentes, no numéricos o distintos dentro de un mismo corregimiento.';
+                }
+                estado.style.color = camposTerritorialesAusentes.length ? '#991b1b' : '#475569';
                 const kpis = [
                     ['Viviendas registradas',fmt(e.cantidad)],['Con afectación total',fmt(e.total)],
                     ['Corregimientos representados',fmt(e.filas.length)],
@@ -1737,7 +1747,7 @@
             map.on('click zoomstart movestart', ocultarFicha);
             capaSismo.on('remove', ocultarFicha);
 
-            fetch('sismo.geojson')
+            fetch('sismo.geojson', { cache: 'no-store' })
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     return response.json();
@@ -1746,6 +1756,12 @@
                     if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
                         throw new Error('El archivo no contiene una colección GeoJSON');
                     }
+                    camposTerritorialesAusentes = ['AREA', 'N_PERSONAS', 'N_VIVIENDA'].filter(campo =>
+                        data.features.length > 0 && !data.features.some(f => {
+                            const valor = f.properties?.[campo];
+                            return valor !== null && valor !== undefined && String(valor).trim() !== '';
+                        })
+                    );
                     capaSismo.addData(data);
                     puntosSismo = capaSismo.getLayers();
                     sismosCargados = true;
