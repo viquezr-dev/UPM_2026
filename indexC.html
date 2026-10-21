@@ -1071,6 +1071,12 @@
             <button class="btn-close-drawer" id="btnCloseDrawer">✕</button>
         </div>
         <div class="drawer-content">
+            <section class="sismo-mobile-controls" aria-label="Información de sismos">
+                <h3>Viviendas afectadas por sismo</h3>
+                <button id="btnSismo" type="button" aria-pressed="true">Ocultar sismos (cargando…)</button>
+                <button id="btnDashboardSismo" type="button">📊 Dashboard de Sismos</button>
+            </section>
+
             
             <div class="filter-group-mobile">
                 <label for="buscar_upm">🔎 Buscar UPM</label>
@@ -1199,6 +1205,70 @@
          ============================================================ -->
     <div class="toast" id="toast"></div>
 
+<dialog id="dashboardSismo" aria-labelledby="tituloDashboardSismo">
+        <header><div><h2 id="tituloDashboardSismo">Dashboard de Sismos</h2><p id="sismoAmbito"></p></div><button id="cerrarDashboardSismo" type="button" aria-label="Cerrar dashboard de sismos">✕</button></header>
+        <p id="sismoEstado" role="status"></p>
+        <div id="sismoIndicadores" class="sismo-indicadores"></div>
+        <p class="sismo-nota">Los totales territoriales se cuentan una vez por corregimiento y corresponden solo a los corregimientos representados en la selección. Población de referencia no significa personas afectadas. Cada punto se cuenta como un registro de vivienda.</p>
+        <p id="sismoNotaPoblado" class="sismo-nota" hidden>Hay un poblado seleccionado: se muestran sus registros, pero el área, la población y las viviendas de referencia pertenecen al corregimiento completo. No se calcula un porcentaje de afectación del poblado.</p>
+        <div class="sismo-graficas">
+            <section><h3>Nivel de afectación</h3><div><canvas id="sismoChartAfectacion"></canvas></div></section>
+            <section><h3>Tipo de construcción</h3><div><canvas id="sismoChartConstruccion"></canvas></div></section>
+            <section><h3>Tipo de vivienda</h3><div><canvas id="sismoChartVivienda"></canvas></div></section>
+        </div>
+        <h3 class="sismo-tabla-titulo">Detalle por corregimiento</h3>
+        <div class="sismo-tabla"><table><colgroup><col style="width:145px"><col style="width:145px"><col style="width:210px"><col style="width:90px"><col style="width:110px"><col style="width:135px"><col style="width:135px"><col style="width:135px"><col style="width:105px"><col style="width:130px"></colgroup><thead><tr><th>Provincia</th><th>Distrito</th><th>Corregimiento</th><th>Registros</th><th>Afectación total</th><th>Viviendas de referencia</th><th>% registrado / viviendas</th><th>Población de referencia</th><th>Área km²</th><th>Habitantes / km²</th></tr></thead><tbody id="sismoDetalle"></tbody></table></div>
+    </dialog>
+    <style>
+        #btnDashboardSismo {position:fixed;bottom:130px;right:20px;z-index:1002;background:#991b1b;color:white;border:0;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0003;}
+        #dashboardSismo {margin:auto;width: min(1200px,95vw);max-height:90vh;overflow:auto;border:0;border-radius:18px;padding:24px;background:#f8fafc;color:#1e293b;box-shadow:0 20px 70px #0005;}
+        #dashboardSismo::backdrop {background:#0f172a99;}
+        #dashboardSismo header {display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:16px;}
+        #dashboardSismo h2 {font-size:21px;color:#991b1b;}
+        #dashboardSismo h3 {font-size:14px;}
+        #sismoAmbito,#sismoEstado,.sismo-nota {font-size:12px;line-height:1.5;margin:8px 0;color:#475569;}
+        #cerrarDashboardSismo {border:0;border-radius:8px;padding:9px 13px;background:#fee2e2;color:#991b1b;cursor:pointer;}
+        .sismo-indicadores {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+        .sismo-indicadores article {padding:14px;background:white;border:1px solid #e2e8f0;border-top:3px solid #b91c1c;border-radius:10px;}
+        .sismo-indicadores strong {display:block;font-size:23px;margin-top:7px;color:#0f172a;}
+        .sismo-indicadores span {font-size:12px;color:#475569;}
+        .sismo-graficas {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0;}
+        .sismo-graficas section {background:white;padding:14px;border:1px solid #e2e8f0;border-radius:10px;min-width:0;}
+        .sismo-graficas section>div {height:300px;position:relative;margin-top:12px;}
+        .sismo-tabla-titulo {margin:18px 0 10px;}
+        .sismo-tabla {overflow:auto;max-height:420px;background:white;border:1px solid #e2e8f0;border-radius:8px;}
+        .sismo-tabla table {border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;min-width:1340px;font-size:12px;}
+        .sismo-tabla th {position:sticky;top:0;background:#7f1d1d;color:white;text-align:left;z-index:1;}
+        .sismo-tabla th,.sismo-tabla td {padding:10px 12px;border-bottom:1px solid #e2e8f0;vertical-align:middle;box-sizing:border-box;}
+        .sismo-tabla th {white-space:normal;line-height:1.4;}
+        .sismo-tabla th:nth-child(-n+3),.sismo-tabla td:nth-child(-n+3) {text-align:left;overflow-wrap:break-word;}
+        .sismo-tabla th:nth-child(n+4) {text-align:right;}
+        .sismo-tabla th:not(:last-child),.sismo-tabla td:not(:last-child) {border-right:1px solid #e2e8f0;}
+        .sismo-tabla td:nth-child(n+4) {text-align:right;white-space:nowrap;}
+        .sismo-tabla tbody tr:nth-child(even) {background:#f1f5f9;}
+        @media(max-width:800px){.sismo-graficas{grid-template-columns:1fr}.sismo-indicadores{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardSismo{padding:16px;}}
+    </style>
+
+
+    <style>
+        .sismo-mobile-controls {margin-bottom:20px;padding:14px;background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;}
+        .sismo-mobile-controls h3 {font-size:14px;margin-bottom:10px;color:#881337;}
+        .sismo-mobile-controls #btnSismo,.sismo-mobile-controls #btnDashboardSismo {position:static;display:block;width:100%;min-height:46px;padding:10px 12px;margin-top:8px;border:0;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:none;}
+        .sismo-mobile-controls #btnSismo {background:#fee2e2;color:#991b1b;}
+        #dashboardSismo {width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0;padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+        #dashboardSismo header {position:sticky;top:0;background:#f8fafc;z-index:3;padding:8px 0;border-bottom:1px solid #e2e8f0;}
+        #dashboardSismo h2 {font-size:19px;}
+        #cerrarDashboardSismo {min-width:44px;min-height:44px;flex-shrink:0;}
+        #dashboardSismo .sismo-indicadores {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+        #dashboardSismo .sismo-indicadores article {padding:10px;}
+        #dashboardSismo .sismo-indicadores strong {font-size:21px;overflow-wrap:anywhere;}
+        #dashboardSismo .sismo-graficas {grid-template-columns:1fr;}
+        #dashboardSismo .sismo-tabla {max-height:55dvh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+        #dashboardSismo .sismo-tabla-titulo::after {content:'Desliza la tabla hacia los lados para ver todas las columnas';display:block;font-size:11px;font-weight:400;margin-top:5px;color:#64748b;}
+        .sismo-popup {pointer-events:none;}
+        .sismo-popup .leaflet-popup-content {font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+    </style>
+
     <script>
         // =============================================================
         // 1. INICIALIZACIÓN DEL MAPA
@@ -1213,12 +1283,14 @@
 
         const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OSM',
-            maxZoom: 19
+            maxNativeZoom: 19,
+            maxZoom: 22
         }).addTo(map);
 
         const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri',
-            maxZoom: 19
+            maxNativeZoom: 17,
+            maxZoom: 22
         });
 
         L.control.layers({ "🗺️ Callejero": streetMap, "🛰️ Satélite": satelliteMap }, null, { position: 'topright' }).addTo(map);
@@ -2002,7 +2074,9 @@
         // =============================================================
         // 16. FILTRAR Y RENDERIZAR
         // =============================================================
+        let actualizarSismosFiltrados = () => {};
         function filtrarYRenderizar() {
+            actualizarSismosFiltrados();
             poligonosEmlLayer.clearLayers();
             oficinasLayer.clearLayers();
             lineasDistanciaLayer.clearLayers();
@@ -2403,6 +2477,238 @@
         cargarGeoJSONs();
 
         console.log('📱 UPM Móvil v1.0 - Iniciado');
+        // INICIO: capa independiente de viviendas afectadas por sismo.
+        (() => {
+            const pane = map.createPane('puntosSismo');
+            pane.style.zIndex = '450';
+            const renderer = L.svg({ pane: 'puntosSismo' });
+            const capaSismo = L.geoJSON(null, {
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+                    pane: 'puntosSismo', renderer,
+                    radius: 7, color: '#7f1d1d', weight: 1,
+                    fillColor: '#ef4444', fillOpacity: 0.9,
+                    bubblingMouseEvents: false
+                }),
+                onEachFeature: (feature, layer) => {
+                    if (window.matchMedia('(hover: hover)').matches) {
+                        layer.on('mouseover', () => mostrarFicha(feature, layer));
+                        layer.on('mouseout', ocultarFicha);
+                    }
+                    // Permite consultar el mismo contenido al tocar un punto.
+                    layer.on('click', () => mostrarFicha(feature, layer, true));
+                }
+            }).addTo(map);
+
+            let puntosSismo = [];
+            let sismosVisibles = true;
+            let sismosCargados = false;
+            let totalFiltrado = 0;
+            const botonSismo = document.getElementById('btnSismo');
+            const normalizarSismo = valor => String(valor ?? '').normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ')
+                .trim().replace(/\s+/g, ' ').toUpperCase();
+            function actualizarBotonSismo() {
+                botonSismo.textContent = (sismosVisibles ? 'Ocultar' : 'Mostrar') +
+                    ' sismos (' + (sismosCargados ? totalFiltrado.toLocaleString('es-PA') : 'cargando…') + ')';
+                botonSismo.setAttribute('aria-pressed', String(sismosVisibles));
+                botonSismo.style.background = sismosVisibles ? '#fee2e2' : '#e2e8f0';
+            }
+            botonSismo.addEventListener('click', () => {
+                sismosVisibles = !sismosVisibles;
+                cerrarBottomSheet();
+                ocultarFicha();
+                if (sismosVisibles) capaSismo.addTo(map);
+                else map.removeLayer(capaSismo);
+                actualizarBotonSismo();
+            });
+            actualizarSismosFiltrados = () => {
+                ocultarFicha();
+                const filtros = [
+                    ['distrito', 'PROV_NOMB'],
+                    ['corregimiento', 'DIST_NOMB'],
+                    ['poblado', 'CORR_NOMB'],
+                    ['lupo', 'LUPO_NOMB']
+                ].map(([id, campo]) => [campo, normalizarSismo(document.getElementById(id).value)]);
+                // Ejecuta usa las provincias asociadas en EML; no es PROV_NOMB.
+                const ejecuta = document.getElementById('provincia').value;
+                const provinciasEjecuta = ejecuta && ejecuta !== 'TODAS'
+                    ? new Set(obtenerProvinciasPorEjecucion(ejecuta).map(normalizarSismo)) : null;
+                totalFiltrado = 0;
+                puntosSismo.forEach(layer => {
+                    const props = layer.feature.properties || {};
+                    const coincide = (!provinciasEjecuta || provinciasEjecuta.has(normalizarSismo(props.PROV_NOMB))) &&
+                        filtros.every(([campo, valor]) => !valor || valor === 'TODOS' || valor === 'TODAS' || normalizarSismo(props[campo]) === valor);
+                    if (coincide) {
+                        totalFiltrado++;
+                        if (!capaSismo.hasLayer(layer)) capaSismo.addLayer(layer);
+                    } else if (capaSismo.hasLayer(layer)) capaSismo.removeLayer(layer);
+                });
+                actualizarBotonSismo();
+                actualizarDashboardSismo();
+            };
+
+            // Estadísticas independientes de UPM; AREA sigue expresada en m² en el archivo.
+            const modalSismo = document.getElementById('dashboardSismo');
+            let graficasSismo = [];
+            let errorCargaSismo = false;
+            let camposTerritorialesAusentes = [];
+            function calcularEstadisticasSismo(features) {
+                const grupos = new Map();
+                const contar = campo => {
+                    const conteos = new Map();
+                    features.forEach(f => {
+                        const p = f.properties || {};
+                        const v = normalizarSismo(campo === 'construccion' ? (p.tipo_construccion || p.tipo_construcion) : p[campo]) || 'SIN DATO';
+                        conteos.set(v, (conteos.get(v) || 0) + 1);
+                    });
+                    return [...conteos].sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0], 'es'));
+                };
+                features.forEach(f => {
+                    const p = f.properties || {};
+                    const nombres = ['PROV_NOMB','DIST_NOMB','CORR_NOMB'].map(k => normalizarSismo(p[k]) || 'SIN DATO');
+                    const key = JSON.stringify(nombres);
+                    if (!grupos.has(key)) grupos.set(key, {nombres, cantidad:0, total:0, area:new Set(), personas:new Set(), viviendas:new Set()});
+                    const g = grupos.get(key);g.cantidad++;
+                    if (normalizarSismo(p.t_afectacion) === 'TOTAL') g.total++;
+                    const numero = v => v !== null && v !== undefined && String(v).trim() !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : null;
+                    const area = numero(p.AREA);
+                    g.area.add(area === null ? null : area / 1000000);
+                    g.personas.add(numero(p.N_PERSONAS));g.viviendas.add(numero(p.N_VIVIENDA));
+                });
+                const unico = s => s.size === 1 && !s.has(null) ? [...s][0] : null;
+                const filas = [...grupos.values()].map(g => ({...g,area:unico(g.area),personas:unico(g.personas),viviendas:unico(g.viviendas)})).sort((a,b)=>b.cantidad-a.cantidad || a.nombres.join().localeCompare(b.nombres.join(),'es'));
+                const suma = k => filas.length && filas.every(g=>g[k]!==null) ? filas.reduce((n,g)=>n+g[k],0) : null;
+                return {filas,area:suma('area'),personas:suma('personas'),viviendas:suma('viviendas'),afectacion:contar('t_afectacion'),construccion:contar('construccion'),vivienda:contar('tipo_vivienda'),total:filas.reduce((n,g)=>n+g.total,0),cantidad:features.length};
+            }
+            function actualizarDashboardSismo() {
+                if (!modalSismo.open) return;
+                const seleccion = puntosSismo.filter(layer=>capaSismo.hasLayer(layer)).map(layer=>layer.feature);
+                const e = calcularEstadisticasSismo(seleccion);
+                const poblado = document.getElementById('lupo').value;
+                const esPoblado = Boolean(poblado && poblado !== 'TODOS');
+                const fmt = (v,dec=0) => v === null || !Number.isFinite(v) ? 'N/D' : v.toLocaleString('es-PA',{maximumFractionDigits:dec});
+                const porcentaje = (n,d) => d > 0 ? n/d*100 : null;
+                document.getElementById('sismoAmbito').textContent = ['provincia','distrito','corregimiento','poblado','lupo'].map((id,i)=>{
+                    const v = document.getElementById(id).value;
+                    return v && v !== 'TODOS' && v !== 'TODAS' ? ['Ejecuta','Provincia','Distrito','Corregimiento','Poblado'][i]+': '+v : '';
+                }).filter(Boolean).join(' · ') || 'Todos los registros del archivo';
+                document.getElementById('sismoNotaPoblado').hidden = !esPoblado;
+                const estado = document.getElementById('sismoEstado');
+                estado.textContent = errorCargaSismo ? 'No se pudo cargar sismo.geojson.' : !sismosCargados ? 'Cargando registros…' : !e.cantidad ? 'No hay registros para los filtros seleccionados.' :
+                    'Estadísticas según los filtros geográficos. Ocultar los puntos no cambia las cifras.';
+                if (camposTerritorialesAusentes.length) {
+                    estado.textContent = 'El sismo.geojson cargado no contiene valores para: ' + camposTerritorialesAusentes.join(', ') + '. Publique la versión que incluye esos campos con el nombre sismo.geojson, en la misma carpeta del HTML. Los N/D no representan ceros.';
+                } else if (e.filas.some(g=>g.area===null || g.personas===null || g.viviendas===null)) {
+                    estado.textContent += ' N/D indica datos territoriales ausentes, no numéricos o distintos dentro de un mismo corregimiento.';
+                }
+                estado.style.color = camposTerritorialesAusentes.length ? '#991b1b' : '#475569';
+                const kpis = [
+                    ['Viviendas registradas',fmt(e.cantidad)],['Con afectación total',fmt(e.total)],
+                    ['Corregimientos representados',fmt(e.filas.length)],
+                    [esPoblado ? '% del poblado (sin total de viviendas)' : '% registrado / viviendas de referencia',esPoblado ? 'N/D' : fmt(porcentaje(e.cantidad,e.viviendas),2)+(e.viviendas>0?' %':'')],
+                    ['Viviendas de referencia',fmt(e.viviendas)],['Población de referencia',fmt(e.personas)],
+                    ['Superficie de referencia (km²)',fmt(e.area,2)],['Densidad de población (hab./km²)',fmt(e.area>0 && e.personas!==null ? e.personas/e.area : null,2)]
+                ];
+                const cards=document.getElementById('sismoIndicadores');cards.replaceChildren();
+                kpis.forEach(([label,value])=>{const card=document.createElement('article');const title=document.createElement('span');title.textContent=label;const val=document.createElement('strong');val.textContent=value;card.append(title,val);cards.appendChild(card);});
+                const tbody=document.getElementById('sismoDetalle');tbody.replaceChildren();
+                e.filas.forEach(g=>{const tr=document.createElement('tr');const valores=[...g.nombres,fmt(g.cantidad),fmt(g.total),fmt(g.viviendas),esPoblado?'N/D':fmt(porcentaje(g.cantidad,g.viviendas),2)+(g.viviendas>0?' %':''),fmt(g.personas),fmt(g.area,2),fmt(g.area>0 && g.personas!==null ? g.personas/g.area : null,2)];valores.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td);});tbody.appendChild(tr);});
+                graficasSismo.forEach(chart=>chart.destroy());graficasSismo=[];
+                if (typeof Chart === 'undefined') {estado.textContent+=' No se pudieron cargar las gráficas; el resumen y la tabla siguen disponibles.';return;}
+                if (!e.cantidad) return;
+                [['sismoChartAfectacion',e.afectacion,'#dc2626'],['sismoChartConstruccion',e.construccion,'#2563eb'],['sismoChartVivienda',e.vivienda,'#0f766e']].forEach(([id,datos,color])=>{
+                    graficasSismo.push(new Chart(document.getElementById(id),{type:'bar',data:{labels:datos.map(d=>d[0]),datasets:[{label:'Viviendas registradas',data:datos.map(d=>d[1]),backgroundColor:color,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmt(c.raw)} registros (${fmt(c.raw/e.cantidad*100,2)} %)`}}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{autoSkip:false}}}}}));
+                });
+            }
+            document.getElementById('btnDashboardSismo').addEventListener('click',()=>{cerrarDrawer();cerrarBottomSheet();modalSismo.showModal();actualizarDashboardSismo();});
+            document.getElementById('cerrarDashboardSismo').addEventListener('click',()=>modalSismo.close());
+            modalSismo.addEventListener('close',()=>{graficasSismo.forEach(chart=>chart.destroy());graficasSismo=[];});
+
+            // Se agrega directamente: no sustituye el popup existente de las UPM.
+            const ficha = L.popup({
+                className: 'sismo-popup', closeButton: false,
+                autoPan: false, autoClose: false, closeOnClick: false,
+                maxWidth: 290, minWidth: 230, offset: [0, -5]
+            });
+            function ocultarFicha() {
+                if (map.hasLayer(ficha)) map.removeLayer(ficha);
+            }
+            function mostrarFicha(feature, layer, tactil = false) {
+                const p = feature.properties || {};
+                const contenido = document.createElement('div');
+                const titulo = document.createElement('strong');
+                titulo.textContent = 'Vivienda afectada';
+                titulo.style.cssText = 'display:block;margin-bottom:7px;color:#991b1b;font-size:13px';
+                contenido.appendChild(titulo);
+                const campos = [
+                    ['Provincia', p.PROV_NOMB],
+                    ['Distrito', p.DIST_NOMB],
+                    ['Corregimiento', p.CORR_NOMB],
+                    ['Poblado', p.LUPO_NOMB],
+                    ['Tipo de vivienda', p.tipo_vivienda],
+                    ['Afectación', p.t_afectacion],
+                    ['Tipo de construcción', p.tipo_construccion || p.tipo_construcion]
+                ];
+                campos.forEach(([etiqueta, valor]) => {
+                    const fila = document.createElement('div');
+                    fila.style.margin = '3px 0';
+                    const nombre = document.createElement('strong');
+                    nombre.textContent = etiqueta + ': ';
+                    const dato = document.createElement('span');
+                    dato.textContent = valor == null || String(valor).trim() === ''
+                        ? 'Sin dato' : String(valor).replace(/_/g, ' ');
+                    fila.appendChild(nombre);
+                    fila.appendChild(dato);
+                    contenido.appendChild(fila);
+                });
+                if (tactil) {
+                    ocultarFicha();
+                    abrirBottomSheet('Vivienda afectada por sismo', contenido.outerHTML);
+                } else {
+                    ficha.setLatLng(layer.getLatLng()).setContent(contenido).addTo(map);
+                }
+            }
+            map.on('click zoomstart movestart', ocultarFicha);
+            capaSismo.on('remove', ocultarFicha);
+
+            fetch('sismo.geojson', { cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
+                        throw new Error('El archivo no contiene una colección GeoJSON');
+                    }
+                    camposTerritorialesAusentes = ['AREA', 'N_PERSONAS', 'N_VIVIENDA'].filter(campo =>
+                        data.features.length > 0 && !data.features.some(f => {
+                            const valor = f.properties?.[campo];
+                            return valor !== null && valor !== undefined && String(valor).trim() !== '';
+                        })
+                    );
+                    capaSismo.addData(data);
+                    puntosSismo = capaSismo.getLayers();
+                    sismosCargados = true;
+                    actualizarSismosFiltrados();
+                })
+                .catch(error => {
+                    console.error('Error cargando sismo.geojson:', error);
+                    errorCargaSismo = true;
+                    actualizarDashboardSismo();
+                    botonSismo.textContent = 'Sismos no disponibles';
+                    botonSismo.disabled = true;
+                    const aviso = L.control({ position: 'bottomleft' });
+                    aviso.onAdd = () => {
+                        const div = L.DomUtil.create('div');
+                        div.style.cssText = 'background:white;color:#991b1b;padding:8px 12px;border-radius:6px;max-width:260px;font-size:12px';
+                        div.textContent = 'No se pudo cargar sismo.geojson. Verifique el archivo junto al HTML.';
+                        L.DomEvent.disableClickPropagation(div);
+                        return div;
+                    };
+                    aviso.addTo(map);
+                });
+        })();
+        // FIN: capa independiente de viviendas afectadas por sismo.
     </script>
 
 </body>
