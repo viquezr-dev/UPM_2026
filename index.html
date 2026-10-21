@@ -544,6 +544,7 @@
                 <button class="btn-back" onclick="volverAtras()">⬅️ Regresar</button>
                 <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
                 <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
+                <button id="btnSismo" type="button" aria-pressed="true" style="background:#fee2e2;color:#991b1b;" title="Mostrar u ocultar las viviendas afectadas según los filtros geográficos">Ocultar sismos (cargando…)</button>
         </div>
     </div>
 
@@ -772,12 +773,15 @@
 
         const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 19
+            maxNativeZoom: 19,
+            maxZoom: 22
         }).addTo(map);
 
         const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri',
-            maxZoom: 19
+            // Ampliar imágenes del nivel 17 sin pedir teselas de mayor detalle.
+            maxNativeZoom: 17,
+            maxZoom: 22
         });
 
         L.control.layers({ "🗺️ Mapa Callejero": streetMap, "🛰️ Vista Satelital": satelliteMap }, null, { position: 'topright' }).addTo(map);
@@ -797,6 +801,7 @@
         const oficinasLayer = L.layerGroup().addTo(map);
         const lineasDistanciaLayer = L.layerGroup().addTo(map);
 
+        let actualizarSismosFiltrados = () => {};
         let emlData = [];
         let oficinaData = [];
         let provinciaData = [];
@@ -1132,6 +1137,7 @@
             actualizarDashboardVerificacion(lista);
             actualizarGraficosModal(lista);
             dibujarPoligonos(lista);
+            actualizarSismosFiltrados();
 
             // Zoom automático solo cuando el usuario ha aplicado algún filtro/búsqueda.
             const haySeleccion =
@@ -1530,6 +1536,52 @@
                 }
             }).addTo(map);
 
+            let puntosSismo = [];
+            let sismosVisibles = true;
+            let sismosCargados = false;
+            let totalFiltrado = 0;
+            const botonSismo = document.getElementById('btnSismo');
+            const normalizarSismo = valor => String(valor ?? '').normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ')
+                .trim().replace(/\s+/g, ' ').toUpperCase();
+            function actualizarBotonSismo() {
+                botonSismo.textContent = (sismosVisibles ? 'Ocultar' : 'Mostrar') +
+                    ' sismos (' + (sismosCargados ? totalFiltrado.toLocaleString('es-PA') : 'cargando…') + ')';
+                botonSismo.setAttribute('aria-pressed', String(sismosVisibles));
+                botonSismo.style.background = sismosVisibles ? '#fee2e2' : '#e2e8f0';
+            }
+            botonSismo.addEventListener('click', () => {
+                sismosVisibles = !sismosVisibles;
+                ocultarFicha();
+                if (sismosVisibles) capaSismo.addTo(map);
+                else map.removeLayer(capaSismo);
+                actualizarBotonSismo();
+            });
+            actualizarSismosFiltrados = () => {
+                ocultarFicha();
+                const filtros = [
+                    ['distrito', 'PROV_NOMB'],
+                    ['corregimiento', 'DIST_NOMB'],
+                    ['poblado', 'CORR_NOMB'],
+                    ['lupo', 'LUPO_NOMB']
+                ].map(([id, campo]) => [campo, normalizarSismo(document.getElementById(id).value)]);
+                // Ejecuta usa las provincias asociadas en EML; no es PROV_NOMB.
+                const ejecuta = document.getElementById('provincia').value;
+                const provinciasEjecuta = ejecuta && ejecuta !== 'TODAS'
+                    ? new Set(obtenerProvinciasPorEjecucion(ejecuta).map(normalizarSismo)) : null;
+                totalFiltrado = 0;
+                puntosSismo.forEach(layer => {
+                    const props = layer.feature.properties || {};
+                    const coincide = (!provinciasEjecuta || provinciasEjecuta.has(normalizarSismo(props.PROV_NOMB))) &&
+                        filtros.every(([campo, valor]) => !valor || valor === 'TODOS' || valor === 'TODAS' || normalizarSismo(props[campo]) === valor);
+                    if (coincide) {
+                        totalFiltrado++;
+                        if (!capaSismo.hasLayer(layer)) capaSismo.addLayer(layer);
+                    } else if (capaSismo.hasLayer(layer)) capaSismo.removeLayer(layer);
+                });
+                actualizarBotonSismo();
+            };
+
             // Se agrega directamente: no sustituye el popup existente de las UPM.
             const ficha = L.popup({
                 className: 'sismo-popup', closeButton: false,
@@ -1582,9 +1634,14 @@
                         throw new Error('El archivo no contiene una colección GeoJSON');
                     }
                     capaSismo.addData(data);
+                    puntosSismo = capaSismo.getLayers();
+                    sismosCargados = true;
+                    actualizarSismosFiltrados();
                 })
                 .catch(error => {
                     console.error('Error cargando sismo.geojson:', error);
+                    botonSismo.textContent = 'Sismos no disponibles';
+                    botonSismo.disabled = true;
                     const aviso = L.control({ position: 'bottomleft' });
                     aviso.onAdd = () => {
                         const div = L.DomUtil.create('div');
