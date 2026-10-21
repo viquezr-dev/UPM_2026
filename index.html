@@ -471,6 +471,11 @@
             border-color: #3b82f6;
         }
     </style>
+
+    <style>
+        .sismo-popup { pointer-events: none; }
+        .sismo-popup .leaflet-popup-content { margin: 10px 13px; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+    </style>
 </head>
 <body>
 
@@ -1504,6 +1509,95 @@
         document.getElementById('btnCerrarGrafico').addEventListener('click', () => {
             document.getElementById('modalGrafico').style.display = 'none';
         });
+
+        // INICIO: capa independiente de viviendas afectadas por sismo.
+        (() => {
+            const pane = map.createPane('puntosSismo');
+            pane.style.zIndex = '450';
+            const renderer = L.svg({ pane: 'puntosSismo' });
+            const capaSismo = L.geoJSON(null, {
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+                    pane: 'puntosSismo', renderer,
+                    radius: 5, color: '#7f1d1d', weight: 1,
+                    fillColor: '#ef4444', fillOpacity: 0.9,
+                    bubblingMouseEvents: false
+                }),
+                onEachFeature: (feature, layer) => {
+                    layer.on('mouseover', () => mostrarFicha(feature, layer));
+                    layer.on('mouseout', ocultarFicha);
+                    // Permite consultar el mismo contenido al tocar un punto.
+                    layer.on('click', () => mostrarFicha(feature, layer));
+                }
+            }).addTo(map);
+
+            // Se agrega directamente: no sustituye el popup existente de las UPM.
+            const ficha = L.popup({
+                className: 'sismo-popup', closeButton: false,
+                autoPan: false, autoClose: false, closeOnClick: false,
+                maxWidth: 290, minWidth: 230, offset: [0, -5]
+            });
+            function ocultarFicha() {
+                if (map.hasLayer(ficha)) map.removeLayer(ficha);
+            }
+            function mostrarFicha(feature, layer) {
+                const p = feature.properties || {};
+                const contenido = document.createElement('div');
+                const titulo = document.createElement('strong');
+                titulo.textContent = 'Vivienda afectada';
+                titulo.style.cssText = 'display:block;margin-bottom:7px;color:#991b1b;font-size:13px';
+                contenido.appendChild(titulo);
+                const campos = [
+                    ['Provincia', p.PROV_NOMB],
+                    ['Distrito', p.DIST_NOMB],
+                    ['Corregimiento', p.CORR_NOMB],
+                    ['Poblado', p.LUPO_NOMB],
+                    ['Tipo de vivienda', p.tipo_vivienda],
+                    ['Afectación', p.t_afectacion],
+                    ['Tipo de construcción', p.tipo_construccion || p.tipo_construcion]
+                ];
+                campos.forEach(([etiqueta, valor]) => {
+                    const fila = document.createElement('div');
+                    fila.style.margin = '3px 0';
+                    const nombre = document.createElement('strong');
+                    nombre.textContent = etiqueta + ': ';
+                    const dato = document.createElement('span');
+                    dato.textContent = valor == null || String(valor).trim() === ''
+                        ? 'Sin dato' : String(valor).replace(/_/g, ' ');
+                    fila.appendChild(nombre);
+                    fila.appendChild(dato);
+                    contenido.appendChild(fila);
+                });
+                ficha.setLatLng(layer.getLatLng()).setContent(contenido).addTo(map);
+            }
+            map.on('click zoomstart movestart', ocultarFicha);
+            capaSismo.on('remove', ocultarFicha);
+
+            fetch('sismo.geojson')
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
+                        throw new Error('El archivo no contiene una colección GeoJSON');
+                    }
+                    capaSismo.addData(data);
+                })
+                .catch(error => {
+                    console.error('Error cargando sismo.geojson:', error);
+                    const aviso = L.control({ position: 'bottomleft' });
+                    aviso.onAdd = () => {
+                        const div = L.DomUtil.create('div');
+                        div.style.cssText = 'background:white;color:#991b1b;padding:8px 12px;border-radius:6px;max-width:260px;font-size:12px';
+                        div.textContent = 'No se pudo cargar sismo.geojson. Verifique el archivo junto al HTML.';
+                        L.DomEvent.disableClickPropagation(div);
+                        return div;
+                    };
+                    aviso.addTo(map);
+                });
+        })();
+        // FIN: capa independiente de viviendas afectadas por sismo.
+
     </script>
 </body>
 </html>
