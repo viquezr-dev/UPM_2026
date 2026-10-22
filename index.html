@@ -477,6 +477,24 @@
         .sismo-popup .leaflet-popup-content { margin: 10px 13px; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
     </style>
 <style>.filtro-afectacion-sismo{display:flex;flex-direction:column;gap:5px;max-width:320px}.filtro-afectacion-sismo label{font-size:12px;font-weight:700}.filtro-afectacion-sismo select{min-height:38px;padding:7px;border:1px solid #94a3b8;border-radius:7px;background:white;color:#1e293b;font-size:13px}.leyenda-afectacion{display:flex;flex-wrap:wrap;gap:4px 9px;font-size:10px}.leyenda-afectacion span{display:inline-flex;align-items:center;gap:4px}.leyenda-afectacion i{width:10px;height:10px;border-radius:50%;border:1px solid #334155;display:inline-block}.sismo-mobile-controls .filtro-afectacion-sismo{max-width:none;margin-bottom:10px}.sismo-mobile-controls .filtro-afectacion-sismo select{min-height:44px;font-size:16px}</style>
+<style>
+
+        .controls {background:#1e293b;color:#f8fafc;display:grid;grid-template-columns:90px 125px 100px repeat(5,minmax(0,1fr));gap:6px 8px;padding:7px 12px;overflow:visible;border-bottom:1px solid #475569;min-width:0;}
+        .controls .filter-group {display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:0;}
+        .controls label {color:#e2e8f0;font-size:10px;}
+        .controls select,.controls input {width:100% !important;min-width:0 !important;max-width:100%;height:29px;padding:3px 6px;background:#334155;color:#f8fafc;border:1px solid #64748b;font-size:11px;text-overflow:ellipsis;}
+        .controls select:focus,.controls input:focus {background:#334155;color:white;border-color:#60a5fa;}
+        .controls select:disabled {opacity:.65;}
+        .controls .btn-group {grid-column:1 / -1;justify-content:flex-end;flex-wrap:wrap;gap:6px;}
+        .controls button {padding:5px 9px;}
+        .sismo-mapa-panel {position:fixed;right:20px;bottom:185px;width:230px;padding:10px 12px;background:rgba(30,41,59,.96);color:#f8fafc;border:1px solid #475569;border-radius:10px;z-index:1002;box-shadow:0 3px 14px #0004;}
+        .sismo-mapa-panel .filtro-afectacion-sismo {gap:7px;max-width:none;}
+        .sismo-mapa-panel .filtro-afectacion-sismo label {font-size:12px;}
+        .sismo-mapa-panel .filtro-afectacion-sismo select {min-height:32px;padding:5px;background:#334155;color:#f8fafc;border-color:#64748b;font-size:12px;}
+        .sismo-mapa-panel .leyenda-afectacion {font-size:10px;gap:6px 10px;}
+        @media(max-width:1050px){.controls{grid-template-columns:repeat(4,minmax(0,1fr));}}
+        @media(max-height:650px){.sismo-mapa-panel{bottom:120px;right:84px;width:215px;}}
+</style>
 </head>
 <body>
 
@@ -541,7 +559,7 @@
             <select id="lupo" disabled><option value="TODOS">Todos</option></select>
         </div>
         
-        <div class="filtro-afectacion-sismo"><label for="filtroAfectacionSismo">Afectación del sismo</label><select id="filtroAfectacionSismo"><option value="TODAS">Todas las afectaciones</option></select><div class="leyenda-afectacion" id="leyendaAfectacionSismo" aria-label="Colores de afectación"></div></div>
+        
         <div class="btn-group">
                 <button class="btn-back" onclick="volverAtras()">⬅️ Regresar</button>
                 <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
@@ -628,6 +646,7 @@
         }
     </style>
     
+<aside class="sismo-mapa-panel" aria-label="Filtro y leyenda de sismos"><div class="filtro-afectacion-sismo"><label for="filtroAfectacionSismo">Afectación del sismo</label><select id="filtroAfectacionSismo"><option value="TODAS">Todas las afectaciones</option></select><div class="leyenda-afectacion" id="leyendaAfectacionSismo" aria-label="Colores de afectación"></div></div></aside>
     <button id="btnDashboardSismo" type="button">📊 Dashboard de Sismos</button>
     <dialog id="dashboardSismo" aria-labelledby="tituloDashboardSismo">
         <header><div><h2 id="tituloDashboardSismo">Dashboard de Sismos</h2><p id="sismoAmbito"></p></div><button id="cerrarDashboardSismo" type="button" aria-label="Cerrar dashboard de sismos">✕</button></header>
