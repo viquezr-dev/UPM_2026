@@ -958,6 +958,19 @@
         .toast.info { background: #1e40af; }
         
     </style>
+
+    <style>
+        /* Indicadores compactos: mapa despejado al abrir la página. */
+        #dashboardMobile[hidden] {display:none !important;}
+        #dashboardMobile {transform:none;transition:none;max-height:none;overflow:visible;}
+        #dashboardMobile .indicadores-cabecera {height:40px;padding:0 8px 0 12px;display:flex;align-items:center;justify-content:space-between;gap:6px;color:#cbd5e1;font-size:11px;}
+        #btnCerrarIndicadores {height:40px;min-width:44px;border:0;background:transparent;color:white;font-size:18px;cursor:pointer;}
+        #dashboardMobile .dashboard-content {display:flex;flex-wrap:nowrap;gap:8px;padding:0 10px 10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+        #dashboardMobile .pct-card-mobile {flex:0 0 148px;min-height:66px;padding:7px 9px;scroll-snap-align:start;}
+        #dashboardMobile .pct-val-mobile {font-size:16px;}
+        #dashboardMobile .pct-count-mobile {font-size:10px;color:#cbd5e1;}
+        #dashboardMobile .pct-label-mobile {font-size:10px;color:#cbd5e1;}
+    </style>
 </head>
 <body>
 
@@ -970,7 +983,7 @@
             🏢 UPM Mercado Laboral 2026
             <small>Actualización Precensal</small>
         </div>
-        <button class="btn-dashboard-toggle" id="btnDashboardToggle">📊</button>
+        <button class="btn-dashboard-toggle" id="btnDashboardToggle" type="button" aria-controls="dashboardMobile" aria-expanded="false" aria-label="Mostrar indicadores UPM" title="Mostrar indicadores UPM">📊</button>
     </div>
 
     <!-- ============================================================
@@ -986,7 +999,8 @@
     <!-- ============================================================
          DASHBOARD COLAPSABLE
          ============================================================ -->
-    <div class="dashboard-mobile" id="dashboardMobile">
+    <div class="dashboard-mobile" id="dashboardMobile" hidden>
+        <div class="indicadores-cabecera"><span>Indicadores UPM · desliza para ver más</span><button id="btnCerrarIndicadores" type="button" aria-label="Cerrar indicadores">✕</button></div>
         <div class="dashboard-content">
             <div class="pct-card-mobile">
                 <div class="pct-row">
@@ -1401,10 +1415,17 @@
         const dashboardMobile = document.getElementById('dashboardMobile');
         const btnDashboardToggle = document.getElementById('btnDashboardToggle');
 
-        btnDashboardToggle.addEventListener('click', function() {
-            dashboardMobile.classList.toggle('active');
-            btnDashboardToggle.classList.toggle('active');
-        });
+        function mostrarIndicadoresUPM(mostrar) {
+            dashboardMobile.hidden = !mostrar;
+            dashboardMobile.classList.toggle('active', mostrar);
+            btnDashboardToggle.classList.toggle('active', mostrar);
+            btnDashboardToggle.setAttribute('aria-expanded', String(mostrar));
+            btnDashboardToggle.setAttribute('aria-label', mostrar ? 'Ocultar indicadores UPM' : 'Mostrar indicadores UPM');
+            btnDashboardToggle.title = mostrar ? 'Ocultar indicadores UPM' : 'Mostrar indicadores UPM';
+        }
+        mostrarIndicadoresUPM(false);
+        btnDashboardToggle.addEventListener('click', () => mostrarIndicadoresUPM(dashboardMobile.hidden));
+        document.getElementById('btnCerrarIndicadores').addEventListener('click', () => mostrarIndicadoresUPM(false));
 
         // =============================================================
         // 5. BOTTOM SHEET
