@@ -2254,16 +2254,35 @@ const ReporteEML = (() => {
  titulo('Avance por provincia',83);tabla(['Provincia','Polígonos de referencia','Verificados en el período','Verificados al corte','Avance al corte (%)','Verificados sin fecha válida'],[...datos.provincias,t].map(r=>[r.nombre,num(r.total),num(r.periodo),num(r.acum),pct(r.acum,r.total),num(r.sinFecha)]),88,{styles:{fontSize:8,cellPadding:1.5},didParseCell:d=>{if(d.section==='body'&&d.row.index===datos.provincias.length){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[219,234,239];}}});
  doc.addPage();titulo('Composición de las verificaciones del período',45);const cats=r=>[num(r.periodo),num(r.urbano),num(r.rural),num(r.otro),num(r.da),num(r.indig),num(r.con),num(r.sin),num(r.costoND)];const headers=['Total','Urbanos','Rurales','Otros tipos','Difícil acceso','Indígenas','Con costo','Sin costo','Costo N/D'];tabla(['Provincia',...headers],[...datos.provincias,t].map(r=>[r.nombre,...cats(r)]),51);let y=doc.lastAutoTable.finalY+9;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(doc.splitTextToSize('Las categorías se superponen: difícil acceso, indígena y costo son atributos del mismo polígono. No deben sumarse entre sí. Urbanos, rurales y otros tipos sí conforman el total del período.',265),14,y);
  doc.addPage();titulo('Detalle territorial de la actividad del período',45);const filas=[];let distrito=null;const cerrarDistrito=()=>{if(distrito)filas.push([distrito.prov,distrito.dist,'SUBTOTAL DISTRITO',...cats(distrito)]);};for(const r of datos.detalles){if(!r.periodo)continue;if(!distrito||distrito.prov!==r.prov||distrito.dist!==r.dist){cerrarDistrito();distrito={...vacio(''),prov:r.prov,dist:r.dist};}for(const k of ['periodo','urbano','rural','otro','da','indig','con','sin','costoND'])distrito[k]+=r[k];filas.push([r.prov,r.dist,r.corr,...cats(r)]);}cerrarDistrito();filas.push(['TOTAL NACIONAL','','',...cats(t)]);tabla(['Provincia','Distrito','Corregimiento',...headers],filas,51,{styles:{fontSize:7,cellPadding:2,overflow:'linebreak'},columnStyles:{0:{cellWidth:34},1:{cellWidth:34},2:{cellWidth:39}},didParseCell:d=>{if(d.section==='body'&&(d.row.index===filas.length-1||d.row.raw[2]==='SUBTOTAL DISTRITO')){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[219,234,239];}}});
- doc.addPage();titulo('Criterios de cálculo y calidad de los datos',45);const notas=[
- 'Fuente: eml.geojson completo. El informe usa provincia geográfica (PROV_NOMB), distrito (DIST_NOMB) y corregimiento (CORR_NOMB). Los filtros y capas visibles del mapa no limitan este reporte.',
- 'Unidad de conteo: cada registro con geometría Polygon o MultiPolygon representa un polígono. Un MultiPolygon se cuenta una vez. Registros con otras geometrías excluidos: '+num(datos.excluidos)+'.',
- 'Verificación: VERIFICADO = SI. La actividad del período incluye DATE_ACT entre el inicio y el corte, ambos inclusive. El avance acumulado incluye las verificaciones con DATE_ACT igual o anterior al corte.',
- 'Porcentaje provincial = polígonos verificados al corte / todos los polígonos de referencia de esa provincia × 100. El total nacional se calcula con las sumas de numerador y denominador; no es un promedio de porcentajes provinciales.',
- 'DATE_ACT debe tener formato dd/mm/yyyy y una fecha válida. Polígonos verificados sin fecha válida: '+num(t.sinFecha)+'. Permanecen en el universo de referencia, pero se excluyen del período y del acumulado. Con fechas incompletas, el avance puede estar subestimado.',
- 'Clasificación: urbano SEGM_TIPO=01; rural=02; otros tipos incluye valores diferentes o vacíos. Difícil acceso DA=1; indígena INDIG=1; con costo COSTO=SI; sin costo COSTO=NO. Costo N/D incluye valores diferentes o vacíos.',
- 'La semana comprende lunes a domingo. En períodos en curso, el corte es la fecha actual de Panamá. El detalle territorial incluye solo corregimientos con actividad durante el período.',
- 'El acumulado se reconstruye con el estado actual de VERIFICADO y DATE_ACT; no es un historial de eventos. Si DATE_ACT es una actualización posterior a la verificación, el registro se atribuirá a esa actualización. El universo corresponde al archivo disponible al generar el reporte.'
- ];tabla(['Metodología'],notas.map(n=>[n]),51,{styles:{fontSize:10,cellPadding:3.5}});
+
+ // Gráficas vectoriales: permanecen nítidas al imprimir o ampliar el PDF.
+ function graficaBarras(tituloGrafica,subtitulo,filas,porcentaje=false) {
+   const maximo=porcentaje?100:Math.max(1,...filas.map(r=>r.valor));
+   const porPagina=15;
+   for(let desde=0;desde<Math.max(1,filas.length);desde+=porPagina){
+     doc.addPage();titulo(tituloGrafica+(desde?' (continuación)':''),45);
+     doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(75,90,105);
+     doc.text(subtitulo,14,52);
+     const lote=filas.slice(desde,desde+porPagina),x=91,ancho=145,y0=64,paso=7.5,alto=4.5;
+     for(let k=0;k<=4;k++){const gx=x+ancho*k/4;doc.setDrawColor(222,230,236);doc.line(gx,y0-3,gx,y0+Math.max(1,lote.length)*paso);doc.setFontSize(7);doc.text(porcentaje?(25*k)+'%':num(Math.round(maximo*k/4)),gx,y0+Math.max(1,lote.length)*paso+5,{align:'center'});}
+     lote.forEach((r,i)=>{const y=y0+i*paso;doc.setFontSize(8);doc.setTextColor(...azul);doc.text(r.nombre,14,y+3.4);doc.setFillColor(231,238,243);doc.rect(x,y,ancho,alto,'F');doc.setFillColor(...(r.color||verde));if(r.valor>0)doc.rect(x,y,ancho*r.valor/maximo,alto,'F');doc.setFont('helvetica','bold');doc.text(porcentaje?r.valor.toFixed(1)+'%':num(r.valor),x+ancho+4,y+3.4);doc.setFont('helvetica','normal');});
+     doc.setFontSize(8);doc.setTextColor(75,90,105);
+     const nota=porcentaje?'Avance = verificados con fecha válida hasta el corte / total de polígonos de referencia.':'Se cuentan únicamente polígonos verificados con DATE_ACT dentro del período y hasta el corte.';
+     doc.text(doc.splitTextToSize(nota,269),14,190);
+   }
+ }
+ graficaBarras('Avance acumulado por provincia','Porcentaje de polígonos verificados a la fecha de corte.',datos.provincias.map(r=>({nombre:r.nombre,valor:r.total?100*r.acum/r.total:0})).sort((a,b)=>b.valor-a.valor),true);
+ graficaBarras('Actividad del período por provincia','Cantidad de polígonos verificados durante el mes o la semana seleccionada.',datos.provincias.map(r=>({nombre:r.nombre,valor:r.periodo,color:[30,103,160]})).sort((a,b)=>b.valor-a.valor));
+ graficaBarras('Perfil de las verificaciones del período','Categorías superpuestas: un polígono puede pertenecer a varias; no deben sumarse entre sí.',[
+ {nombre:'Urbanos',valor:t.urbano,color:[30,103,160]},
+ {nombre:'Rurales',valor:t.rural,color:[34,139,100]},
+ {nombre:'Otros tipos',valor:t.otro,color:[115,130,145]},
+ {nombre:'Difícil acceso',valor:t.da,color:[197,118,32]},
+ {nombre:'Indígenas',valor:t.indig,color:[126,87,168]},
+ {nombre:'Con costo',valor:t.con,color:[0,112,123]},
+ {nombre:'Sin costo',valor:t.sin,color:[66,140,174]},
+ {nombre:'Costo sin clasificar',valor:t.costoND,color:[115,130,145]}
+ ]);
  const paginas=doc.getNumberOfPages(),emitido=new Date().toLocaleString('es-PA',{timeZone:'America/Panama'});for(let i=1;i<=paginas;i++){doc.setPage(i);doc.setFillColor(...azul);doc.rect(0,0,W,32,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('INEC | INSTITUTO NACIONAL DE ESTADÍSTICA Y CENSO',14,10);doc.setFontSize(16);doc.text(prueba?'PRUEBA DE DISEÑO - DATOS SIMULADOS':'Informe de polígonos verificados',14,19);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text((p.tipo==='mes'?'Mensual':'Semanal')+' | '+fmt(p.inicio)+' al '+fmt(p.fin)+' | Corte: '+fmt(p.corte),14,27);doc.setDrawColor(200,210,220);doc.line(14,H-13,W-14,H-13);doc.setTextColor(80,95,110);doc.setFontSize(8);doc.text('Fuente: eml.geojson | Emitido: '+emitido+' (Panamá)',14,H-8);doc.text('Página '+i+' de '+paginas,W-14,H-8,{align:'right'});}return doc;}
  return{fecha,periodo,analizar,pdf,hoy};
 })();
