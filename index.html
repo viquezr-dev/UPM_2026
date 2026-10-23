@@ -472,11 +472,8 @@
         }
     </style>
 
-    <style>
-        .sismo-popup { pointer-events: none; }
-        .sismo-popup .leaflet-popup-content { margin: 10px 13px; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
-    </style>
-<style>.filtro-afectacion-sismo{display:flex;flex-direction:column;gap:5px;max-width:320px}.filtro-afectacion-sismo label{font-size:12px;font-weight:700}.filtro-afectacion-sismo select{min-height:38px;padding:7px;border:1px solid #94a3b8;border-radius:7px;background:white;color:#1e293b;font-size:13px}.leyenda-afectacion{display:flex;flex-wrap:wrap;gap:4px 9px;font-size:10px}.leyenda-afectacion span{display:inline-flex;align-items:center;gap:4px}.leyenda-afectacion i{width:10px;height:10px;border-radius:50%;border:1px solid #334155;display:inline-block}.sismo-mobile-controls .filtro-afectacion-sismo{max-width:none;margin-bottom:10px}.sismo-mobile-controls .filtro-afectacion-sismo select{min-height:44px;font-size:16px}</style>
+    
+
 <style>
 
         .controls {background:#1e293b;color:#f8fafc;display:grid;grid-template-columns:90px 125px 100px repeat(5,minmax(0,1fr));gap:6px 8px;padding:7px 12px;overflow:visible;border-bottom:1px solid #475569;min-width:0;}
@@ -487,13 +484,7 @@
         .controls select:disabled {opacity:.65;}
         .controls .btn-group {grid-column:1 / -1;justify-content:flex-end;flex-wrap:wrap;gap:6px;}
         .controls button {padding:5px 9px;}
-        .sismo-mapa-panel {position:fixed;right:20px;bottom:185px;width:230px;padding:10px 12px;background:rgba(30,41,59,.96);color:#f8fafc;border:1px solid #475569;border-radius:10px;z-index:1002;box-shadow:0 3px 14px #0004;}
-        .sismo-mapa-panel .filtro-afectacion-sismo {gap:7px;max-width:none;}
-        .sismo-mapa-panel .filtro-afectacion-sismo label {font-size:12px;}
-        .sismo-mapa-panel .filtro-afectacion-sismo select {min-height:32px;padding:5px;background:#334155;color:#f8fafc;border-color:#64748b;font-size:12px;}
-        .sismo-mapa-panel .leyenda-afectacion {font-size:10px;gap:6px 10px;}
         @media(max-width:1050px){.controls{grid-template-columns:repeat(4,minmax(0,1fr));}}
-        @media(max-height:650px){.sismo-mapa-panel{bottom:120px;right:84px;width:215px;}}
 </style>
 </head>
 <body>
@@ -565,7 +556,6 @@
                 <button class="btn-back" onclick="volverAtras()">⬅️ Regresar</button>
                 <button class="btn-export" onclick="exportarCSV()">📥 CSV</button>
                 <button class="btn-reset" onclick="resetMap()">🔄 Reset</button>
-                <button id="btnSismo" type="button" aria-pressed="true" style="background:#fee2e2;color:#991b1b;" title="Mostrar u ocultar las viviendas afectadas según los filtros geográficos">Ocultar sismos (cargando…)</button>
         </div>
     </div>
 
@@ -647,53 +637,7 @@
         }
     </style>
     
-<aside class="sismo-mapa-panel" aria-label="Filtro y leyenda de sismos"><div class="filtro-afectacion-sismo"><label for="filtroAfectacionSismo">Afectación del sismo</label><select id="filtroAfectacionSismo"><option value="TODAS">Todas las afectaciones</option></select><div class="leyenda-afectacion" id="leyendaAfectacionSismo" aria-label="Colores de afectación"></div></div></aside>
-    <button id="btnDashboardSismo" type="button">📊 Dashboard de Sismos</button>
-    <dialog id="dashboardSismo" aria-labelledby="tituloDashboardSismo">
-        <header><div><h2 id="tituloDashboardSismo">Dashboard de Sismos</h2><p id="sismoAmbito"></p></div><button id="cerrarDashboardSismo" type="button" aria-label="Cerrar dashboard de sismos">✕</button></header>
-        <p id="sismoEstado" role="status"></p>
-        <div id="sismoIndicadores" class="sismo-indicadores"></div>
-        <p class="sismo-nota">Los totales territoriales se cuentan una vez por corregimiento de la selección geográfica y se mantienen al filtrar la afectación. La tabla conserva los corregimientos con cero coincidencias. Población de referencia no significa personas afectadas. Cada punto se cuenta como un registro de vivienda.</p>
-        <p id="sismoNotaPoblado" class="sismo-nota" hidden>Hay un poblado seleccionado: se muestran sus registros, pero el área, la población y las viviendas de referencia pertenecen al corregimiento completo. No se calcula un porcentaje de afectación del poblado.</p>
-        <div class="sismo-graficas">
-            <section><h3>Nivel de afectación</h3><div><canvas id="sismoChartAfectacion"></canvas></div></section>
-            <section><h3>Tipo de construcción</h3><div><canvas id="sismoChartConstruccion"></canvas></div></section>
-            <section><h3>Tipo de vivienda</h3><div><canvas id="sismoChartVivienda"></canvas></div></section>
-        </div>
-        <h3 class="sismo-tabla-titulo">Detalle por corregimiento</h3>
-        <div class="sismo-tabla"><table><colgroup><col style="width:145px"><col style="width:145px"><col style="width:210px"><col style="width:90px"><col style="width:110px"><col style="width:135px"><col style="width:135px"><col style="width:135px"><col style="width:105px"><col style="width:130px"></colgroup><thead><tr><th>Provincia</th><th>Distrito</th><th>Corregimiento</th><th>Registros</th><th>Afectación total</th><th>Viviendas de referencia</th><th>% registrado / viviendas</th><th>Población de referencia</th><th>Área km²</th><th>Habitantes / km²</th></tr></thead><tbody id="sismoDetalle"></tbody></table></div>
-    </dialog>
-    <style>
-        #btnDashboardSismo {position:fixed;bottom:130px;right:20px;z-index:1002;background:#991b1b;color:white;border:0;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0003;}
-        #dashboardSismo {margin:auto;width: min(1200px,95vw);max-height:90vh;overflow:auto;border:0;border-radius:18px;padding:24px;background:#f8fafc;color:#1e293b;box-shadow:0 20px 70px #0005;}
-        #dashboardSismo::backdrop {background:#0f172a99;}
-        #dashboardSismo header {display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:16px;}
-        #dashboardSismo h2 {font-size:21px;color:#991b1b;}
-        #dashboardSismo h3 {font-size:14px;}
-        #sismoAmbito,#sismoEstado,.sismo-nota {font-size:12px;line-height:1.5;margin:8px 0;color:#475569;}
-        #cerrarDashboardSismo {border:0;border-radius:8px;padding:9px 13px;background:#fee2e2;color:#991b1b;cursor:pointer;}
-        .sismo-indicadores {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
-        .sismo-indicadores article {padding:14px;background:white;border:1px solid #e2e8f0;border-top:3px solid #b91c1c;border-radius:10px;}
-        .sismo-indicadores strong {display:block;font-size:23px;margin-top:7px;color:#0f172a;}
-        .sismo-indicadores span {font-size:12px;color:#475569;}
-        .sismo-graficas {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0;}
-        .sismo-graficas section {background:white;padding:14px;border:1px solid #e2e8f0;border-radius:10px;min-width:0;}
-        .sismo-graficas section>div {height:300px;position:relative;margin-top:12px;}
-        .sismo-tabla-titulo {margin:18px 0 10px;}
-        .sismo-tabla {overflow:auto;max-height:420px;background:white;border:1px solid #e2e8f0;border-radius:8px;}
-        .sismo-tabla table {border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;min-width:1340px;font-size:12px;}
-        .sismo-tabla th {position:sticky;top:0;background:#7f1d1d;color:white;text-align:left;z-index:1;}
-        .sismo-tabla th,.sismo-tabla td {padding:10px 12px;border-bottom:1px solid #e2e8f0;vertical-align:middle;box-sizing:border-box;}
-        .sismo-tabla th {white-space:normal;line-height:1.4;}
-        .sismo-tabla th:nth-child(-n+3),.sismo-tabla td:nth-child(-n+3) {text-align:left;overflow-wrap:break-word;}
-        .sismo-tabla th:nth-child(n+4) {text-align:right;}
-        .sismo-tabla th:not(:last-child),.sismo-tabla td:not(:last-child) {border-right:1px solid #e2e8f0;}
-        .sismo-tabla td:nth-child(n+4) {text-align:right;white-space:nowrap;}
-        .sismo-tabla tbody tr:nth-child(even) {background:#f1f5f9;}
-        @media(max-width:800px){.sismo-graficas{grid-template-columns:1fr}.sismo-indicadores{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardSismo{padding:16px;}}
-    </style>
-
-    <div id="modalGrafico" style="
+<div id="modalGrafico" style="
         display: none;
         position: fixed;
         top: 0;
@@ -868,7 +812,6 @@
         const oficinasLayer = L.layerGroup().addTo(map);
         const lineasDistanciaLayer = L.layerGroup().addTo(map);
 
-        let actualizarSismosFiltrados = () => {};
         let emlData = [];
         let oficinaData = [];
         let provinciaData = [];
@@ -1204,7 +1147,6 @@
             actualizarDashboardVerificacion(lista);
             actualizarGraficosModal(lista);
             dibujarPoligonos(lista);
-            actualizarSismosFiltrados();
 
             // Zoom automático solo cuando el usuario ha aplicado algún filtro/búsqueda.
             const haySeleccion =
@@ -1324,7 +1266,6 @@
         }
 
         function resetMap() {
-            document.getElementById('filtroAfectacionSismo').value = 'TODAS';
             map.stop();
             map.closePopup();
             ultimoPoligonoSeleccionado = null;
@@ -1587,252 +1528,7 @@
             document.getElementById('modalGrafico').style.display = 'none';
         });
 
-        // INICIO: capa independiente de viviendas afectadas por sismo.
-        (() => {
-            const pane = map.createPane('puntosSismo');
-            pane.style.zIndex = '450';
-            const renderer = L.svg({ pane: 'puntosSismo' });
-            const coloresAfectacion = {TOTAL:'#b91c1c',PARCIAL:'#ea580c',MODERADO:'#eab308',LEVE:'#22c55e',MENOR:'#0ea5e9'};
-            const categoriaAfectacion = valor => String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/_/g,' ').replace(/\s+/g,' ').toUpperCase() || 'SIN DATO';
-            const colorAfectacion = valor => coloresAfectacion[categoriaAfectacion(valor)] || '#64748b';
-            const filtroAfectacion = document.getElementById('filtroAfectacionSismo');
-            function prepararFiltroAfectacion(features) {
-                const categorias = [...new Set([...Object.keys(coloresAfectacion), ...features.map(f=>categoriaAfectacion(f.properties?.t_afectacion))])];
-                const leyenda = document.getElementById('leyendaAfectacionSismo');
-                categorias.forEach(categoria=>{
-                    const opcion=document.createElement('option');opcion.value=categoria;opcion.textContent=categoria;filtroAfectacion.appendChild(opcion);
-                    const item=document.createElement('span');const marca=document.createElement('i');marca.style.background=colorAfectacion(categoria);item.appendChild(marca);item.appendChild(document.createTextNode(categoria));leyenda.appendChild(item);
-                });
-            }
-            filtroAfectacion.addEventListener('change', () => {
-                
-                actualizarSismosFiltrados();
-            });
-            const capaSismo = L.geoJSON(null, {
-                pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-                    pane: 'puntosSismo', renderer,
-                    radius: 5, color: '#334155', weight: 1,
-                    fillColor: colorAfectacion(feature.properties?.t_afectacion), fillOpacity: 0.9,
-                    bubblingMouseEvents: false
-                }),
-                onEachFeature: (feature, layer) => {
-                    layer.on('mouseover', () => mostrarFicha(feature, layer));
-                    layer.on('mouseout', ocultarFicha);
-                    // Permite consultar el mismo contenido al tocar un punto.
-                    layer.on('click', () => mostrarFicha(feature, layer));
-                }
-            }).addTo(map);
 
-            let puntosSismo = [];
-            let referenciaGeograficaSismo = [];
-            let sismosVisibles = true;
-            let sismosCargados = false;
-            let totalFiltrado = 0;
-            const botonSismo = document.getElementById('btnSismo');
-            const normalizarSismo = valor => String(valor ?? '').normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ')
-                .trim().replace(/\s+/g, ' ').toUpperCase();
-            function actualizarBotonSismo() {
-                botonSismo.textContent = (sismosVisibles ? 'Ocultar' : 'Mostrar') +
-                    ' sismos (' + (sismosCargados ? totalFiltrado.toLocaleString('es-PA') : 'cargando…') + ')';
-                botonSismo.setAttribute('aria-pressed', String(sismosVisibles));
-                botonSismo.style.background = sismosVisibles ? '#fee2e2' : '#e2e8f0';
-            }
-            botonSismo.addEventListener('click', () => {
-                sismosVisibles = !sismosVisibles;
-                ocultarFicha();
-                if (sismosVisibles) capaSismo.addTo(map);
-                else map.removeLayer(capaSismo);
-                actualizarBotonSismo();
-            });
-            actualizarSismosFiltrados = () => {
-                ocultarFicha();
-                const filtros = [
-                    ['distrito', 'PROV_NOMB'],
-                    ['corregimiento', 'DIST_NOMB'],
-                    ['poblado', 'CORR_NOMB'],
-                    ['lupo', 'LUPO_NOMB']
-                ].map(([id, campo]) => [campo, normalizarSismo(document.getElementById(id).value)]);
-                // Ejecuta usa las provincias asociadas en EML; no es PROV_NOMB.
-                const ejecuta = document.getElementById('provincia').value;
-                const provinciasEjecuta = ejecuta && ejecuta !== 'TODAS'
-                    ? new Set(obtenerProvinciasPorEjecucion(ejecuta).map(normalizarSismo)) : null;
-                totalFiltrado = 0;
-                referenciaGeograficaSismo = [];
-                puntosSismo.forEach(layer => {
-                    const props = layer.feature.properties || {};
-                    const coincideGeografia = (!provinciasEjecuta || provinciasEjecuta.has(normalizarSismo(props.PROV_NOMB))) &&
-                        filtros.every(([campo, valor]) => !valor || valor === 'TODOS' || valor === 'TODAS' || normalizarSismo(props[campo]) === valor);
-                    if (coincideGeografia) referenciaGeograficaSismo.push(layer.feature);
-                    const coincide = coincideGeografia && (filtroAfectacion.value === 'TODAS' || categoriaAfectacion(props.t_afectacion) === filtroAfectacion.value);
-                    if (coincide) {
-                        totalFiltrado++;
-                        if (!capaSismo.hasLayer(layer)) capaSismo.addLayer(layer);
-                    } else if (capaSismo.hasLayer(layer)) capaSismo.removeLayer(layer);
-                });
-                actualizarBotonSismo();
-                actualizarDashboardSismo();
-            };
-
-            // Estadísticas independientes de UPM; AREA sigue expresada en m² en el archivo.
-            const modalSismo = document.getElementById('dashboardSismo');
-            let graficasSismo = [];
-            let errorCargaSismo = false;
-            let camposTerritorialesAusentes = [];
-            function calcularEstadisticasSismo(features, referencia = features) {
-                const seleccionados = new Set(features);
-                const grupos = new Map();
-                const contar = campo => {
-                    const conteos = new Map();
-                    features.forEach(f => {
-                        const p = f.properties || {};
-                        const v = normalizarSismo(campo === 'construccion' ? (p.tipo_construccion || p.tipo_construcion) : p[campo]) || 'SIN DATO';
-                        conteos.set(v, (conteos.get(v) || 0) + 1);
-                    });
-                    return [...conteos].sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0], 'es'));
-                };
-                referencia.forEach(f => {
-                    const p = f.properties || {};
-                    const nombres = ['PROV_NOMB','DIST_NOMB','CORR_NOMB'].map(k => normalizarSismo(p[k]) || 'SIN DATO');
-                    const key = JSON.stringify(nombres);
-                    if (!grupos.has(key)) grupos.set(key, {nombres, cantidad:0, total:0, area:new Set(), personas:new Set(), viviendas:new Set()});
-                    const g = grupos.get(key);if (seleccionados.has(f)) g.cantidad++;
-                    if (seleccionados.has(f) && normalizarSismo(p.t_afectacion) === 'TOTAL') g.total++;
-                    const numero = v => v !== null && v !== undefined && String(v).trim() !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : null;
-                    const area = numero(p.AREA);
-                    g.area.add(area === null ? null : area / 1000000);
-                    g.personas.add(numero(p.N_PERSONAS));g.viviendas.add(numero(p.N_VIVIENDA));
-                });
-                const unico = s => s.size === 1 && !s.has(null) ? [...s][0] : null;
-                const filas = [...grupos.values()].map(g => ({...g,area:unico(g.area),personas:unico(g.personas),viviendas:unico(g.viviendas)})).sort((a,b)=>b.cantidad-a.cantidad || a.nombres.join().localeCompare(b.nombres.join(),'es'));
-                const suma = k => filas.length && filas.every(g=>g[k]!==null) ? filas.reduce((n,g)=>n+g[k],0) : null;
-                return {filas,area:suma('area'),personas:suma('personas'),viviendas:suma('viviendas'),afectacion:contar('t_afectacion'),construccion:contar('construccion'),vivienda:contar('tipo_vivienda'),total:filas.reduce((n,g)=>n+g.total,0),cantidad:features.length};
-            }
-            function actualizarDashboardSismo() {
-                if (!modalSismo.open) return;
-                const seleccion = puntosSismo.filter(layer=>capaSismo.hasLayer(layer)).map(layer=>layer.feature);
-                const e = calcularEstadisticasSismo(seleccion, referenciaGeograficaSismo);
-                const poblado = document.getElementById('lupo').value;
-                const esPoblado = Boolean(poblado && poblado !== 'TODOS');
-                const fmt = (v,dec=0) => v === null || !Number.isFinite(v) ? 'N/D' : v.toLocaleString('es-PA',{maximumFractionDigits:dec});
-                const porcentaje = (n,d) => d > 0 ? n/d*100 : null;
-                document.getElementById('sismoAmbito').textContent = ['provincia','distrito','corregimiento','poblado','lupo'].map((id,i)=>{
-                    const v = document.getElementById(id).value;
-                    return v && v !== 'TODOS' && v !== 'TODAS' ? ['Ejecuta','Provincia','Distrito','Corregimiento','Poblado'][i]+': '+v : '';
-                }).filter(Boolean).concat('Afectación: ' + (filtroAfectacion.value === 'TODAS' ? 'Todas' : filtroAfectacion.value)).join(' · ');
-                document.getElementById('sismoNotaPoblado').hidden = !esPoblado;
-                const estado = document.getElementById('sismoEstado');
-                estado.textContent = errorCargaSismo ? 'No se pudo cargar sismo.geojson.' : !sismosCargados ? 'Cargando registros…' : !e.cantidad ? 'No hay registros para los filtros seleccionados. Los totales territoriales corresponden a la selección geográfica.' :
-                    'Estadísticas según los filtros geográficos y de afectación. Ocultar los puntos no cambia las cifras.';
-                if (camposTerritorialesAusentes.length) {
-                    estado.textContent = 'El sismo.geojson cargado no contiene valores para: ' + camposTerritorialesAusentes.join(', ') + '. Publique la versión que incluye esos campos con el nombre sismo.geojson, en la misma carpeta del HTML. Los N/D no representan ceros.';
-                } else if (e.filas.some(g=>g.area===null || g.personas===null || g.viviendas===null)) {
-                    estado.textContent += ' N/D indica datos territoriales ausentes, no numéricos o distintos dentro de un mismo corregimiento.';
-                }
-                estado.style.color = camposTerritorialesAusentes.length ? '#991b1b' : '#475569';
-                const kpis = [
-                    ['Viviendas registradas',fmt(e.cantidad)],['Con afectación total',fmt(e.total)],
-                    ['Corregimientos representados',fmt(e.filas.length)],
-                    [esPoblado ? '% del poblado (sin total de viviendas)' : '% registrado / viviendas de referencia',esPoblado ? 'N/D' : fmt(porcentaje(e.cantidad,e.viviendas),2)+(e.viviendas>0?' %':'')],
-                    ['Viviendas de referencia',fmt(e.viviendas)],['Población de referencia',fmt(e.personas)],
-                    ['Superficie de referencia (km²)',fmt(e.area,2)],['Densidad de población (hab./km²)',fmt(e.area>0 && e.personas!==null ? e.personas/e.area : null,2)]
-                ];
-                const cards=document.getElementById('sismoIndicadores');cards.replaceChildren();
-                kpis.forEach(([label,value])=>{const card=document.createElement('article');const title=document.createElement('span');title.textContent=label;const val=document.createElement('strong');val.textContent=value;card.append(title,val);cards.appendChild(card);});
-                const tbody=document.getElementById('sismoDetalle');tbody.replaceChildren();
-                e.filas.forEach(g=>{const tr=document.createElement('tr');const valores=[...g.nombres,fmt(g.cantidad),fmt(g.total),fmt(g.viviendas),esPoblado?'N/D':fmt(porcentaje(g.cantidad,g.viviendas),2)+(g.viviendas>0?' %':''),fmt(g.personas),fmt(g.area,2),fmt(g.area>0 && g.personas!==null ? g.personas/g.area : null,2)];valores.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td);});tbody.appendChild(tr);});
-                graficasSismo.forEach(chart=>chart.destroy());graficasSismo=[];
-                if (typeof Chart === 'undefined') {estado.textContent+=' No se pudieron cargar las gráficas; el resumen y la tabla siguen disponibles.';return;}
-                if (!e.cantidad) return;
-                [['sismoChartAfectacion',e.afectacion,'#dc2626'],['sismoChartConstruccion',e.construccion,'#2563eb'],['sismoChartVivienda',e.vivienda,'#0f766e']].forEach(([id,datos,color])=>{
-                    graficasSismo.push(new Chart(document.getElementById(id),{type:'bar',data:{labels:datos.map(d=>d[0]),datasets:[{label:'Viviendas registradas',data:datos.map(d=>d[1]),backgroundColor:id === 'sismoChartAfectacion' ? datos.map(d=>colorAfectacion(d[0])) : color,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmt(c.raw)} registros (${fmt(c.raw/e.cantidad*100,2)} %)`}}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{autoSkip:false}}}}}));
-                });
-            }
-            document.getElementById('btnDashboardSismo').addEventListener('click',()=>{modalSismo.showModal();actualizarDashboardSismo();});
-            document.getElementById('cerrarDashboardSismo').addEventListener('click',()=>modalSismo.close());
-            modalSismo.addEventListener('close',()=>{graficasSismo.forEach(chart=>chart.destroy());graficasSismo=[];});
-
-            // Se agrega directamente: no sustituye el popup existente de las UPM.
-            const ficha = L.popup({
-                className: 'sismo-popup', closeButton: false,
-                autoPan: false, autoClose: false, closeOnClick: false,
-                maxWidth: 290, minWidth: 230, offset: [0, -5]
-            });
-            function ocultarFicha() {
-                if (map.hasLayer(ficha)) map.removeLayer(ficha);
-            }
-            function mostrarFicha(feature, layer) {
-                const p = feature.properties || {};
-                const contenido = document.createElement('div');
-                const titulo = document.createElement('strong');
-                titulo.textContent = 'Vivienda afectada';
-                titulo.style.cssText = 'display:block;margin-bottom:7px;color:#991b1b;font-size:13px';
-                contenido.appendChild(titulo);
-                const campos = [
-                    ['Provincia', p.PROV_NOMB],
-                    ['Distrito', p.DIST_NOMB],
-                    ['Corregimiento', p.CORR_NOMB],
-                    ['Poblado', p.LUPO_NOMB],
-                    ['Tipo de vivienda', p.tipo_vivienda],
-                    ['Afectación', p.t_afectacion],
-                    ['Tipo de construcción', p.tipo_construccion || p.tipo_construcion]
-                ];
-                campos.forEach(([etiqueta, valor]) => {
-                    const fila = document.createElement('div');
-                    fila.style.margin = '3px 0';
-                    const nombre = document.createElement('strong');
-                    nombre.textContent = etiqueta + ': ';
-                    const dato = document.createElement('span');
-                    dato.textContent = valor == null || String(valor).trim() === ''
-                        ? 'Sin dato' : String(valor).replace(/_/g, ' ');
-                    fila.appendChild(nombre);
-                    fila.appendChild(dato);
-                    contenido.appendChild(fila);
-                });
-                ficha.setLatLng(layer.getLatLng()).setContent(contenido).addTo(map);
-            }
-            map.on('click zoomstart movestart', ocultarFicha);
-            capaSismo.on('remove', ocultarFicha);
-
-            fetch('sismo.geojson', { cache: 'no-store' })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
-                        throw new Error('El archivo no contiene una colección GeoJSON');
-                    }
-                    camposTerritorialesAusentes = ['AREA', 'N_PERSONAS', 'N_VIVIENDA'].filter(campo =>
-                        data.features.length > 0 && !data.features.some(f => {
-                            const valor = f.properties?.[campo];
-                            return valor !== null && valor !== undefined && String(valor).trim() !== '';
-                        })
-                    );
-                    prepararFiltroAfectacion(data.features);
-                    capaSismo.addData(data);
-                    puntosSismo = capaSismo.getLayers();
-                    sismosCargados = true;
-                    actualizarSismosFiltrados();
-                })
-                .catch(error => {
-                    console.error('Error cargando sismo.geojson:', error);
-                    errorCargaSismo = true;
-                    actualizarDashboardSismo();
-                    botonSismo.textContent = 'Sismos no disponibles';
-                    botonSismo.disabled = true;
-                    const aviso = L.control({ position: 'bottomleft' });
-                    aviso.onAdd = () => {
-                        const div = L.DomUtil.create('div');
-                        div.style.cssText = 'background:white;color:#991b1b;padding:8px 12px;border-radius:6px;max-width:260px;font-size:12px';
-                        div.textContent = 'No se pudo cargar sismo.geojson. Verifique el archivo junto al HTML.';
-                        L.DomEvent.disableClickPropagation(div);
-                        return div;
-                    };
-                    aviso.addTo(map);
-                });
-        })();
-        // FIN: capa independiente de viviendas afectadas por sismo.
 
     </script>
 
@@ -1841,7 +1537,7 @@
 </style>
 <dialog id="emlReporteModal" aria-labelledby="emlReporteTitulo">
 <h2 id="emlReporteTitulo">Reporte de polígonos verificados</h2>
-<p>Informe institucional en PDF de todo <strong>eml.geojson</strong>, independiente de los filtros del mapa. Incluye actividad por territorio, clasificación y avance acumulado.</p>
+<p>Informe institucional en PDF de todo <strong>eml.geojson</strong>, independiente de los filtros del mapa. Incluye actividad por territorio, viviendas precensales y revisadas, clasificación y avance acumulado.</p>
 <label>Período<select id="emlReporteTipo"><option value="mes">Mensual</option><option value="semana">Semanal (lunes a domingo)</option></select></label>
 <label>Mes<input type="month" id="emlReporteMes" required></label>
 <label>Seleccione un día de la semana<input type="date" id="emlReporteSemana" required></label>
@@ -2241,12 +1937,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 /* Informe institucional EML: fuente completa, independiente de filtros del mapa. */
 const ReporteEML = (() => {
  const DIA=86400000, norm=v=>String(v??'').trim().toUpperCase(), num=n=>Number(n).toLocaleString('es-PA'), pct=(a,b)=>b?(100*a/b).toFixed(1)+'%':'N/D';
- function fecha(v){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(v??'').trim());if(!m)return null;const t=Date.UTC(+m[3],+m[2]-1,+m[1]),d=new Date(t);return d.getUTCFullYear()===+m[3]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[1]?t:null;}
+ function fecha(v){const raw=String(v??'').trim(),es=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(raw),iso=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);if(!es&&!iso)return null;const y=+(es?es[3]:iso[1]),m=+(es?es[2]:iso[2]),dia=+(es?es[1]:iso[3]),t=Date.UTC(y,m-1,dia),d=new Date(t);return d.getUTCFullYear()===y&&d.getUTCMonth()===m-1&&d.getUTCDate()===dia?t:null;}
+ function vivienda(v){if(v===null||v===undefined||String(v).trim()==='')return null;const n=Number(v);return Number.isSafeInteger(n)&&n>=0?n:null;}
+
  const fmt=t=>{const d=new Date(t);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();};
  function hoy(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Panama',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const v=k=>p.find(x=>x.type===k).value;return Date.UTC(+v('year'),+v('month')-1,+v('day'));}
  function periodo(tipo,valor,ahora=hoy()){let inicio,fin;if(tipo==='mes'){if(!/^\d{4}-\d{2}$/.test(valor))throw Error('Seleccione un mes.');const [y,m]=valor.split('-').map(Number);inicio=Date.UTC(y,m-1,1);fin=Date.UTC(y,m,0);}else{if(!/^\d{4}-\d{2}-\d{2}$/.test(valor))throw Error('Seleccione una fecha de la semana.');const [y,m,d]=valor.split('-').map(Number),t=Date.UTC(y,m-1,d);inicio=t-((new Date(t).getUTCDay()+6)%7)*DIA;fin=inicio+6*DIA;}if(inicio>ahora)throw Error('El período seleccionado todavía no ha comenzado.');return{inicio,fin,corte:Math.min(fin,ahora),tipo};}
- function vacio(nombre){return{nombre,total:0,periodo:0,acum:0,sinFecha:0,urbano:0,rural:0,otro:0,da:0,indig:0,con:0,sin:0,costoND:0};}
- function analizar(features,p){const total=vacio('TOTAL NACIONAL'),provincias=new Map(),detalles=new Map();let excluidos=0;for(const f of features){if(!['Polygon','MultiPolygon'].includes(f.geometry?.type)){excluidos++;continue;}const a=f.properties||{},prov=norm(a.PROV_NOMB)||'SIN PROVINCIA',dist=norm(a.DIST_NOMB)||'SIN DISTRITO',corr=norm(a.CORR_NOMB)||'SIN CORREGIMIENTO',key=JSON.stringify([prov,dist,corr]);if(!provincias.has(prov))provincias.set(prov,vacio(prov));if(!detalles.has(key))detalles.set(key,{...vacio(corr),prov,dist,corr});const ver=norm(a.VERIFICADO)==='SI',t=fecha(a.DATE_ACT),en=ver&&t!==null&&t>=p.inicio&&t<=p.corte;for(const r of [total,provincias.get(prov),detalles.get(key)]){r.total++;if(ver&&t===null)r.sinFecha++;if(ver&&t!==null&&t<=p.corte)r.acum++;if(en){r.periodo++;const seg=norm(a.SEGM_TIPO);r[seg==='01'?'urbano':seg==='02'?'rural':'otro']++;if(norm(a.DA)==='1')r.da++;if(norm(a.INDIG)==='1')r.indig++;r[norm(a.COSTO)==='SI'?'con':norm(a.COSTO)==='NO'?'sin':'costoND']++;}}}const orden=(a,b)=>[a.prov||a.nombre,a.dist||'',a.corr||''].join('|').localeCompare([b.prov||b.nombre,b.dist||'',b.corr||''].join('|'),'es');return{total,provincias:[...provincias.values()].sort(orden),detalles:[...detalles.values()].sort(orden),excluidos};}
+ function vacio(nombre){return{nombre,total:0,periodo:0,acum:0,sinFecha:0,urbano:0,rural:0,otro:0,da:0,indig:0,con:0,sin:0,costoND:0,vivPre:0,vivRev:0,nPre:0,nRev:0,pares:0,prePar:0,revPar:0};}
+ function analizar(features,p){const total=vacio('TOTAL NACIONAL'),provincias=new Map(),detalles=new Map();let excluidos=0;for(const f of features){if(!['Polygon','MultiPolygon'].includes(f.geometry?.type)){excluidos++;continue;}const a=f.properties||{},prov=norm(a.PROV_NOMB)||'SIN PROVINCIA',dist=norm(a.DIST_NOMB)||'SIN DISTRITO',corr=norm(a.CORR_NOMB)||'SIN CORREGIMIENTO',key=JSON.stringify([prov,dist,corr]);if(!provincias.has(prov))provincias.set(prov,vacio(prov));if(!detalles.has(key))detalles.set(key,{...vacio(corr),prov,dist,corr});const ver=norm(a.VERIFICADO)==='SI',t=fecha(a.DATE_ACT),en=ver&&t!==null&&t>=p.inicio&&t<=p.corte;for(const r of [total,provincias.get(prov),detalles.get(key)]){r.total++;if(ver&&t===null)r.sinFecha++;if(ver&&t!==null&&t<=p.corte)r.acum++;if(en){r.periodo++;const pre=vivienda(a.TOT_VIV),rev=vivienda(a.TOT_VIV_EN);if(pre!==null){r.vivPre+=pre;r.nPre++;}if(rev!==null){r.vivRev+=rev;r.nRev++;}if(pre!==null&&rev!==null){r.pares++;r.prePar+=pre;r.revPar+=rev;}const seg=norm(a.SEGM_TIPO);r[seg==='01'?'urbano':seg==='02'?'rural':'otro']++;if(norm(a.DA)==='1')r.da++;if(norm(a.INDIG)==='1')r.indig++;r[norm(a.COSTO)==='SI'?'con':norm(a.COSTO)==='NO'?'sin':'costoND']++;}}}const orden=(a,b)=>[a.prov||a.nombre,a.dist||'',a.corr||''].join('|').localeCompare([b.prov||b.nombre,b.dist||'',b.corr||''].join('|'),'es');return{total,provincias:[...provincias.values()].sort(orden),detalles:[...detalles.values()].sort(orden),excluidos};}
  function pdf(datos,p,prueba=false){const doc=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'}),W=297,H=210,azul=[19,42,66],verde=[0,112,123];doc.setProperties({title:'Informe de polígonos verificados - INEC',subject:'Actividad del período y avance acumulado',author:'INEC'});
  const titulo=(texto,y)=>{doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...azul);doc.text(texto,14,y);};
  const tabla=(head,body,y,extra={})=>doc.autoTable({head:[head],body,startY:y,margin:{top:39,bottom:18,left:14,right:14},styles:{font:'helvetica',fontSize:8,cellPadding:2.3,overflow:'linebreak',textColor:azul},headStyles:{fillColor:azul,textColor:[255,255,255],fontSize:8},alternateRowStyles:{fillColor:[241,245,248]},rowPageBreak:'avoid',...extra});
@@ -2255,6 +1953,29 @@ const ReporteEML = (() => {
  doc.addPage();titulo('Composición de las verificaciones del período',45);const cats=r=>[num(r.periodo),num(r.urbano),num(r.rural),num(r.otro),num(r.da),num(r.indig),num(r.con),num(r.sin),num(r.costoND)];const headers=['Total','Urbanos','Rurales','Otros tipos','Difícil acceso','Indígenas','Con costo','Sin costo','Costo N/D'];tabla(['Provincia',...headers],[...datos.provincias,t].map(r=>[r.nombre,...cats(r)]),51);let y=doc.lastAutoTable.finalY+9;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(doc.splitTextToSize('Las categorías se superponen: difícil acceso, indígena y costo son atributos del mismo polígono. No deben sumarse entre sí. Urbanos, rurales y otros tipos sí conforman el total del período.',265),14,y);
  doc.addPage();titulo('Detalle territorial de la actividad del período',45);const filas=[];let distrito=null;const cerrarDistrito=()=>{if(distrito)filas.push([distrito.prov,distrito.dist,'SUBTOTAL DISTRITO',...cats(distrito)]);};for(const r of datos.detalles){if(!r.periodo)continue;if(!distrito||distrito.prov!==r.prov||distrito.dist!==r.dist){cerrarDistrito();distrito={...vacio(''),prov:r.prov,dist:r.dist};}for(const k of ['periodo','urbano','rural','otro','da','indig','con','sin','costoND'])distrito[k]+=r[k];filas.push([r.prov,r.dist,r.corr,...cats(r)]);}cerrarDistrito();filas.push(['TOTAL NACIONAL','','',...cats(t)]);tabla(['Provincia','Distrito','Corregimiento',...headers],filas,51,{styles:{fontSize:7,cellPadding:2,overflow:'linebreak'},columnStyles:{0:{cellWidth:34},1:{cellWidth:34},2:{cellWidth:39}},didParseCell:d=>{if(d.section==='body'&&(d.row.index===filas.length-1||d.row.raw[2]==='SUBTOTAL DISTRITO')){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[219,234,239];}}});
 
+
+ const firmado=n=>(n>0?'+':'')+num(n),vtotal=(n,validas,r)=>validas?num(n)+(validas<r.periodo?' *':''):'N/D';
+ const vivcols=r=>[num(r.periodo),vtotal(r.vivPre,r.nPre,r),vtotal(r.vivRev,r.nRev,r),num(r.pares)+' / '+num(r.periodo),r.pares?firmado(r.revPar-r.prePar):'N/D',r.pares&&r.prePar?((r.revPar-r.prePar)>0?'+':'')+((r.revPar-r.prePar)/r.prePar*100).toFixed(1)+'%':'N/D'];
+ const cabviv=['UPM terminadas','Viviendas precensales','Viviendas revisadas','UPM comparables / terminadas','Diferencia comparable','Variación comparable (%)'];
+ const notaViv='* Total parcial: hay UPM sin el dato. N/D indica ausencia de datos. Diferencia y variación comparan únicamente UPM con ambos valores; un cero registrado sí es válido.';
+ doc.addPage();titulo('Viviendas en las UPM terminadas durante el período',45);
+ const tarjetas=[['PRECENSALES',vtotal(t.vivPre,t.nPre,t)],['REVISADAS',vtotal(t.vivRev,t.nRev,t)],['DIFERENCIA COMPARABLE',t.pares?firmado(t.revPar-t.prePar):'N/D'],['UPM CON AMBOS DATOS',num(t.pares)+' / '+num(t.periodo)]];
+ tarjetas.forEach((c,i)=>{const x=14+i*68;doc.setFillColor(239,245,248);doc.roundedRect(x,50,65,23,2,2,'F');doc.setFontSize(7);doc.setTextColor(...azul);doc.text(c[0],x+4,57);doc.setFontSize(18);doc.setTextColor(...verde);doc.text(c[1],x+4,67);});
+ doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...azul);doc.text(doc.splitTextToSize(notaViv,267),14,80);
+ tabla(['Provincia',...cabviv],[...datos.provincias.filter(r=>r.periodo),t].map(r=>[r.nombre,...vivcols(r)]),93,{styles:{fontSize:8,cellPadding:2},didParseCell:d=>{if(d.section==='body'&&d.row.raw[0]==='TOTAL NACIONAL'){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[219,234,239];}}});
+ doc.addPage();titulo('Detalle territorial de viviendas del período',45);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(doc.splitTextToSize(notaViv,267),14,51);
+ const filasViv=[];let dv=null;const cerrarViv=()=>{if(dv)filasViv.push([dv.prov,dv.dist,'SUBTOTAL DISTRITO',...vivcols(dv)]);};
+ for(const r of datos.detalles){if(!r.periodo)continue;if(!dv||dv.prov!==r.prov||dv.dist!==r.dist){cerrarViv();dv={...vacio(''),prov:r.prov,dist:r.dist};}for(const k of ['periodo','vivPre','vivRev','nPre','nRev','pares','prePar','revPar'])dv[k]+=r[k];filasViv.push([r.prov,r.dist,r.corr,...vivcols(r)]);}cerrarViv();filasViv.push(['TOTAL NACIONAL','','',...vivcols(t)]);
+ tabla(['Provincia','Distrito','Corregimiento',...cabviv],filasViv,63,{styles:{fontSize:7.5,cellPadding:2},columnStyles:{0:{cellWidth:32},1:{cellWidth:32},2:{cellWidth:40}},didParseCell:d=>{if(d.section==='body'&&(d.row.raw[0]==='TOTAL NACIONAL'||d.row.raw[2]==='SUBTOTAL DISTRITO')){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[219,234,239];}}});
+ // Comparación de viviendas sobre la misma base de UPM con ambos valores.
+ const comparables=datos.provincias.filter(r=>r.pares),maxViv=Math.max(1,...comparables.flatMap(r=>[r.prePar,r.revPar]));
+ for(let desde=0;desde<Math.max(1,comparables.length);desde+=10){doc.addPage();titulo('Viviendas precensales y revisadas por provincia',45);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...azul);doc.text('UPM terminadas en el período con ambos datos disponibles.',14,52);
+ doc.setFillColor(30,103,160);doc.rect(14,58,4,3,'F');doc.text('Precensales',20,61);doc.setFillColor(...verde);doc.rect(63,58,4,3,'F');doc.text('Revisadas',69,61);
+ const lote=comparables.slice(desde,desde+10),x=87,ancho=153;
+ lote.forEach((r,i)=>{const y=72+i*10.5;doc.setFontSize(8);doc.setTextColor(...azul);doc.text(r.nombre,14,y+4);for(const [j,v] of [r.prePar,r.revPar].entries()){doc.setFillColor(...(j?verde:[30,103,160]));if(v)doc.rect(x,y+j*4.3,ancho*v/maxViv,3.3,'F');doc.text(num(v),x+ancho*v/maxViv+2,y+j*4.3+2.8);}});
+ if(!lote.length)doc.text('No hay UPM con ambos valores de vivienda para comparar en este período.',14,80);
+ doc.setFontSize(8);doc.text('Base comparable: '+num(t.pares)+' de '+num(t.periodo)+' UPM terminadas. Los datos faltantes no se convierten en cero.',14,190);
+ }
  // Gráficas vectoriales: permanecen nítidas al imprimir o ampliar el PDF.
  function graficaBarras(tituloGrafica,subtitulo,filas,porcentaje=false) {
    const maximo=porcentaje?100:Math.max(1,...filas.map(r=>r.valor));
@@ -2284,10 +2005,18 @@ const ReporteEML = (() => {
  {nombre:'Costo sin clasificar',valor:t.costoND,color:[115,130,145]}
  ]);
  const paginas=doc.getNumberOfPages(),emitido=new Date().toLocaleString('es-PA',{timeZone:'America/Panama'});for(let i=1;i<=paginas;i++){doc.setPage(i);doc.setFillColor(...azul);doc.rect(0,0,W,32,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('INEC | INSTITUTO NACIONAL DE ESTADÍSTICA Y CENSO',14,10);doc.setFontSize(16);doc.text(prueba?'PRUEBA DE DISEÑO - DATOS SIMULADOS':'Informe de polígonos verificados',14,19);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text((p.tipo==='mes'?'Mensual':'Semanal')+' | '+fmt(p.inicio)+' al '+fmt(p.fin)+' | Corte: '+fmt(p.corte),14,27);doc.setDrawColor(200,210,220);doc.line(14,H-13,W-14,H-13);doc.setTextColor(80,95,110);doc.setFontSize(8);doc.text('Fuente: eml.geojson | Emitido: '+emitido+' (Panamá)',14,H-8);doc.text('Página '+i+' de '+paginas,W-14,H-8,{align:'right'});}return doc;}
- return{fecha,periodo,analizar,pdf,hoy};
+ function validarPeriodoEnDatos(features,p) {
+   const fechados=features.filter(f=>['Polygon','MultiPolygon'].includes(f.geometry?.type)&&fecha(f.properties?.DATE_ACT)!==null);
+   if(!fechados.length)throw Error('No existen fechas válidas en DATE_ACT. Los formatos admitidos son dd/mm/yyyy y yyyy-mm-dd.');
+   const delPeriodo=fechados.filter(f=>{const t=fecha(f.properties.DATE_ACT);return t>=p.inicio&&t<=p.corte;});
+   if(!delPeriodo.length)throw Error('No existe información para el período seleccionado ('+fmt(p.inicio)+' al '+fmt(p.corte)+'). Seleccione un mes o una semana con fechas registradas en DATE_ACT.');
+   if(!delPeriodo.some(f=>norm(f.properties?.VERIFICADO)==='SI'))throw Error('El período seleccionado tiene registros, pero no contiene polígonos verificados. No se generará el reporte.');
+   return true;
+ }
+ return{fecha,periodo,analizar,pdf,hoy,validarPeriodoEnDatos};
 })();
 window.ReporteEML=ReporteEML;
-(() => {const $=id=>document.getElementById(id),modal=$('emlReporteModal'),tipo=$('emlReporteTipo'),mes=$('emlReporteMes'),semana=$('emlReporteSemana'),estado=$('emlReporteEstado'),descarga=$('emlReporteDescargar');const actual=new Date(ReporteEML.hoy()).toISOString().slice(0,10);mes.value=actual.slice(0,7);mes.max=mes.value;semana.value=actual;semana.max=actual;function cambiar(){mes.parentElement.hidden=tipo.value!=='mes';semana.parentElement.hidden=tipo.value!=='semana';estado.textContent='';}tipo.addEventListener('change',cambiar);cambiar();$('btnReporteEML').addEventListener('click',()=>modal.showModal());$('emlReporteCerrar').addEventListener('click',()=>modal.close());descarga.addEventListener('click',async()=>{descarga.disabled=true;estado.textContent='Preparando el PDF…';try{const p=ReporteEML.periodo(tipo.value,tipo.value==='mes'?mes.value:semana.value);estado.textContent='Ingrese la contraseña para descargar el PDF.';if(!await validarPasswordDescarga('Descargar reporte PDF')){estado.textContent='Descarga no autorizada o cancelada.';return;}estado.textContent='Preparando el PDF…';const res=await fetch('eml.geojson',{cache:'no-store'});if(!res.ok)throw Error('No se pudo cargar eml.geojson (HTTP '+res.status+').');const geo=await res.json();if(!Array.isArray(geo.features))throw Error('eml.geojson no contiene una colección de registros válida.');const datos=ReporteEML.analizar(geo.features,p);if(!datos.total.total)throw Error('No hay polígonos en el archivo.');const verificadas=geo.features.filter(f=>['Polygon','MultiPolygon'].includes(f.geometry?.type)&&String(f.properties?.VERIFICADO??'').trim().toUpperCase()==='SI');if(verificadas.length&&datos.total.sinFecha===verificadas.length)throw Error('Todos los polígonos verificados carecen de DATE_ACT válido. Actualice eml.geojson con fechas dd/mm/yyyy para generar el reporte temporal.');const doc=ReporteEML.pdf(datos,p);doc.save('INEC_Verificados_'+tipo.value+'_'+new Date(p.inicio).toISOString().slice(0,10)+'.pdf');estado.textContent='PDF generado. '+(datos.total.sinFecha?'Aviso: '+datos.total.sinFecha+' verificados sin fecha válida; consulte las notas del reporte.':'');}catch(e){estado.textContent=e.message||'No se pudo generar el PDF.';}finally{descarga.disabled=false;}});})();
+(() => {const $=id=>document.getElementById(id),modal=$('emlReporteModal'),tipo=$('emlReporteTipo'),mes=$('emlReporteMes'),semana=$('emlReporteSemana'),estado=$('emlReporteEstado'),descarga=$('emlReporteDescargar');const actual=new Date(ReporteEML.hoy()).toISOString().slice(0,10);mes.value=actual.slice(0,7);mes.max=mes.value;semana.value=actual;semana.max=actual;function cambiar(){mes.parentElement.hidden=tipo.value!=='mes';semana.parentElement.hidden=tipo.value!=='semana';estado.textContent='';}tipo.addEventListener('change',cambiar);cambiar();$('btnReporteEML').addEventListener('click',()=>modal.showModal());$('emlReporteCerrar').addEventListener('click',()=>modal.close());descarga.addEventListener('click',async()=>{descarga.disabled=true;estado.textContent='Preparando el PDF…';try{const p=ReporteEML.periodo(tipo.value,tipo.value==='mes'?mes.value:semana.value);estado.textContent='Validando las fechas del período en eml.geojson…';const res=await fetch('eml.geojson',{cache:'no-store'});if(!res.ok)throw Error('No se pudo cargar eml.geojson (HTTP '+res.status+').');const geo=await res.json();if(!Array.isArray(geo.features))throw Error('eml.geojson no contiene una colección de registros válida.');ReporteEML.validarPeriodoEnDatos(geo.features,p);estado.textContent='Ingrese la contraseña para descargar el PDF.';if(!await validarPasswordDescarga('Descargar reporte PDF')){estado.textContent='Descarga no autorizada o cancelada.';return;}estado.textContent='Preparando el PDF…';const datos=ReporteEML.analizar(geo.features,p);if(!datos.total.total)throw Error('No hay polígonos en el archivo.');const verificadas=geo.features.filter(f=>['Polygon','MultiPolygon'].includes(f.geometry?.type)&&String(f.properties?.VERIFICADO??'').trim().toUpperCase()==='SI');if(verificadas.length&&datos.total.sinFecha===verificadas.length)throw Error('Todos los polígonos verificados carecen de DATE_ACT válido. Actualice eml.geojson con fechas dd/mm/yyyy o yyyy-mm-dd para generar el reporte temporal.');const doc=ReporteEML.pdf(datos,p);doc.save('INEC_Verificados_'+tipo.value+'_'+new Date(p.inicio).toISOString().slice(0,10)+'.pdf');estado.textContent='PDF generado. '+(datos.total.sinFecha?'Aviso: '+datos.total.sinFecha+' verificados sin fecha válida; no se incluyeron en los conteos por fecha.':'');}catch(e){estado.textContent=e.message||'No se pudo generar el PDF.';}finally{descarga.disabled=false;}});})();
 
 </script>
 </body>
