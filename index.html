@@ -490,7 +490,7 @@
 <body>
 
     <div class="header">
-    <h1>🏢 Mapa de Actualización Precensal 2026 a nivel Nacional-Incluye UPM-EML
+    <h1>🏢 Actualización Cartográfica Precensal 2026
         <a href="https://www.inec.gob.pa/ProgramaDeEncuestas" target="_blank" rel="noopener noreferrer" class="link-cartografos">📸 Ver fotos de cartógrafos</a>
     </h1>
     <span class="stats-badge" id="contador">0 Polígonos | 0 Oficinas</span>
@@ -684,7 +684,7 @@
                     ">📊</div>
                     <div>
                         <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">📊 Dashboard de UPM</h3>
-                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">Distribución de viáticos y verificación por provincia</p>
+                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0; font-weight: 500;">Avance por fecha y viviendas antes y después del proceso</p>
                     </div>
                 </div>
                 <button id="btnCerrarGrafico" style="
@@ -704,33 +704,36 @@
                 ">✕</button>
             </div>
             <p id="avisoGraficos" role="status" hidden style="padding: 10px; color: #92400e; background: #fef3c7; border-radius: 8px;"></p>
-            <div class="graficos-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div style="background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 16px; padding: 12px 14px 10px; border: 2px solid #e2e8f0; box-shadow: inset 0 2px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">💰 Distribución de viáticos</span>
-                        <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
-                    </div>
-                    <div style="flex: 1; min-height: 260px; height: 300px; position: relative; flex-shrink: 0;"><canvas id="graficoCostosModal"></canvas></div>
-                    <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
-                        <span><span style="display:inline-block; width:12px; height:12px; background:#22c55e; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Con Viático</span>
-                        <span><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Sin Viático</span>
-                    </div>
-                </div>
-                <div style="background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 16px; padding: 12px 14px 10px; border: 2px solid #e2e8f0; box-shadow: inset 0 2px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <span style="font-size: 13px; font-weight: 700; color: #0f172a;">✅ Progreso de Verificación</span>
-                        <span style="font-size: 10px; color: #94a3b8;">Por provincia de ejecución</span>
-                    </div>
-                    <div style="flex: 1; min-height: 260px; height: 300px; position: relative; flex-shrink: 0;"><canvas id="graficoVerificacionModal"></canvas></div>
-                    <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; color: #94a3b8; flex-wrap: wrap;">
-                        <span><span style="display:inline-block; width:12px; height:12px; background:#facc15; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Verificadas</span>
-                        <span><span style="display:inline-block; width:12px; height:12px; background:#64748b; border-radius:3px; vertical-align:middle; margin-right:4px;"></span> Pendientes</span>
-                    </div>
-                </div>
+            <div class="dash-kpis">
+                <div><span>UPM verificadas</span><strong id="dashVerificadas">—</strong><small id="dashPorcentaje"></small></div>
+                <div><span>Viviendas antes</span><strong id="dashAntes">—</strong><small>UPM verificadas comparables</small></div>
+                <div><span>Viviendas después</span><strong id="dashDespues">—</strong><small>Mismo conjunto de UPM</small></div>
+                <div><span>Diferencia de viviendas</span><strong id="dashCambio">—</strong><small id="dashVariacion"></small></div>
             </div>
+            <div class="graficos-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <section class="dash-panel">
+                    <h4>Avance por fecha</h4><p class="dash-sub">UPM verificadas por día y acumulado · DATE_ACT</p>
+                    <p id="sinAvance" role="status"></p>
+                    <div style="height:340px;position:relative;"><canvas id="graficoAvanceModal" role="img" aria-label="UPM verificadas por fecha y acumulado"></canvas></div>
+                    <p id="notaAvance" class="dash-note"></p>
+                </section>
+                <section class="dash-panel">
+                    <h4>Viviendas antes y después</h4><p class="dash-sub">Comparación por provincia · solo UPM verificadas con ambos valores</p>
+                    <p id="sinViviendas" role="status"></p>
+                    <div id="contenedorViviendas" style="height:340px;position:relative;"><canvas id="graficoViviendasModal" role="img" aria-label="Viviendas antes y después por provincia"></canvas></div>
+                    <p id="notaViviendas" class="dash-note"></p>
+                </section>
+            </div>
+            <details class="dash-panel" style="margin-top:16px;">
+                <summary style="cursor:pointer;font-weight:700;">Ver cifras de viviendas por provincia</summary>
+                <div style="overflow-x:auto;margin-top:12px;">
+                    <table class="dash-table"><thead><tr><th>Provincia</th><th>UPM comparables</th><th>Antes</th><th>Después</th><th>Diferencia</th><th>Variación</th></tr></thead><tbody id="tablaViviendasBody"></tbody></table>
+                </div>
+                <p class="dash-note">Diferencia = después − antes. Variación = diferencia / antes × 100. Si antes es cero, el porcentaje no se calcula. Un dato faltante no se considera cero.</p>
+            </details>
             <div style="margin-top: 12px; padding-top: 10px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; font-weight: 500; flex-wrap: wrap; gap: 8px;">
                 <span id="statsGrafico" style="color: #0f172a; font-weight: 600;">📊 Total UPM: <span style="color: #3b82f6;">0</span> | 💰 Con Viático: <span style="color: #22c55e;">0</span> | ❌ Sin Viático: <span style="color: #ef4444;">0</span> | ✅ Verificadas: <span style="color: #facc15;">0</span> | ⏳ Pendientes: <span style="color: #64748b;">0</span></span>
-                <span style="color: #94a3b8; font-size: 10px;">🔄 Actualizado en tiempo real</span>
+                <span style="color: #94a3b8; font-size: 10px;">Según los datos cargados y filtros del mapa</span>
             </div>
         </div>
     </div>
@@ -752,6 +755,19 @@
             }
         }
         
+        .dash-kpis { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0; }
+        .dash-kpis > div { background:#eff6ff;border:1px solid #dbeafe;padding:14px;border-radius:12px; }
+        .dash-kpis span,.dash-kpis small { display:block;color:#475569;font-size:11px; }
+        .dash-kpis strong { display:block;color:#123b70;font-size:24px;margin:5px 0; }
+        .dash-panel { background:#fff;border:1px solid #dbe3ee;border-radius:14px;padding:16px;min-width:0;color:#1e293b; }
+        .dash-panel h4 { font-size:15px;margin:0 0 5px; }
+        .dash-sub,.dash-note { font-size:11px;line-height:1.5;color:#475569;margin:4px 0 12px; }
+        .dash-note { margin-top:12px; }
+        .dash-table { border-collapse:collapse;width:100%;font-size:12px; }
+        .dash-table th,.dash-table td { padding:9px;text-align:right;border-bottom:1px solid #e2e8f0; }
+        .dash-table th:first-child { text-align:left; }
+        .dash-table thead,.dash-total { background:#eff6ff;font-weight:700; }
+        @media(max-width:760px) { .dash-kpis {grid-template-columns:repeat(2,minmax(0,1fr));} }
         #modalGrafico > div { overflow-y: auto; box-sizing: border-box; }
         .graficos-grid > div { min-width: 0; }
         @media (max-width: 760px) {
@@ -965,67 +981,95 @@
             }
         }
 
-        let chartCostos = null;
-        let chartVerificacion = null;
+        let chartsDashboard = [];
+        function analizarDashboardUPM(features) {
+            const leerNumero = value => {
+                if (value === null || value === undefined || String(value).trim() === '') return null;
+                if (!/^\d+(?:\.0+)?$/.test(String(value).trim())) return null;
+                const n = Number(value);
+                return Number.isSafeInteger(n) && n >= 0 ? n : null;
+            };
+            const leerFecha = value => {
+                const raw = String(value ?? '').trim();
+                const es = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(raw);
+                const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+                if (!es && !iso) return null;
+                const y = +(es ? es[3] : iso[1]), m = +(es ? es[2] : iso[2]), d = +(es ? es[1] : iso[3]);
+                const t = Date.UTC(y, m - 1, d), date = new Date(t);
+                return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d ? t : null;
+            };
+            const resultado = { total: features.length, verificadas: 0, sinFecha: 0, sinPar: 0, pares: 0, antes: 0, despues: 0, fechas: [], diario: [], acumulado: [], provincias: [] };
+            const dias = new Map(), provincias = new Map();
+            for (const feature of features) {
+                const p = feature.properties || {};
+                if (String(p.VERIFICADO ?? '').trim().toUpperCase() !== 'SI') continue;
+                resultado.verificadas++;
+                const fecha = leerFecha(p.DATE_ACT);
+                if (fecha === null) resultado.sinFecha++;
+                else dias.set(fecha, (dias.get(fecha) || 0) + 1);
+                const antes = leerNumero(p.TOT_VIV), despues = leerNumero(p.TOT_VIV_EN);
+                if (antes === null || despues === null) { resultado.sinPar++; continue; }
+                resultado.pares++; resultado.antes += antes; resultado.despues += despues;
+                const nombre = String(p.PROV_NOMB ?? '').trim().toUpperCase() || 'SIN PROVINCIA';
+                if (!provincias.has(nombre)) provincias.set(nombre, { nombre, n: 0, antes: 0, despues: 0 });
+                const prov = provincias.get(nombre); prov.n++; prov.antes += antes; prov.despues += despues;
+            }
+            const orden = [...dias.keys()].sort((a,b) => a-b);
+            let acumulado = 0;
+            if (orden.length) for (let t = orden[0]; t <= orden[orden.length-1]; t += 86400000) {
+                const n = dias.get(t) || 0; acumulado += n;
+                resultado.fechas.push(new Date(t).toISOString().slice(0,10));
+                resultado.diario.push(n); resultado.acumulado.push(acumulado);
+            }
+            resultado.provincias = [...provincias.values()].sort((a,b) => a.nombre.localeCompare(b.nombre,'es'));
+            return resultado;
+        }
 
         function actualizarGraficosModal(listaUPM) {
-            const modal = document.getElementById('modalGrafico');
-            if (modal.style.display !== 'flex') return;
-            const stats = obtenerEstadisticasPorEjecucion(listaUPM);
-            const provincias = Object.keys(stats).sort((a, b) => a.localeCompare(b, 'es'));
-            const sumar = campo => provincias.reduce((total, provincia) => total + stats[provincia][campo], 0);
-            const resumen = document.getElementById('statsGrafico');
-            resumen.textContent = `Total UPM: ${listaUPM.length} | Con viático: ${sumar('conCosto')} | Sin viático: ${sumar('sinCosto')} | Verificadas: ${sumar('verificadas')} | Pendientes: ${sumar('pendientes')}`;
+            if (document.getElementById('modalGrafico').style.display !== 'flex') return;
+            const r = analizarDashboardUPM(listaUPM);
+            const num = n => new Intl.NumberFormat('es-PA').format(n);
+            const signed = n => (n > 0 ? '+' : '') + num(n);
+            const porcentaje = (a,b) => a ? ((b-a)/a*100).toLocaleString('es-PA',{maximumFractionDigits:1}) + '%' : 'No calculable (base 0)';
+            const txt = (id,value) => { document.getElementById(id).textContent = value; };
+            const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            txt('dashVerificadas', `${num(r.verificadas)} / ${num(r.total)}`);
+            txt('dashPorcentaje', `${r.total ? (100*r.verificadas/r.total).toFixed(1) : '0.0'}% del conjunto filtrado`);
+            txt('dashAntes', r.pares ? num(r.antes) : 'Sin datos');
+            txt('dashDespues', r.pares ? num(r.despues) : 'Sin datos');
+            txt('dashCambio', r.pares ? signed(r.despues-r.antes) : 'Sin datos');
+            txt('dashVariacion', r.pares ? porcentaje(r.antes,r.despues) : 'Sin pares comparables');
+            txt('notaAvance', `${num(r.verificadas-r.sinFecha)} verificadas con fecha válida; ${num(r.sinFecha)} sin fecha válida excluidas de esta gráfica. Fecha de actualización registrada, no historial de visitas. Los días sin registros se muestran en cero.`);
+            txt('notaViviendas', `${num(r.pares)} UPM verificadas comparables; ${num(r.sinPar)} verificadas sin ambos valores válidos excluidas. Antes y después corresponden exactamente a las mismas UPM. Provincia = ubicación geográfica.`);
+            txt('statsGrafico', `Filtros del mapa aplicados · ${num(r.total)} UPM · ${num(r.verificadas)} verificadas · ${num(r.pares)} comparables en viviendas`);
+            txt('sinAvance', r.fechas.length ? '' : 'No hay UPM verificadas con DATE_ACT válido para esta selección.');
+            txt('sinViviendas', r.pares ? '' : 'No hay UPM verificadas con ambos valores de viviendas para comparar.');
+            document.getElementById('tablaViviendasBody').innerHTML = r.provincias.map(p => `<tr><th scope="row">${escape(p.nombre)}</th><td>${num(p.n)}</td><td>${num(p.antes)}</td><td>${num(p.despues)}</td><td>${signed(p.despues-p.antes)}</td><td>${porcentaje(p.antes,p.despues)}</td></tr>`).join('') + (r.pares ? `<tr class="dash-total"><th scope="row">TOTAL COMPARABLE</th><td>${num(r.pares)}</td><td>${num(r.antes)}</td><td>${num(r.despues)}</td><td>${signed(r.despues-r.antes)}</td><td>${porcentaje(r.antes,r.despues)}</td></tr>` : '<tr><td colspan="6">Sin datos comparables.</td></tr>');
+            chartsDashboard.forEach(chart => chart.destroy()); chartsDashboard = [];
             const aviso = document.getElementById('avisoGraficos');
-            if (typeof Chart === 'undefined') {
-                aviso.textContent = 'No se pudo cargar la librería de gráficas. Revise su conexión y recargue la página.';
-                aviso.hidden = false;
-                return;
-            }
-            aviso.hidden = listaUPM.length > 0;
-            aviso.textContent = 'No hay UPM para los filtros seleccionados.';
-            const crearGrafico = (id, series) => {
-                const canvas = document.getElementById(id);
-                canvas.parentElement.style.height = Math.max(260, provincias.length * 38 + 45) + 'px';
-                return new Chart(canvas, {
-                    type: 'bar',
-                    data: {
-                        labels: provincias,
-                        datasets: series.map(([label, campo, color]) => ({
-                            label,
-                            data: provincias.map(provincia => stats[provincia][campo]),
-                            backgroundColor: color,
-                            borderRadius: 3,
-                            maxBarThickness: 20
-                        }))
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        // Seleccionar la provincia por su fila en ambas gráficas horizontales.
-                        interaction: { mode: 'index', axis: 'y', intersect: false },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { mode: 'index', axis: 'y', intersect: false }
-                        },
-                        scales: {
-                            x: { beginAtZero: true, stacked: true, ticks: { precision: 0 }, title: { display: true, text: 'Cantidad de UPM' } },
-                            y: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, color: '#334155', font: { size: 11 } } }
-                        }
-                    }
-                });
-            };
-            if (chartCostos) { chartCostos.destroy(); chartCostos = null; }
-            if (chartVerificacion) { chartVerificacion.destroy(); chartVerificacion = null; }
-            chartCostos = crearGrafico('graficoCostosModal', [
-                ['Con viático', 'conCosto', '#22c55e'],
-                ['Sin viático', 'sinCosto', '#ef4444']
-            ]);
-            chartVerificacion = crearGrafico('graficoVerificacionModal', [
-                ['Verificadas', 'verificadas', '#facc15'],
-                ['Pendientes', 'pendientes', '#64748b']
-            ]);
+            aviso.hidden = typeof Chart !== 'undefined' && r.total > 0;
+            aviso.textContent = typeof Chart === 'undefined' ? 'No se pudo cargar la librería de gráficas. El resumen y la tabla siguen disponibles; revise la conexión y recargue.' : 'No hay UPM para los filtros seleccionados.';
+            if (typeof Chart === 'undefined') return;
+            const fechaCorta = iso => iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
+            if (r.fechas.length) chartsDashboard.push(new Chart(document.getElementById('graficoAvanceModal'), {
+                type:'bar',
+                data:{labels:r.fechas.map(fechaCorta),datasets:[
+                    {label:'Verificadas por día',data:r.diario,backgroundColor:'#38bdf8',yAxisID:'y',order:2},
+                    {type:'line',label:'Acumulado con fecha',data:r.acumulado,borderColor:'#1d4ed8',backgroundColor:'#1d4ed8',pointRadius:0,pointHitRadius:8,borderWidth:2,tension:0,yAxisID:'acumulado',order:1}
+                ]},
+                options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',axis:'x',intersect:false},plugins:{legend:{position:'bottom'}},scales:{
+                    x:{ticks:{maxTicksLimit:10,maxRotation:45},grid:{display:false}},
+                    y:{beginAtZero:true,title:{display:true,text:'UPM por día'},ticks:{precision:0}},
+                    acumulado:{position:'right',beginAtZero:true,title:{display:true,text:'UPM acumuladas'},ticks:{precision:0},grid:{drawOnChartArea:false}}
+                }}
+            }));
+            document.getElementById('contenedorViviendas').style.height = Math.max(300,r.provincias.length*52+80)+'px';
+            if (r.pares) chartsDashboard.push(new Chart(document.getElementById('graficoViviendasModal'), {
+                type:'bar',data:{labels:r.provincias.map(p=>p.nombre),datasets:[
+                    {label:'Antes · TOT_VIV',data:r.provincias.map(p=>p.antes),backgroundColor:'#94a3b8',borderRadius:3},
+                    {label:'Después · TOT_VIV_EN',data:r.provincias.map(p=>p.despues),backgroundColor:'#0d9488',borderRadius:3}
+                ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,interaction:{mode:'index',axis:'y',intersect:false},plugins:{legend:{position:'bottom'},tooltip:{callbacks:{footer:items=>{const p=r.provincias[items[0].dataIndex];return `${p.n} UPM comparables\nDiferencia: ${signed(p.despues-p.antes)} viviendas`;}}}},scales:{x:{beginAtZero:true,title:{display:true,text:'Viviendas'},ticks:{precision:0}},y:{ticks:{autoSkip:false},grid:{display:false}}}}
+            }));
         }
 
         function obtenerEstadisticasPorEjecucion(listaUPM) {
